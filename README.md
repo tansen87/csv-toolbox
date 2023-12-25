@@ -1,6 +1,7 @@
 # Tauri Toolkit
 > Download MySQL data, data pivot...
-![image](https://github.com/tansen87/tauri-toolkit/assets/98570790/e616a119-857e-46d5-9973-1b4c141084c4)
+
+![image](https://github.com/tansen87/tauri-toolkit/assets/98570790/bb98f299-da9b-4616-9ef5-28765997bf49)
 
 ## Usage
 ### Installation dependencies
