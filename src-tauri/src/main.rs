@@ -2,13 +2,13 @@
 
 
 use dlib::data4mysql;
-use dlib::pivot;
+use dlib::dataprocess;
 
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             data4mysql::download,
-            pivot::pivot
+            dataprocess::pivot
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
