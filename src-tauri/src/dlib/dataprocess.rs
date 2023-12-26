@@ -49,14 +49,18 @@ pub fn groupby_sum(path: String, sep: String, index: String, values: String) -> 
     let val: Vec<&str> = values.split(',').collect();
     let file_path = path::Path::new(&path);
 
-    // Convert idx field datatype to utf8
+    // Convert idx field datatype to utf8, val field datatype to float64
     let mut schema = Schema::new();
     for i in idx.iter() {
         schema.with_column(i.to_string().into(), DataType::Utf8);
     }
+    for v in val.iter() {
+        schema.with_column(v.to_string().into(), DataType::Float64);
+    }
 
     // load csv file
     let lf = LazyCsvReader::new(&file_path)
+        // .with_infer_schema_length(Some(10))
         .with_delimiter(sep_u8)
         .with_dtype_overwrite(Some(&Arc::new(schema)))
         .finish()?;
