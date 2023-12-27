@@ -1,4 +1,5 @@
 use std::path;
+use chrono::Utc;
 use polars::frame::DataFrame;
 use polars::lazy::dsl::col;
 use polars::prelude::{Schema, LazyCsvReader, Arc, LazyFileListReader};
@@ -37,7 +38,8 @@ pub fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error:
             }
         }
     }
-    let output_path = format!("{}/{}_pt.xlsx", file_path.parent().unwrap().to_string_lossy(), file_name[0]);
+    let current_time = Utc::now();
+    let output_path = format!("{}/{} {}.xlsx", file_path.parent().unwrap().to_string_lossy(), file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
     workbook.save(output_path)?;
     Ok(())
 }
@@ -113,6 +115,30 @@ pub fn groupby_sum(path: String, sep: String, index: String, values: String) -> 
     Ok(())
 }
 
+pub fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn std::error::Error>> {
+    /* Getting a unique value for a column */
+    let sep_u8 = sep.into_bytes()[0];
+    let file_path = path::Path::new(&path);
+
+    // Convert col field datatype to utf8
+    let mut schema = Schema::new();
+    schema.with_column(column.to_string().into(), DataType::Utf8);
+
+    // load csv file
+    let lf = LazyCsvReader::new(&file_path)
+        .with_delimiter(sep_u8)
+        .with_dtype_overwrite(Some(&Arc::new(schema)))
+        .finish()?;
+
+    // get unique value
+    let uni = lf.select([
+        col(&column).unique()
+    ])
+    .collect()?;
+    write_xlsx(uni, path)?;
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn pivot(path: String, sep: String, index: String, values: String, window: tauri::Window) {
     let _pt = match async {
@@ -124,6 +150,22 @@ pub async fn pivot(path: String, sep: String, index: String, values: String, win
         {
             eprintln!("Error: {}", error);
             window.emit("pivotErr", &error.to_string()).unwrap();
+            error.to_string();
+        }
+    };
+}
+
+#[tauri::command]
+pub async fn unique(path: String, sep: String, column: String, window: tauri::Window) {
+    let _uni = match async {
+        unique_value(path, sep, column)
+    }.await
+    {
+        Ok(result) => result,
+        Err(error) =>
+        {
+            eprintln!("Error: {}", error);
+            window.emit("uniqueErr", &error.to_string()).unwrap();
             error.to_string();
         }
     };
