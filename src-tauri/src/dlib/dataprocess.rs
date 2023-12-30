@@ -1,12 +1,14 @@
-use std::path;
+use std::{path, fs};
 use chrono::Local;
 use polars::frame::DataFrame;
+use polars::io::SerReader;
 use polars::lazy::dsl::col;
-use polars::prelude::{Schema, LazyCsvReader, Arc, LazyFileListReader};
+use polars::lazy::dsl::functions::diag_concat_lf;
+use polars::prelude::{Schema, LazyCsvReader, Arc, LazyFileListReader, CsvReader, CsvWriter, SerWriter};
 use polars::datatypes::{DataType, AnyValue};
 use rust_xlsxwriter::Workbook;
 
-pub fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Error>> {
+fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Error>> {
     /*  Write dataframe to xlsx */
     let file_path = path::Path::new(&path);
     let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
@@ -32,9 +34,7 @@ pub fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error:
                 AnyValue::Utf8(values) => {
                     worksheet.write_string((col+1).try_into()?, row.try_into()?, values.to_string())?;
                 }
-                _ => {
-                    worksheet.write_string((col+1).try_into()?, row.try_into()?, col_data.to_string())?;
-                },
+                _ => { },
             }
         }
     }
@@ -44,7 +44,20 @@ pub fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
-pub fn groupby_sum(path: String, sep: String, index: String, values: String) -> Result<(), Box<dyn std::error::Error>> {
+fn write_csv(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Error>> {
+    /*  Write dataframe to csv */
+    let file_path = path::Path::new(&path);
+    let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
+    let current_time = Local::now();
+    let output_path = format!("{}/{} {}.csv", file_path.parent().unwrap().to_string_lossy(), file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+    let mut file = fs::File::create(output_path)?;
+    CsvWriter::new(&mut file)
+        .with_delimiter(b'|')
+        .finish(&mut df.clone())?;
+    Ok(())
+}
+
+fn groupby_sum(path: String, sep: String, index: String, values: String) -> Result<(), Box<dyn std::error::Error>> {
     /* group by - sum */
     let sep_u8 = sep.into_bytes()[0];
     let idx: Vec<&str> = index.split(',').collect();
@@ -115,12 +128,12 @@ pub fn groupby_sum(path: String, sep: String, index: String, values: String) -> 
     Ok(())
 }
 
-pub fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn std::error::Error>> {
+fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn std::error::Error>> {
     /* Getting a unique value for a column */
     let sep_u8 = sep.into_bytes()[0];
     let file_path = path::Path::new(&path);
 
-    // Convert col field datatype to utf8
+    // Convert column field datatype to utf8
     let mut schema = Schema::new();
     schema.with_column(column.to_string().into(), DataType::Utf8);
 
@@ -136,6 +149,48 @@ pub fn unique_value(path: String, sep: String, column: String) -> Result<(), Box
     ])
     .collect()?;
     write_xlsx(uni, path)?;
+    Ok(())
+}
+
+fn merge_file(path: String, sep: String, column: String) -> Result<(), Box<dyn std::error::Error>> {
+    /* merge csv files into a xlsx or csv file */
+    let sep_u8 = sep.into_bytes()[0];
+    let vec_path: Vec<&str> = path.split(',').collect();
+    let vec_col: Vec<&str> = column.split(',').collect();
+    let mut dfs = Vec::new();
+
+    // Convert column field datatype to float64
+    let mut schema = Schema::new();
+    for file in vec_path.iter() 
+    {
+        let tmp_df = CsvReader::from_path(file).unwrap()
+            .with_n_rows(Some(0))
+            .with_missing_is_null(false)
+            .finish()?;
+        let header = tmp_df.get_column_names();
+        for h in header.iter() {
+            schema.with_column(h.to_string().into(), DataType::Utf8);
+        }
+        for num in vec_col.iter() {
+            schema.with_column(num.to_string().into(), DataType::Float64);
+        }
+        let tmp_lf = LazyCsvReader::new(file)
+            .with_delimiter(sep_u8)
+            .with_missing_is_null(false)
+            .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
+            .finish()?;
+        dfs.push(tmp_lf);
+    }
+
+    // concat dataframe
+    let union_df = diag_concat_lf(dfs, true, true)?.collect()?;
+    let save_path = vec_path[0].to_string();
+    let row_len = union_df.shape().0;
+    if row_len < 104_0000 {
+        write_xlsx(union_df, save_path)?;
+    } else {
+        write_csv(union_df, save_path)?;
+    }
     Ok(())
 }
 
@@ -166,6 +221,22 @@ pub async fn unique(path: String, sep: String, column: String, window: tauri::Wi
         {
             eprintln!("Error: {}", error);
             window.emit("uniqueErr", &error.to_string()).unwrap();
+            error.to_string();
+        }
+    };
+}
+
+#[tauri::command]
+pub async fn concat(path: String, sep: String, column: String, window: tauri::Window) {
+    let _cct = match async {
+        merge_file(path, sep, column)
+    }.await
+    {
+        Ok(result) => result,
+        Err(error) =>
+        {
+            eprintln!("Error: {}", error);
+            window.emit("concatErr", &error.to_string()).unwrap();
             error.to_string();
         }
     };

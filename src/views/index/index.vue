@@ -2,6 +2,7 @@
   import Data4mysql from './components/Data4mysql.vue';
   import Pivot from './components/Pivot.vue';
   import Unique from './components/Unique.vue';
+  import Concat from './components/Concat.vue';
 
   defineOptions({
     name: 'RtWelcome',
@@ -47,10 +48,10 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>...</span>
+              <span>concat</span>
             </div>
           </template>
-          <!-- <WordCloud></WordCloud> -->
+          <Concat />
         </el-card>
       </el-col>
     </el-row>

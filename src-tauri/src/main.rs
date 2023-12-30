@@ -9,7 +9,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             data4mysql::download,
             dataprocess::pivot,
-            dataprocess::unique
+            dataprocess::unique,
+            dataprocess::concat
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
