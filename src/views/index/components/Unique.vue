@@ -75,7 +75,7 @@ async function selectFile() {
         </el-form-item>
         <el-form-item>
             <el-button type="primary" @click="selectFile()">Open File</el-button>
-            <el-button type="success" @click="uniqueData()">Pivot</el-button>
+            <el-button type="success" @click="uniqueData()">Unique</el-button>
         </el-form-item>
     </el-form>
     <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
