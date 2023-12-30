@@ -1,5 +1,5 @@
 use std::path;
-use chrono::Utc;
+use chrono::Local;
 use polars::frame::DataFrame;
 use polars::lazy::dsl::col;
 use polars::prelude::{Schema, LazyCsvReader, Arc, LazyFileListReader};
@@ -38,7 +38,7 @@ pub fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error:
             }
         }
     }
-    let current_time = Utc::now();
+    let current_time = Local::now();
     let output_path = format!("{}/{} {}.xlsx", file_path.parent().unwrap().to_string_lossy(), file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
     workbook.save(output_path)?;
     Ok(())
