@@ -20,6 +20,11 @@
     ElMessage.error(error);
   });
 
+  listen('readerr', (event: any) => {
+    const error: any = event.payload;
+    ElMessage.error(error);
+  });
+
   // data concat
   async function concatData() {
     if (data.filePath == '') {

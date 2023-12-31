@@ -152,7 +152,7 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
     Ok(())
 }
 
-fn merge_file(path: String, sep: String, column: String) -> Result<(), Box<dyn std::error::Error>> {
+fn merge_file(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
     /* merge csv files into a xlsx or csv file */
     let sep_u8 = sep.into_bytes()[0];
     let vec_path: Vec<&str> = path.split(',').collect();
@@ -163,10 +163,24 @@ fn merge_file(path: String, sep: String, column: String) -> Result<(), Box<dyn s
     let mut schema = Schema::new();
     for file in vec_path.iter() 
     {
-        let tmp_df = CsvReader::from_path(file).unwrap()
+        // let tmp_df = if let Ok(df) = CsvReader::from_path(file)?
+        //     .with_n_rows(Some(0))
+        //     .finish() {
+        //         df
+        //     } else {
+        //         return Err(format!("error file: {}", file).into());
+        //     };
+        let tmp_df = match CsvReader::from_path(file)?
             .with_n_rows(Some(0))
-            .with_missing_is_null(false)
-            .finish()?;
+            .finish() 
+            {
+                Ok(df ) => df,
+                Err(err) => {
+                    let err_msg = format!("error: {} | {}", file, err);
+                    window.emit("readerr", err_msg)?;
+                    return Err(Box::new(err));
+                }
+            };
         let header = tmp_df.get_column_names();
         for h in header.iter() {
             schema.with_column(h.to_string().into(), DataType::Utf8);
@@ -228,8 +242,9 @@ pub async fn unique(path: String, sep: String, column: String, window: tauri::Wi
 
 #[tauri::command]
 pub async fn concat(path: String, sep: String, column: String, window: tauri::Window) {
+    let cct_window = window.clone();
     let _cct = match async {
-        merge_file(path, sep, column)
+        merge_file(path, sep, column, cct_window)
     }.await
     {
         Ok(result) => result,
