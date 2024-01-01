@@ -3,6 +3,7 @@
 
 use dlib::data4mysql;
 use dlib::dataprocess;
+use dlib::excel2csv;
 
 fn main() {
     tauri::Builder::default()
@@ -10,7 +11,8 @@ fn main() {
             data4mysql::download,
             dataprocess::pivot,
             dataprocess::unique,
-            dataprocess::concat
+            dataprocess::concat,
+            excel2csv::etoc
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
