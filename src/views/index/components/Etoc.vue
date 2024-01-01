@@ -8,7 +8,7 @@
   const getExcelMsg = ref('');
   const data = reactive({
     filePath: '',
-    fileFormats: ['xlsx', 'xls', '.xlsb', '.xlsm', '.xlam', '.xla', '.ods'],
+    fileFormats: ['xlsx', 'xls', 'xlsb', 'xlsm', 'xlam', 'xla', 'ods'],
   });
   const form = reactive({
     sep: '',
