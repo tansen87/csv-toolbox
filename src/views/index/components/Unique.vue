@@ -20,7 +20,7 @@
     ElMessage.error(error);
   });
 
-  // data pivot
+  // data unique
   async function uniqueData() {
     if (data.filePath == '') {
       ElMessage.warning('未选择csv文件');
@@ -34,8 +34,6 @@
         sep: form.sep,
         column: form.column,
       });
-      // .then((msg: any) => ElMessage.success(msg))
-      // .catch((err: any) => ElMessage.error(err))
       console.log(value);
       ElMessage.success('get unique value!');
     }

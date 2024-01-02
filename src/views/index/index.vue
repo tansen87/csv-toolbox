@@ -3,7 +3,7 @@
   import Pivot from './components/Pivot.vue';
   import Unique from './components/Unique.vue';
   import Concat from './components/Concat.vue';
-  import Etoc from './components/Etoc.vue';
+  import Excel2csv from './components/Excel2csv.vue';
 
   defineOptions({
     name: 'RtWelcome',
@@ -62,7 +62,7 @@
               <span>excel to csv</span>
             </div>
           </template>
-          <Etoc />
+          <Excel2csv />
         </el-card>
       </el-col>
     </el-row>

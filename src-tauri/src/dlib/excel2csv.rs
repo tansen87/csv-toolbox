@@ -1,6 +1,5 @@
-use std::{fs, path};
-use calamine::{open_workbook_auto, Reader};
-use std::io::{BufWriter, Write};
+use std::{fs, path, io::{BufWriter, Write}};
+use calamine::{Reader, DataType};
 
 fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
     /* convert excel to csv */
@@ -11,7 +10,7 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn std::e
         let sce = path::PathBuf::from(file);
         let dest = sce.with_extension("csv");
         let mut dest = BufWriter::new(fs::File::create(dest)?);
-        let mut workbook = open_workbook_auto(&sce)?;
+        let mut workbook = calamine::open_workbook_auto(&sce)?;
         let sheets = workbook.sheet_names().first().unwrap().to_owned();
         let range = workbook.worksheet_range(&sheets.as_str())?;
 
@@ -22,16 +21,16 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn std::e
             {
                 match *c 
                 {
-                    calamine::DataType::Empty => Ok(()),
-                    calamine::DataType::String(ref s)
-                    | calamine::DataType::DateTimeIso(ref s)
-                    | calamine::DataType::DurationIso(ref s) => write!(dest, "{}", s),
-                    calamine::DataType::Float(ref f) 
-                    | calamine::DataType::DateTime(ref f) 
-                    | calamine::DataType::Duration(ref f) => write!(dest, "{}", f),
-                    calamine::DataType::Int(ref i) => write!(dest, "{}", i),
-                    calamine::DataType::Error(ref e) => write!(dest, "{:?}", e),
-                    calamine::DataType::Bool(ref b) => write!(dest, "{}", b),
+                    DataType::Empty => Ok(()),
+                    DataType::String(ref s)
+                    | DataType::DateTimeIso(ref s)
+                    | DataType::DurationIso(ref s) => write!(dest, "{}", s),
+                    DataType::Float(ref f) 
+                    | DataType::DateTime(ref f) 
+                    | DataType::Duration(ref f) => write!(dest, "{}", f),
+                    DataType::Int(ref i) => write!(dest, "{}", i),
+                    DataType::Error(ref e) => write!(dest, "{:?}", e),
+                    DataType::Bool(ref b) => write!(dest, "{}", b),
                 }?;
                 if i != n {
                     write!(dest, "|")?;

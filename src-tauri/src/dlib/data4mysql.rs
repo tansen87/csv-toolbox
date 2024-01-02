@@ -268,7 +268,6 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                 ).expect("Failed to create file");
                 file.write_all(err_msg.as_bytes()).expect("Failed to write to file");
                 log_file.write_all(&err_msg_log.as_bytes())?;
-                // println!("{}", err_msg);
                 continue;
             }
         }

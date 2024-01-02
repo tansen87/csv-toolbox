@@ -36,8 +36,6 @@
         index: form.index,
         values: form.values,
       });
-      // .then((msg: any) => ElMessage.success(msg))
-      // .catch((err: any) => ElMessage.error(err))
       console.log(value);
       ElMessage.success('数据透视完成!');
     }
