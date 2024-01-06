@@ -28,7 +28,10 @@ chrono = "0.4"
 futures = "0.3.29"
 polars = { version = "0.33.2", features = ["lazy", "diagonal_concat"] }
 rust_xlsxwriter = "0.59.0"
-calamine = "0.23.1"
+calamine = { version = "0.23", features = ["dates"] }
+rayon = "1.8"
+ryu = "1"
+itoa = "1"
 
 [features]
 # by default Tauri runs in production mode
