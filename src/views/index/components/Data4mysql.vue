@@ -48,17 +48,15 @@
     }
 
     if (data.filePath != '') {
-      ElMessage.info('正在下载,请稍等...');
+      ElMessage.info('waiting...');
       let value = await invoke('download', {
         filePath: data.filePath,
         etable: form.region,
         rcolumn: form.input,
         epath: form.epath,
       });
-      // .then((msg: any) => ElMessage.success(msg))
-      // .catch((err: any) => ElMessage.error(err))
       console.log(value);
-      ElMessage.success('下载完成!');
+      ElMessage.success('download successfully.');
     }
   }
 

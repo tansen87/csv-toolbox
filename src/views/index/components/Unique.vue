@@ -11,8 +11,8 @@
     fileFormats: ['csv', 'txt', '*'],
   });
   const form = reactive({
-    sep: ',',
-    column: 'Currency',
+    sep: '|',
+    column: '币种',
   });
 
   listen('uniqueErr', (event: any) => {
@@ -35,7 +35,7 @@
         column: form.column,
       });
       console.log(value);
-      ElMessage.success('get unique value!');
+      ElMessage.success('unique successfully.');
     }
   }
 

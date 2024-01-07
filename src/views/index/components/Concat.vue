@@ -11,7 +11,7 @@
     fileFormats: ['csv', 'txt', '*'],
   });
   const form = reactive({
-    sep: ',',
+    sep: '|',
     column: '借方发生额,贷方发生额,借方发生额-外币,贷方发生额-外币,借方数量,贷方数量',
   });
 
@@ -40,7 +40,7 @@
         column: form.column,
       });
       console.log(value);
-      ElMessage.success('merge successfully!');
+      ElMessage.success('concat successfully.');
     }
   }
 

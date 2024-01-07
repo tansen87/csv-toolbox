@@ -1,9 +1,4 @@
-use std::{
-    error::Error, 
-    fs,
-    io,
-    io::prelude::*
-};
+use std::io::prelude::*;
 
 use csv::WriterBuilder;
 use sqlx::{MySqlPool, Row, Column};
@@ -24,14 +19,14 @@ pub struct Config {
     project_name: Vec<String>,
 }
 
-pub fn read_yaml(file_path: String) -> Result<Config, Box<dyn Error>> {
-    let yaml_file = fs::File::open(file_path)?;
-    let yaml_reader = io::BufReader::new(yaml_file);
+pub fn read_yaml(file_path: String) -> Result<Config, Box<dyn std::error::Error>> {
+    let yaml_file = std::fs::File::open(file_path)?;
+    let yaml_reader = std::io::BufReader::new(yaml_file);
     let yaml: Config = serde_yaml::from_reader(yaml_reader)?;
     Ok(yaml)
 }
 
-pub async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec<String>, Config), Box<dyn Error>> {
+pub async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec<String>, Config), Box<dyn std::error::Error>> {
     // query the code corresponding to the company name
     let yaml = read_yaml(file_path)?;
     let mut vec_code: Vec<String> = Vec::new();
@@ -59,7 +54,7 @@ pub async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec
     // Write the incorrect names to a text file
     if !incorrect_names.is_empty() 
     {
-        let mut file = match fs::File::create(
+        let mut file = match std::fs::File::create(
             format!("{}/0_error_project.log", &epath)) 
             {
                 Ok(file) => file,
@@ -80,14 +75,14 @@ pub async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec
     Ok((vec_code, yaml))
 }
 
-pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String, rcolumn: String, epath: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
+pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String, rcolumn: String, epath: String, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
     let mut company_count = 1;
     let pool: sqlx::Pool<sqlx::MySql> = MySqlPool::connect(&yaml.url).await?;
     let mut message_log = String::new();
-    let _log_file = fs::File::create(
+    let _log_file = std::fs::File::create(
         format!("{}/2_logs.log", &epath)
     ).expect("Failed to create file"); 
-    let mut log_file = fs::OpenOptions::new()
+    let mut log_file = std::fs::OpenOptions::new()
         .append(true)
         .open(format!("{}/2_logs.log", &epath))?;
     let mut gl_table = "".to_string();
@@ -150,7 +145,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                 let folder_path = format!("{}\\{}", &epath, &filename);
                 if !folder_exists(&folder_path) 
                 {
-                    fs::create_dir(&folder_path)?;
+                    std::fs::create_dir(&folder_path)?;
                 }
 
                 // gl save path
@@ -263,7 +258,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                 let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                 let err_msg_log = format!("{} => {}\n", &timestamp, &err_msg);
                 window.emit("errcode", &err_msg)?;
-                let mut file = fs::File::create(
+                let mut file = std::fs::File::create(
                     format!("{}/0_error_company.log", &epath)
                 ).expect("Failed to create file");
                 file.write_all(err_msg.as_bytes()).expect("Failed to write to file");
@@ -273,7 +268,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
         }
     }
     
-    let mut successful_file = fs::File::create(
+    let mut successful_file = std::fs::File::create(
         format!("{}/1_successful_company.log", &epath)
     ).expect("failed to create file");
     successful_file.write_all(message_log.as_bytes()).expect("failed to write to file");
@@ -285,7 +280,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
 }
 
 fn folder_exists(path: &str) -> bool {
-    fs::metadata(path).is_ok()
+    std::fs::metadata(path).is_ok()
 }
 
 #[tauri::command]

@@ -1,18 +1,16 @@
-use std::{path, fs};
-use chrono::Local;
-use polars::frame::DataFrame;
-use polars::io::SerReader;
-use polars::lazy::dsl::col;
-use polars::lazy::dsl::functions::diag_concat_lf;
-use polars::prelude::{Schema, LazyCsvReader, Arc, LazyFileListReader, CsvReader, CsvWriter, SerWriter};
-use polars::datatypes::{DataType, AnyValue};
-use rust_xlsxwriter::Workbook;
+use polars::{
+    io::SerReader,
+    frame::DataFrame,
+    datatypes::{AnyValue, DataType},
+    lazy::dsl::{col, functions::diag_concat_lf},
+    prelude::{Arc, Schema, CsvReader, CsvWriter, SerWriter, LazyCsvReader, LazyFileListReader}
+};
 
 fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Error>> {
     /*  Write dataframe to xlsx */
-    let file_path = path::Path::new(&path);
+    let file_path = std::path::Path::new(&path);
     let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
-    let mut workbook = Workbook::new();
+    let mut workbook = rust_xlsxwriter::Workbook::new();
     let worksheet = workbook.add_worksheet();
 
     // write header to xlsx
@@ -38,7 +36,7 @@ fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Err
             }
         }
     }
-    let current_time = Local::now();
+    let current_time = chrono::Local::now();
     let output_path = format!("{}/{} {}.xlsx", file_path.parent().unwrap().to_string_lossy(), file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
     workbook.save(output_path)?;
     Ok(())
@@ -46,11 +44,11 @@ fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Err
 
 fn write_csv(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Error>> {
     /*  Write dataframe to csv */
-    let file_path = path::Path::new(&path);
+    let file_path = std::path::Path::new(&path);
     let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
-    let current_time = Local::now();
+    let current_time = chrono::Local::now();
     let output_path = format!("{}/{} {}.csv", file_path.parent().unwrap().to_string_lossy(), file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
-    let mut file = fs::File::create(output_path)?;
+    let mut file = std::fs::File::create(output_path)?;
     CsvWriter::new(&mut file)
         .with_delimiter(b'|')
         .finish(&mut df.clone())?;
@@ -62,7 +60,7 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     let sep_u8 = sep.into_bytes()[0];
     let idx: Vec<&str> = index.split(',').collect();
     let val: Vec<&str> = values.split(',').collect();
-    let file_path = path::Path::new(&path);
+    let file_path = std::path::Path::new(&path);
 
     // Convert idx field datatype to utf8, val field datatype to float64
     let mut schema = Schema::new();
@@ -131,7 +129,7 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
 fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn std::error::Error>> {
     /* Getting a unique value for a column */
     let sep_u8 = sep.into_bytes()[0];
-    let file_path = path::Path::new(&path);
+    let file_path = std::path::Path::new(&path);
 
     // Convert column field datatype to utf8
     let mut schema = Schema::new();
@@ -157,7 +155,7 @@ fn merge_file(path: String, sep: String, column: String, window: tauri::Window) 
     let sep_u8 = sep.into_bytes()[0];
     let vec_path: Vec<&str> = path.split(',').collect();
     let vec_col: Vec<&str> = column.split(',').collect();
-    let mut dfs = Vec::new();
+    let mut lfs = Vec::new();
 
     // Convert column field datatype to float64
     let mut schema = Schema::new();
@@ -193,11 +191,11 @@ fn merge_file(path: String, sep: String, column: String, window: tauri::Window) 
             .with_missing_is_null(false)
             .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
             .finish()?;
-        dfs.push(tmp_lf);
+        lfs.push(tmp_lf);
     }
 
     // concat dataframe
-    let union_df = diag_concat_lf(dfs, true, true)?.collect()?;
+    let union_df = diag_concat_lf(lfs, true, true)?.collect()?;
     let save_path = vec_path[0].to_string();
     let row_len = union_df.shape().0;
     if row_len < 104_0000 {

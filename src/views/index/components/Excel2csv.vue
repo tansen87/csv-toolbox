@@ -38,7 +38,7 @@
         path: data.filePath,
       });
       console.log(value);
-      ElMessage.success('convert successfully!');
+      ElMessage.success('convert successfully.');
     }
   }
 

@@ -11,7 +11,7 @@
     fileFormats: ['csv', 'txt', '*'],
   });
   const form = reactive({
-    sep: ',',
+    sep: '|',
     index: '被审计单位,科目编号',
     values: '借方发生额,贷方发生额',
   });
@@ -29,7 +29,7 @@
     }
 
     if (data.filePath != '') {
-      ElMessage.info('pivot...');
+      ElMessage.info('waiting...');
       let value = await invoke('pivot', {
         path: data.filePath,
         sep: form.sep,
@@ -37,7 +37,7 @@
         values: form.values,
       });
       console.log(value);
-      ElMessage.success('数据透视完成!');
+      ElMessage.success('pivot successfully.');
     }
   }
 
