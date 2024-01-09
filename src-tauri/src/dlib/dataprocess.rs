@@ -169,6 +169,7 @@ fn merge_file(path: String, sep: String, column: String, window: tauri::Window) 
         //         return Err(format!("error file: {}", file).into());
         //     };
         let tmp_df = match CsvReader::from_path(file)?
+            .with_delimiter(sep_u8)
             .with_n_rows(Some(0))
             .finish() 
             {
