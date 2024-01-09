@@ -57,7 +57,14 @@ fn write_csv(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Erro
 
 fn groupby_sum(path: String, sep: String, index: String, values: String) -> Result<(), Box<dyn std::error::Error>> {
     /* group by - sum */
-    let sep_u8 = sep.into_bytes()[0];
+    let mut separator = Vec::new();
+    if sep.clone() == "\\t" {
+        let sep_u8 = b'\t';
+        separator.push(sep_u8);
+    } else {
+        let sep_u8 = sep.into_bytes()[0];
+        separator.push(sep_u8);
+    }
     let idx: Vec<&str> = index.split(',').collect();
     let val: Vec<&str> = values.split(',').collect();
     let file_path = std::path::Path::new(&path);
@@ -74,7 +81,7 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     // load csv file
     let lf = LazyCsvReader::new(&file_path)
         // .with_infer_schema_length(Some(10))
-        .with_delimiter(sep_u8)
+        .with_delimiter(separator[0])
         .with_dtype_overwrite(Some(&Arc::new(schema)))
         .finish()?;
 
@@ -128,7 +135,14 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
 
 fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn std::error::Error>> {
     /* Getting a unique value for a column */
-    let sep_u8 = sep.into_bytes()[0];
+    let mut separator = Vec::new();
+    if sep.clone() == "\\t" {
+        let sep_u8 = b'\t';
+        separator.push(sep_u8);
+    } else {
+        let sep_u8 = sep.into_bytes()[0];
+        separator.push(sep_u8);
+    }
     let file_path = std::path::Path::new(&path);
 
     // Convert column field datatype to utf8
@@ -137,7 +151,7 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
 
     // load csv file
     let lf = LazyCsvReader::new(&file_path)
-        .with_delimiter(sep_u8)
+        .with_delimiter(separator[0])
         .with_dtype_overwrite(Some(&Arc::new(schema)))
         .finish()?;
 
@@ -152,7 +166,14 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
 
 fn merge_file(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
     /* merge csv files into a xlsx or csv file */
-    let sep_u8 = sep.into_bytes()[0];
+    let mut separator = Vec::new();
+    if sep.clone() == "\\t" {
+        let sep_u8 = b'\t';
+        separator.push(sep_u8);
+    } else {
+        let sep_u8 = sep.into_bytes()[0];
+        separator.push(sep_u8);
+    }
     let vec_path: Vec<&str> = path.split(',').collect();
     let vec_col: Vec<&str> = column.split(',').collect();
     let mut lfs = Vec::new();
@@ -169,7 +190,7 @@ fn merge_file(path: String, sep: String, column: String, window: tauri::Window) 
         //         return Err(format!("error file: {}", file).into());
         //     };
         let tmp_df = match CsvReader::from_path(file)?
-            .with_delimiter(sep_u8)
+            .with_delimiter(separator[0])
             .with_n_rows(Some(0))
             .finish() 
             {
@@ -188,7 +209,7 @@ fn merge_file(path: String, sep: String, column: String, window: tauri::Window) 
             schema.with_column(num.to_string().into(), DataType::Float64);
         }
         let tmp_lf = LazyCsvReader::new(file)
-            .with_delimiter(sep_u8)
+            .with_delimiter(separator[0])
             .with_missing_is_null(false)
             .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
             .finish()?;

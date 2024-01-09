@@ -8,7 +8,7 @@
   const getCSVMsg = ref('');
   const data = reactive({
     filePath: '',
-    fileFormats: ['csv', 'txt', '*'],
+    fileFormats: ['csv', 'txt', 'tsv'],
   });
   const form = reactive({
     sep: '|',
@@ -74,6 +74,7 @@
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
         <el-option label="|" value="|" />
+        <el-option label="\t" value="\t" />
       </el-select>
     </el-form-item>
     <el-form-item label="Col">
