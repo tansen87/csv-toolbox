@@ -7,6 +7,8 @@
 ### Installation dependencies
 ```bash
 npm i -g pnpm
+```
+```bash
 pnpm i
 ```
 ### run web
