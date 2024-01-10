@@ -2,8 +2,8 @@ use polars::{
     io::SerReader,
     frame::DataFrame,
     datatypes::{AnyValue, DataType},
-    lazy::dsl::{col, functions::diag_concat_lf},
-    prelude::{Arc, Schema, CsvReader, CsvWriter, SerWriter, LazyCsvReader, LazyFileListReader}
+    lazy::dsl::{col, functions::concat_lf_diagonal},
+    prelude::{Arc, Schema, CsvReader, CsvWriter, SerWriter, UnionArgs, LazyCsvReader, LazyFileListReader}
 };
 
 fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Error>> {
@@ -29,7 +29,7 @@ fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Err
                 AnyValue::Float64(values) => {
                     worksheet.write_number((col+1).try_into()?, row.try_into()?, values)?;
                 }
-                AnyValue::Utf8(values) => {
+                AnyValue::String(values) => {
                     worksheet.write_string((col+1).try_into()?, row.try_into()?, values.to_string())?;
                 }
                 _ => { },
@@ -50,7 +50,7 @@ fn write_csv(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Erro
     let output_path = format!("{}/{} {}.csv", file_path.parent().unwrap().to_string_lossy(), file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
     let mut file = std::fs::File::create(output_path)?;
     CsvWriter::new(&mut file)
-        .with_delimiter(b'|')
+        .with_separator(b'|')
         .finish(&mut df.clone())?;
     Ok(())
 }
@@ -72,7 +72,7 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     // Convert idx field datatype to utf8, val field datatype to float64
     let mut schema = Schema::new();
     for i in idx.iter() {
-        schema.with_column(i.to_string().into(), DataType::Utf8);
+        schema.with_column(i.to_string().into(), DataType::String);
     }
     for v in val.iter() {
         schema.with_column(v.to_string().into(), DataType::Float64);
@@ -81,7 +81,7 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     // load csv file
     let lf = LazyCsvReader::new(&file_path)
         // .with_infer_schema_length(Some(10))
-        .with_delimiter(separator[0])
+        .with_separator(separator[0])
         .with_dtype_overwrite(Some(&Arc::new(schema)))
         .finish()?;
 
@@ -147,11 +147,11 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
 
     // Convert column field datatype to utf8
     let mut schema = Schema::new();
-    schema.with_column(column.to_string().into(), DataType::Utf8);
+    schema.with_column(column.to_string().into(), DataType::String);
 
     // load csv file
     let lf = LazyCsvReader::new(&file_path)
-        .with_delimiter(separator[0])
+        .with_separator(separator[0])
         .with_dtype_overwrite(Some(&Arc::new(schema)))
         .finish()?;
 
@@ -190,7 +190,7 @@ fn merge_file(path: String, sep: String, column: String, window: tauri::Window) 
         //         return Err(format!("error file: {}", file).into());
         //     };
         let tmp_df = match CsvReader::from_path(file)?
-            .with_delimiter(separator[0])
+            .with_separator(separator[0])
             .with_n_rows(Some(0))
             .finish() 
             {
@@ -203,13 +203,13 @@ fn merge_file(path: String, sep: String, column: String, window: tauri::Window) 
             };
         let header = tmp_df.get_column_names();
         for h in header.iter() {
-            schema.with_column(h.to_string().into(), DataType::Utf8);
+            schema.with_column(h.to_string().into(), DataType::String);
         }
         for num in vec_col.iter() {
             schema.with_column(num.to_string().into(), DataType::Float64);
         }
         let tmp_lf = LazyCsvReader::new(file)
-            .with_delimiter(separator[0])
+            .with_separator(separator[0])
             .with_missing_is_null(false)
             .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
             .finish()?;
@@ -217,7 +217,7 @@ fn merge_file(path: String, sep: String, column: String, window: tauri::Window) 
     }
 
     // concat dataframe
-    let union_df = diag_concat_lf(lfs, true, true)?.collect()?;
+    let union_df = concat_lf_diagonal(lfs, UnionArgs{parallel: true, rechunk: true, to_supertypes: true})?.collect()?;
     let save_path = vec_path[0].to_string();
     let row_len = union_df.shape().0;
     if row_len < 104_0000 {
