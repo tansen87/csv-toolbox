@@ -4,6 +4,7 @@
 use dlib::data4mysql;
 use dlib::dataprocess;
 use dlib::excel2csv;
+use dlib::csv2xlsx;
 
 fn main() {
     tauri::Builder::default()
@@ -12,7 +13,8 @@ fn main() {
             dataprocess::pivot,
             dataprocess::unique,
             dataprocess::concat,
-            excel2csv::etoc
+            excel2csv::etoc,
+            csv2xlsx::ctox,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
