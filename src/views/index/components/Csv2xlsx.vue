@@ -83,7 +83,7 @@
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
-      <el-button type="success" @click="concatData()">Concat</el-button>
+      <el-button type="success" @click="concatData()">Convert</el-button>
     </el-form-item>
   </el-form>
   <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
