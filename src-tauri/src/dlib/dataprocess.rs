@@ -6,7 +6,7 @@ use polars::{
     prelude::{Arc, Schema, CsvReader, CsvWriter, SerWriter, UnionArgs, LazyCsvReader, LazyFileListReader}
 };
 
-fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Error>> {
+fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn std::error::Error>> {
     /*  Write dataframe to xlsx */
     let file_path = std::path::Path::new(&path);
     let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
@@ -37,18 +37,40 @@ fn write_xlsx(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Err
         }
     }
     let current_time = chrono::Local::now();
-    let output_path = format!("{}/{} {}.xlsx", file_path.parent().unwrap().to_string_lossy(), file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
-    workbook.save(output_path)?;
+    let file_path_copy = file_path.parent().unwrap().to_string_lossy();
+    let mut vec_output = Vec::new();
+    if fn_type == "pivot" {
+        let output_path = format!("{}/{}_pivot {}.xlsx", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        vec_output.push(output_path);
+    } else if fn_type == "unique" {
+        let output_path = format!("{}/{}_unique {}.xlsx", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        vec_output.push(output_path);
+    } else if fn_type == "concat" {
+        let output_path = format!("{}/{}_concat {}.xlsx", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        vec_output.push(output_path);
+    } else {
+        let output_path = format!("{}/{} {}.xlsx", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        vec_output.push(output_path);
+    }
+    workbook.save(vec_output[0].clone())?;
     Ok(())
 }
 
-fn write_csv(df: DataFrame, path: String) -> Result<(), Box<dyn std::error::Error>> {
+fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn std::error::Error>> {
     /*  Write dataframe to csv */
     let file_path = std::path::Path::new(&path);
     let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
     let current_time = chrono::Local::now();
-    let output_path = format!("{}/{} {}.csv", file_path.parent().unwrap().to_string_lossy(), file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
-    let mut file = std::fs::File::create(output_path)?;
+    let file_path_copy = file_path.parent().unwrap().to_string_lossy();
+    let mut vec_output = Vec::new();
+    if fn_type == "concat" {
+        let output_path = format!("{}/{}_concat {}.csv", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        vec_output.push(output_path);
+    } else {
+        let output_path = format!("{}/{} {}.csv", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        vec_output.push(output_path);
+    }
+    let mut file = std::fs::File::create(vec_output[0].clone())?;
     CsvWriter::new(&mut file)
         .with_separator(b'|')
         .finish(&mut df.clone())?;
@@ -129,7 +151,9 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     {
         eprintln!("[warning] - Only supports up to four variables.");
     }
-    write_xlsx(vec_df[0].clone(), path)?;
+
+    let fn_type = "pivot".to_string();
+    write_xlsx(vec_df[0].clone(), path, fn_type)?;
     Ok(())
 }
 
@@ -160,7 +184,8 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
         col(&column).unique()
     ])
     .collect()?;
-    write_xlsx(uni, path)?;
+    let fn_type = "unique".to_string();
+    write_xlsx(uni, path, fn_type)?;
     Ok(())
 }
 
@@ -220,10 +245,11 @@ fn merge_file(path: String, sep: String, column: String, window: tauri::Window) 
     let union_df = concat_lf_diagonal(lfs, UnionArgs{parallel: true, rechunk: true, to_supertypes: true})?.collect()?;
     let save_path = vec_path[0].to_string();
     let row_len = union_df.shape().0;
+    let fn_type = "concat".to_string();
     if row_len < 104_0000 {
-        write_xlsx(union_df, save_path)?;
+        write_xlsx(union_df, save_path, fn_type.clone())?;
     } else {
-        write_csv(union_df, save_path)?;
+        write_csv(union_df, save_path, fn_type)?;
     }
     Ok(())
 }
