@@ -26,6 +26,11 @@
     ElMessage.error(error);
   });
 
+  listen('convertmsg', (event: any) => {
+    const error: any = event.payload;
+    ElMessage.success(error);
+  });
+
   // data concat
   async function concatData() {
     if (data.filePath == '') {

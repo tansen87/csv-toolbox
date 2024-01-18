@@ -7,7 +7,6 @@ use polars::{
 
 fn write_xlsx(df: DataFrame, dest: std::path::PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     /* write dataframe to xlsx */
-    println!("{}", df);
     let mut workbook = rust_xlsxwriter::Workbook::new();
     let worksheet = workbook.add_worksheet();
 
@@ -89,6 +88,9 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
             let rows_msg = format!("{} - {}, cannot converted.", file, rows);
             window.emit("rowserr", rows_msg)?;
         }
+
+        let convert_msg = format!("{} converted.", file);
+        window.emit("convertmsg", convert_msg)?;
     }
     Ok(())
 }
