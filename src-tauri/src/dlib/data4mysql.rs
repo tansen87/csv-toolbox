@@ -149,7 +149,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                 }
 
                 // gl save path
-                let gl_output_path = format!("{}\\{}_{}.csv", &folder_path, filename, &gl_table);
+                let gl_output_path = format!("{}\\{}_{}.csv", &folder_path, &gl_table, filename);
                 let mut csv_writer_gl = WriterBuilder::new()
                     .delimiter(b'|')
                     .from_path(gl_output_path)?;
@@ -210,7 +210,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                         vec_col_name.push(one_tb.column(num).name());
                         vec_col_type.push(one_tb.column(num).type_info().to_string())
                     }
-                let output_path = format!("{}\\{}_{}.csv", &folder_path, filename, &tb_table);
+                let output_path = format!("{}\\{}_{}.csv", &folder_path, &tb_table, filename);
                 let mut csv_writer_tb = WriterBuilder::new()
                     .delimiter(b'|')
                     // .quote_style(csv::QuoteStyle::Always)
