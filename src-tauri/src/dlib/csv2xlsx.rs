@@ -84,13 +84,12 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
         let rows = df.shape().0;
         if rows < 104_0000 {
             write_xlsx(df, dest)?;
+            let convert_msg = format!("{} converted.", file);
+            window.emit("convertmsg", convert_msg)?;
         } else {
             let rows_msg = format!("{} - {}, cannot converted.", file, rows);
             window.emit("rowserr", rows_msg)?;
         }
-
-        let convert_msg = format!("{} converted.", file);
-        window.emit("convertmsg", convert_msg)?;
     }
     Ok(())
 }

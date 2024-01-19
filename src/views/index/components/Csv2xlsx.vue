@@ -26,6 +26,11 @@
     ElMessage.error(error);
   });
 
+  listen('rowserr', (event: any) => {
+    const error: any = event.payload;
+    ElMessage.error(error);
+  });
+
   listen('convertmsg', (event: any) => {
     const error: any = event.payload;
     ElMessage.success(error);
