@@ -8,7 +8,7 @@
   const getYamlMsg = ref('');
   const data = reactive({
     filePath: '',
-    fileFormats: ['yaml'],
+    fileFormats: ['yaml', 'yml'],
   });
   const form = reactive({
     region: '凭证表&科目余额表',
