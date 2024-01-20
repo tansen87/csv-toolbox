@@ -8,7 +8,7 @@
   const getCSVMsg = ref('');
   const data = reactive({
     filePath: '',
-    fileFormats: ['csv', 'txt', 'tsv'],
+    fileFormats: ['csv', 'txt', 'tsv', 'spext'],
   });
   const form = reactive({
     sep: '|',
