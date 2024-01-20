@@ -107,53 +107,14 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
         .with_dtype_overwrite(Some(&Arc::new(schema)))
         .finish()?;
 
-    // group by: maximum 4
-    let mut vec_df = Vec::new();
-    if val.len() == 1 
-    {
-        let gb = lf.group_by(idx)
+    // group by dataframe
+    let gb = lf.group_by(idx)
         .agg([
-            col(val[0]).sum()
+            cols(val).sum()
         ]).collect()?;
-        vec_df.push(gb);
-    }
-    else if val.len() == 2
-    {
-        let gb = lf.group_by(idx)
-        .agg([
-            col(val[0]).sum(),
-            col(val[1]).sum()
-        ]).collect()?;
-        vec_df.push(gb);
-    }
-    else if val.len() == 3
-    {
-        let gb = lf.group_by(idx)
-        .agg([
-            col(val[0]).sum(),
-            col(val[1]).sum(),
-            col(val[2]).sum()
-        ]).collect()?;
-        vec_df.push(gb);
-    }
-    else if val.len() == 4
-    {
-        let gb = lf.group_by(idx)
-        .agg([
-            col(val[0]).sum(),
-            col(val[1]).sum(),
-            col(val[2]).sum(),
-            col(val[3]).sum()
-        ]).collect()?;
-        vec_df.push(gb);
-    }
-    else 
-    {
-        eprintln!("[warning] - Only supports up to four variables.");
-    }
-
+    
     let fn_type = "pivot".to_string();
-    write_xlsx(vec_df[0].clone(), path, fn_type)?;
+    write_xlsx(gb.clone(), path, fn_type)?;
     Ok(())
 }
 
