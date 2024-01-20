@@ -12,16 +12,21 @@
   });
   const form = reactive({
     sep: '|',
-    column: '币种',
+    column: '被审计单位,科目编号,科目名称,借方发生额,贷方发生额',
   });
 
-  listen('uniqueErr', (event: any) => {
+  listen('catspErr', (event: any) => {
     const error: any = event.payload;
     ElMessage.error(error);
   });
 
-  // data unique
-  async function uniqueData() {
+  listen('readerr', (event: any) => {
+    const error: any = event.payload;
+    ElMessage.error(error);
+  });
+
+  // data concat
+  async function concatData() {
     if (data.filePath == '') {
       ElMessage.warning('未选择csv文件');
       return;
@@ -29,19 +34,19 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      let value = await invoke('unique', {
+      let value = await invoke('concatsp', {
         path: data.filePath,
         sep: form.sep,
         column: form.column,
       });
       console.log(value);
-      ElMessage.success('unique successfully.');
+      ElMessage.success('concat successfully.');
     }
   }
 
   async function selectFile() {
     const selected = await open({
-      multiple: false,
+      multiple: true,
       filters: [
         {
           name: 'csv',
@@ -72,13 +77,19 @@
         <el-option label="\t" value="\t" />
       </el-select>
     </el-form-item>
-    <el-form-item label="Column">
-      <el-input v-model="form.column" placeholder="Please input column" />
+    <el-form-item label="Specific col">
+      <el-input v-model="form.column" placeholder="Please input numeric column" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
-      <el-button type="success" @click="uniqueData()">Unique</el-button>
+      <el-button type="success" @click="concatData()">Concat</el-button>
     </el-form-item>
   </el-form>
   <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
 </template>
+
+<style>
+  .el-input {
+    width: 500px;
+  }
+</style>

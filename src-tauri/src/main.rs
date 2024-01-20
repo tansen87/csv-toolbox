@@ -13,6 +13,7 @@ fn main() {
             dataprocess::pivot,
             dataprocess::unique,
             dataprocess::concat,
+            dataprocess::concatsp,
             excel2csv::etoc,
             csv2xlsx::ctox,
         ])

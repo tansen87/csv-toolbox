@@ -81,14 +81,14 @@
 
 <template>
   <el-form :model="form">
-    <el-form-item label="Sep">
+    <el-form-item label="Separator">
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
       </el-select>
     </el-form-item>
-    <el-form-item label="Col">
+    <el-form-item label="Numeric col">
       <el-input v-model="form.column" placeholder="Please input numeric column" />
     </el-form-item>
     <el-form-item>
