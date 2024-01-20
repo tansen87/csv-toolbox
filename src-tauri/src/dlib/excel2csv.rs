@@ -170,11 +170,9 @@ pub async fn etoc(path: String, window: tauri::Window) {
     let file_window = window.clone();
     let _e2c = match async {
         write_range(path, file_window)
-    }.await
-    {
+    }.await {
         Ok(result) => result,
-        Err(error) =>
-        {
+        Err(error) => {
             eprintln!("Error: {}", error);
             wtr_window.emit("etocerr", &error.to_string()).unwrap();
             error.to_string();

@@ -99,8 +99,7 @@ pub async fn ctox(path: String, sep: String, column: String, window: tauri::Wind
     let copy_window = window.clone();
     let _c2x = match async {
         write_range(path, sep, column, copy_window)
-    }.await
-    {
+    }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("Error: {}", error);
