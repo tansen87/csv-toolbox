@@ -37,7 +37,7 @@
 
   listen('message', (event: any) => {
     const progress: any = event.payload;
-    ElMessage.info(progress);
+    ElMessage.success(progress);
   });
 
   // download mysql data
