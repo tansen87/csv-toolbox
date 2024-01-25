@@ -1,12 +1,12 @@
 [package]
 name = "tauri-toolkit"
-version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
+version = "0.3.6"
+description = "tauri toolkit"
+authors = ["tansen"]
+license = "MIT"
 repository = ""
 edition = "2021"
-rust-version = "1.64"
+rust-version = "1.75.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
