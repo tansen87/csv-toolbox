@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, reactive, toRaw } from 'vue';
+  import { ref, reactive } from 'vue';
   import { open } from '@tauri-apps/api/dialog';
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
@@ -7,7 +7,6 @@
 
   const getCSVMsg = ref('');
   const cntMsg = ref('');
-  const formData = ref(toRaw(cntMsg));
   const tableData = ref([]);
   const title = ref([]);
   const data = reactive({
@@ -26,11 +25,10 @@
   listen('cntrows', (event: any) => {
     const msg: any = event.payload;
     cntMsg.value = msg;
-    // console.log(cntMsg.value);
   });
 
   // count csv rows
-  async function countData() {
+  async function countData(this: any) {
     title.value = [];
     tableData.value = [];
     if (data.filePath == '') {
@@ -40,27 +38,25 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      let _value = await invoke('count', {
+      let counntrows: any = await invoke('countr', {
         path: data.filePath,
-        sep: form.sep,
       });
-      const vls = JSON.parse(JSON.stringify(formData.value));
-      const vlsp = vls.map((item) => item.split('|'));
-      this.tableData = vlsp.map((item) => ({
+      const vls = JSON.parse(JSON.stringify(counntrows));
+      const vlsp = vls.map((item: any) => item.split('|'));
+      tableData.value = vlsp.map((item: any) => ({
         File: item[0],
         Rows: item[1],
       }));
-
       for (const key in tableData.value[0]) {
-        title.value.push(key);
+        title.value.push(key as never);
       }
       tableData.value.forEach((item) => {
-        let obj = {};
-        title.value.forEach((item2, index2) => {
+        let obj: any = {};
+        title.value.forEach((item2: any, index2: any) => {
           // console.log('item', item[item2]);
           obj['in' + index2] = item[item2];
         });
-        tableData.value.push(obj);
+        tableData.value.push(obj as never);
       });
       ElMessage.success('count successfully.');
     }
@@ -77,13 +73,10 @@
       ],
     });
     if (Array.isArray(selected)) {
-      // user selected multiple files
       data.filePath = selected.toString();
     } else if (selected === null) {
-      // user cancelled the selection
       return;
     } else {
-      // user selected a single file
       data.filePath = selected;
     }
     getCSVMsg.value = selected.toString();
@@ -92,13 +85,6 @@
 
 <template>
   <el-form :model="form">
-    <el-form-item label="Separator">
-      <el-select v-model="form.sep" placeholder="please select delimiter">
-        <el-option label="," value="," />
-        <el-option label="|" value="|" />
-        <el-option label="\t" value="\t" />
-      </el-select>
-    </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="countData()">Count</el-button>

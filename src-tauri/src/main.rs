@@ -17,7 +17,7 @@ fn main() {
             dataprocess::concatsp,
             excel2csv::etoc,
             csv2xlsx::ctox,
-            count::count,
+            count::countr,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
