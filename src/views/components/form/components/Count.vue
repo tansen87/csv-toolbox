@@ -5,8 +5,7 @@
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
 
-  const getCSVMsg = ref('');
-  const cntMsg = ref('');
+  const getCSVMsg = ref([]);
   const tableData = ref([]);
   const title = ref([]);
   const data = reactive({
@@ -20,11 +19,6 @@
   listen('countErr', (event: any) => {
     const error: any = event.payload;
     ElMessage.error(error);
-  });
-
-  listen('cntrows', (event: any) => {
-    const msg: any = event.payload;
-    cntMsg.value = msg;
   });
 
   // count csv rows
@@ -79,7 +73,7 @@
     } else {
       data.filePath = selected;
     }
-    getCSVMsg.value = selected.toString();
+    getCSVMsg.value = selected as never;
   }
 </script>
 
@@ -90,7 +84,7 @@
       <el-button type="success" @click="countData()">Count</el-button>
     </el-form-item>
   </el-form>
-  <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
+  <el-text class="mx-1" type="success">{{ getCSVMsg[0] }}</el-text>
   <el-table :data="tableData" height="250" style="width: 100%">
     <el-table-column
       v-for="(item, index) in title"

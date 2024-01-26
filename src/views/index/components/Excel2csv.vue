@@ -5,7 +5,7 @@
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
 
-  const getExcelMsg = ref('');
+  const getExcelMsg = ref([]);
   const data = reactive({
     filePath: '',
     fileFormats: ['xlsx', 'xls', 'xlsb', 'xlsm', 'xlam', 'xla', 'ods'],
@@ -62,7 +62,7 @@
       // user selected a single file
       data.filePath = selected;
     }
-    getExcelMsg.value = selected.toString();
+    getExcelMsg.value = selected as never;
   }
 </script>
 
@@ -73,7 +73,7 @@
       <el-button type="success" @click="excelTocsv()">Convert</el-button>
     </el-form-item>
   </el-form>
-  <el-text class="mx-1" type="success">{{ getExcelMsg }}</el-text>
+  <el-text class="mx-1" type="success">{{ getExcelMsg[0] }}</el-text>
 </template>
 
 <style>

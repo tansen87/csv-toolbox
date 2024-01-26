@@ -5,7 +5,7 @@
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
 
-  const getCSVMsg = ref('');
+  const getCSVMsg = ref([]);
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -75,7 +75,7 @@
       // user selected a single file
       data.filePath = selected;
     }
-    getCSVMsg.value = selected.toString();
+    getCSVMsg.value = selected as never;
   }
 </script>
 
@@ -96,7 +96,7 @@
       <el-button type="success" @click="concatData()">Convert</el-button>
     </el-form-item>
   </el-form>
-  <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
+  <el-text class="mx-1" type="success">{{ getCSVMsg[0] }}</el-text>
 </template>
 
 <style>
