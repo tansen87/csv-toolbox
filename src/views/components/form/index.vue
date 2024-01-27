@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import Count from './components/Count.vue';
+  import Select from './components/Select.vue';
 
   defineOptions({
     name: 'RtWelcome',
@@ -17,6 +18,16 @@
             </div>
           </template>
           <Count />
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header cursor">
+              <span>isin</span>
+            </div>
+          </template>
+          <Select />
         </el-card>
       </el-col>
     </el-row>
