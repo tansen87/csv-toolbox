@@ -8,6 +8,7 @@
 > * Data unique
 > * Quick count CSV rows
 > * Quick multi condition data query
+
 ![image](https://github.com/tansen87/tauri-toolkit/assets/98570790/bb98f299-da9b-4616-9ef5-28765997bf49)
 
 ## Usage
