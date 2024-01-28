@@ -4,8 +4,8 @@ fn count_rows(path: String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let mut vec_file = Vec::new();
     for file in vec_path.iter() {
         let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(true)
-        .from_reader(std::fs::File::open(file)?);
+            .has_headers(true)
+            .from_reader(std::fs::File::open(file)?);
 
         let mut record = csv::ByteRecord::new();
 
@@ -15,8 +15,8 @@ fn count_rows(path: String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
         while rdr.read_byte_record(&mut record)? {
             count += 1;
         }
-        let filename = std::path::Path::new(file).file_name().unwrap();
-        let cntmsg = format!("{:?}|{}", filename, count);
+        let filename = std::path::Path::new(file).file_name().unwrap().to_str().unwrap();
+        let cntmsg = format!("{}|{}", filename, count);
         vec_file.push(cntmsg);
     }
 

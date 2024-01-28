@@ -7,7 +7,6 @@
 
   const getCSVMsg = ref([]);
   const tableData = ref([]);
-  const title = ref([]);
   const loading = ref(false);
   const data = reactive({
     filePath: '',
@@ -19,44 +18,34 @@
 
   listen('countErr', (event: any) => {
     const error: any = event.payload;
-    ElMessage.error(error);
+    const countErrmsg: any = 'count error: ' + error;
+    ElMessage.error(countErrmsg);
   });
 
   // count csv rows
-  async function countData(this: any) {
-    title.value = [];
+  async function countData() {
     tableData.value = [];
     if (data.filePath == '') {
       ElMessage.warning('未选择csv文件');
       return;
     }
 
-    if (data.filePath != '') {
-      ElMessage.info('waiting...');
-      loading.value = true;
-      let counntrows: any = await invoke('countr', {
-        path: data.filePath,
-      });
-      const vls = JSON.parse(JSON.stringify(counntrows));
-      const vlsp = vls.map((item: any) => item.split('|'));
-      tableData.value = vlsp.map((item: any) => ({
-        File: item[0],
-        Rows: item[1],
-      }));
-      for (const key in tableData.value[0]) {
-        title.value.push(key as never);
-      }
-      tableData.value.forEach((item) => {
-        let obj: any = {};
-        title.value.forEach((item2: any, index2: any) => {
-          // console.log('item', item[item2]);
-          obj['in' + index2] = item[item2];
-        });
-        tableData.value.push(obj as never);
-      });
-      loading.value = false;
-      ElMessage.success('count successfully.');
-    }
+    ElMessage.info('waiting...');
+    loading.value = true;
+    let countrows: any = await invoke('countr', {
+      path: data.filePath,
+    });
+    const vls = JSON.parse(JSON.stringify(countrows));
+
+    // 过滤掉空行并填充tableData
+    const nonEmptyRows = vls.filter((row: any) => row.trim() !== '');
+    tableData.value = nonEmptyRows.map((row: any) => {
+      const [fileName, rows] = row.split('|'); // 分割文件名和行数
+      return { File: fileName, Rows: rows };
+    });
+
+    loading.value = false;
+    ElMessage.success('count done.');
   }
 
   async function selectFile() {
@@ -87,13 +76,8 @@
       <el-button type="success" @click="countData()">Count</el-button>
     </el-form-item>
     <el-table :data="tableData" height="250" style="width: 100%">
-      <el-table-column
-        v-for="(item, index) in title"
-        :key="index"
-        :prop="'in' + index"
-        :label="item"
-        width="400"
-      />
+      <el-table-column prop="File" label="File" width="400"></el-table-column>
+      <el-table-column prop="Rows" label="Rows" width="200"></el-table-column>
     </el-table>
   </el-form>
   <el-text class="mx-1" type="success">{{ getCSVMsg[0] }}</el-text>
