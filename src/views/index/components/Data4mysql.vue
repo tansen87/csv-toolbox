@@ -6,6 +6,7 @@
   import { ElMessage } from 'element-plus';
 
   const getYamlMsg = ref('');
+  const loading = ref(false);
   const data = reactive({
     filePath: '',
     fileFormats: ['yaml', 'yml'],
@@ -49,14 +50,15 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      let value = await invoke('download', {
+      loading.value = true;
+      await invoke('download', {
         filePath: data.filePath,
         etable: form.region,
         rcolumn: form.input,
         epath: form.epath,
       });
-      console.log(value);
-      ElMessage.success('download successfully.');
+      loading.value = false;
+      ElMessage.success('download done.');
     }
   }
 
@@ -85,7 +87,7 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form v-loading="loading" element-loading-text="Downloading..." :model="form">
     <el-form-item label="Export table">
       <el-select v-model="form.region" placeholder="please select download table">
         <el-option label="凭证表&科目余额表" value="凭证表&科目余额表" />

@@ -6,6 +6,7 @@
   import { ElMessage } from 'element-plus';
 
   const getCSVMsg = ref('');
+  const loading = ref(false);
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -30,14 +31,15 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      let value = await invoke('pivot', {
+      loading.value = true;
+      await invoke('pivot', {
         path: data.filePath,
         sep: form.sep,
         index: form.index,
         values: form.values,
       });
-      console.log(value);
-      ElMessage.success('pivot successfully.');
+      loading.value = false;
+      ElMessage.success('pivot done.');
     }
   }
 
@@ -66,7 +68,7 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form v-loading="loading" element-loading-text="Pivoting..." :model="form">
     <el-form-item label="Sepa">
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
@@ -75,10 +77,10 @@
       </el-select>
     </el-form-item>
     <el-form-item label="Index">
-      <el-input v-model="form.index" placeholder="Please input row" />
+      <el-input v-model="form.index" placeholder="Please input row columns" />
     </el-form-item>
     <el-form-item label="Value">
-      <el-input v-model="form.values" placeholder="Only supports up to two variables" />
+      <el-input v-model="form.values" placeholder="Please input value columns" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>

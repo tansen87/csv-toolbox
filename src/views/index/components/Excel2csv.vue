@@ -6,6 +6,7 @@
   import { ElMessage } from 'element-plus';
 
   const getExcelMsg = ref([]);
+  const loading = ref(false);
   const data = reactive({
     filePath: '',
     fileFormats: ['xlsx', 'xls', 'xlsb', 'xlsm', 'xlam', 'xla', 'ods'],
@@ -34,11 +35,12 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      let value = await invoke('etoc', {
+      loading.value = true;
+      await invoke('etoc', {
         path: data.filePath,
       });
-      console.log(value);
-      ElMessage.success('convert successfully.');
+      loading.value = false;
+      ElMessage.success('convert done.');
     }
   }
 
@@ -67,7 +69,7 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form v-loading="loading" element-loading-text="Converting..." :model="form">
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="excelTocsv()">Convert</el-button>

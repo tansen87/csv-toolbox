@@ -8,6 +8,7 @@
   const getCSVMsg = ref([]);
   const tableData = ref([]);
   const title = ref([]);
+  const loading = ref(false);
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -32,6 +33,7 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
+      loading.value = true;
       let counntrows: any = await invoke('countr', {
         path: data.filePath,
       });
@@ -52,6 +54,7 @@
         });
         tableData.value.push(obj as never);
       });
+      loading.value = false;
       ElMessage.success('count successfully.');
     }
   }
@@ -78,22 +81,22 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form v-loading="loading" element-loading-text="Counting..." :model="form">
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="countData()">Count</el-button>
     </el-form-item>
+    <el-table :data="tableData" height="250" style="width: 100%">
+      <el-table-column
+        v-for="(item, index) in title"
+        :key="index"
+        :prop="'in' + index"
+        :label="item"
+        width="400"
+      />
+    </el-table>
   </el-form>
   <el-text class="mx-1" type="success">{{ getCSVMsg[0] }}</el-text>
-  <el-table :data="tableData" height="250" style="width: 100%">
-    <el-table-column
-      v-for="(item, index) in title"
-      :key="index"
-      :prop="'in' + index"
-      :label="item"
-      width="480"
-    />
-  </el-table>
 </template>
 
 <style>

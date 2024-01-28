@@ -6,6 +6,7 @@
   import { ElMessage } from 'element-plus';
 
   const getCSVMsg = ref([]);
+  const loading = ref(false);
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -29,13 +30,14 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      let value = await invoke('concatsp', {
+      loading.value = true;
+      await invoke('concatsp', {
         path: data.filePath,
         sep: form.sep,
         column: form.column,
       });
-      console.log(value);
-      ElMessage.success('concat successfully.');
+      loading.value = false;
+      ElMessage.success('concat done.');
     }
   }
 
@@ -64,7 +66,7 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form v-loading="loading" element-loading-text="Concating..." :model="form">
     <el-form-item label="Separator">
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
