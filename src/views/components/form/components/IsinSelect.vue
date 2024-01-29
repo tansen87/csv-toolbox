@@ -26,11 +26,6 @@
     const isinerr: any = 'isin error: ' + error;
     ElMessage.error(isinerr);
   });
-  listen('isinWriteErr', (event: any) => {
-    const error: any = event.payload;
-    const wtrerr: any = 'isin write error: ' + error;
-    ElMessage.error(wtrerr);
-  });
 
   // select data - isin
   async function isinData() {
@@ -53,7 +48,7 @@
         column: form.column,
       });
       loading.value = false;
-      ElMessage.success('isin done.');
+      ElMessage.success('precision query done.');
     }
   }
 
@@ -98,7 +93,7 @@
 </script>
 
 <template>
-  <el-form v-loading="loading" element-loading-text="Selecting..." :model="form">
+  <el-form v-loading="loading" element-loading-text="Querying..." :model="form">
     <el-form-item label="Separator">
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
@@ -112,7 +107,7 @@
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="warning" @click="selectYmlFile()">Open Yaml</el-button>
-      <el-button type="success" @click="isinData()">Select</el-button>
+      <el-button type="success" @click="isinData()">Query</el-button>
     </el-form-item>
   </el-form>
   <el-text class="mx-1" type="primary">{{ getCSVMsg }}</el-text>

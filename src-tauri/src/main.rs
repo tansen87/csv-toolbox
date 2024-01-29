@@ -20,6 +20,7 @@ fn main() {
             csv2xlsx::ctox,
             count::countr,
             select::isin,
+            select::contains,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

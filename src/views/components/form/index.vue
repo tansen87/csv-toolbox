@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import Count from './components/Count.vue';
-  import Select from './components/Select.vue';
+  import IsinSelect from './components/IsinSelect.vue';
+  import ContainsSelect from './components/ContainsSelect.vue';
 
   defineOptions({
     name: 'RtWelcome',
@@ -20,14 +21,26 @@
           <Count />
         </el-card>
       </el-col>
+    </el-row>
+    <el-row :gutter="20" class="enter-y">
       <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>isin</span>
+              <span>precision query</span>
             </div>
           </template>
-          <Select />
+          <IsinSelect />
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header cursor">
+              <span>fuzzy query</span>
+            </div>
+          </template>
+          <ContainsSelect />
         </el-card>
       </el-col>
     </el-row>
