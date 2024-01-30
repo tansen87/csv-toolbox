@@ -34,4 +34,4 @@ pnpm run tauri build
 ```
 ### Thanks
 * [tauri-xs-admin](https://github.com/jsxiaosi/tauri-xs-admin)
-* [qsv]([https://github.com/jsxiaosi/tauri-xs-admin](https://github.com/jqnatividad/qsv)https://github.com/jqnatividad/qsv)
+* [qsv](https://github.com/jqnatividad/qsv)https://github.com/jqnatividad/qsv)
