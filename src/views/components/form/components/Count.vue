@@ -34,6 +34,7 @@
     loading.value = true;
     let countrows: any = await invoke('countr', {
       path: data.filePath,
+      sep: form.sep,
     });
     const vls = JSON.parse(JSON.stringify(countrows));
 
@@ -71,6 +72,13 @@
 
 <template>
   <el-form v-loading="loading" element-loading-text="Counting..." :model="form">
+    <el-form-item label="Separator">
+      <el-select v-model="form.sep" placeholder="please select delimiter">
+        <el-option label="," value="," />
+        <el-option label="|" value="|" />
+        <el-option label="\t" value="\t" />
+      </el-select>
+    </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="countData()">Count</el-button>
