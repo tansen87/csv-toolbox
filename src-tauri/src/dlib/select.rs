@@ -26,16 +26,25 @@ fn isin_select(path: String, sep: String, column: String, conditions: Vec<String
             return Err(format!("The column '{}' was not found in the headers.", column).into());
         }
     };
-    let file_path = std::path::Path::new(&path);
-    let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
+
+    let path = std::path::PathBuf::from(path);
+    let file_name = path.file_stem()
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "File stem not found"))?
+        .to_str()
+        .map_or("", |s| s);
+
+    let path_parent = path.parent()
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "Parent path not found"))?;
+
     let current_time = chrono::Local::now();
-    let file_path_copy = file_path.parent().unwrap().to_string_lossy();
+    
     let output_path = format!(
         "{}/{}_precision {}.csv",
-        file_path_copy,
-        file_name[0],
+        path_parent.display(),
+        file_name,
         current_time.format("%Y-%m-%d %H.%M.%S")
     );
+
     let file = std::fs::File::create(&output_path)?;
     let mut wtr = csv::WriterBuilder::new()
         .delimiter(b'|') 
@@ -63,16 +72,24 @@ fn contains_select(path: String, sep: String, column: String, conditions: Vec<St
 
     let headers = rdr.headers()?.clone();
 
-    let file_path = std::path::Path::new(&path);
-    let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
+    let path = std::path::PathBuf::from(path);
+    let file_name = path.file_stem()
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "File stem not found"))?
+        .to_str()
+        .map_or("", |s| s);
+
+    let path_parent = path.parent()
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "Parent path not found"))?;
+
     let current_time = chrono::Local::now();
-    let file_path_copy = file_path.parent().unwrap().to_string_lossy();
+    
     let output_path = format!(
         "{}/{}_fuzzy {}.csv",
-        file_path_copy,
-        file_name[0],
+        path_parent.display(),
+        file_name,
         current_time.format("%Y-%m-%d %H.%M.%S")
     );
+
     let file = std::fs::File::create(&output_path)?;
     let mut wtr = csv::WriterBuilder::new()
         .delimiter(b'|')
@@ -109,7 +126,17 @@ fn contains_select(path: String, sep: String, column: String, conditions: Vec<St
 
 #[tauri::command]
 pub async fn isin(path: String, ymlpath: String, sep: String, column: String, window: tauri::Window) {
-    let yaml = read_yaml(ymlpath).unwrap();
+    let yml_window = window.clone();
+    let yaml = match read_yaml(ymlpath) {
+        Ok(yaml) => yaml,
+        Err(e) => {
+            let errmsg = format!("Error loading YAML: {:?}", e);
+            eprintln!("{}", errmsg);
+            yml_window.emit("ymlerr", errmsg).unwrap();
+            return ();
+        },
+    };
+
     let mut vec_cond = Vec::new();
     for name in &yaml.conditions {
         vec_cond.push(name.to_string())
@@ -129,7 +156,17 @@ pub async fn isin(path: String, ymlpath: String, sep: String, column: String, wi
 
 #[tauri::command]
 pub async fn contains(path: String, ymlpath: String, sep: String, column: String, window: tauri::Window) {
-    let yaml = read_yaml(ymlpath).unwrap();
+    let yml_window = window.clone();
+    let yaml = match read_yaml(ymlpath) {
+        Ok(yaml) => yaml,
+        Err(e) => {
+            let errmsg = format!("Error loading YAML: {:?}", e);
+            eprintln!("{}", errmsg);
+            yml_window.emit("ymlerr", errmsg).unwrap();
+            return ();
+        },
+    };
+    
     let mut vec_cond = Vec::new();
     for name in &yaml.conditions {
         vec_cond.push(name.to_string())

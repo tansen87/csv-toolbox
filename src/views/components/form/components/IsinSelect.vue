@@ -21,6 +21,12 @@
     column: '科目名称',
   });
 
+  listen('ymlerr', (event: any) => {
+    const error: any = event.payload;
+    const isinerr: any = 'read yaml error: ' + error;
+    ElMessage.error(isinerr);
+  });
+
   listen('isinErr', (event: any) => {
     const error: any = event.payload;
     const isinerr: any = 'isin error: ' + error;
