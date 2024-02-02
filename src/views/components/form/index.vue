@@ -15,7 +15,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>count csv rows</span>
+              <span>Count csv rows</span>
             </div>
           </template>
           <Count />
@@ -27,7 +27,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>precision query</span>
+              <span>Precision Query</span>
             </div>
           </template>
           <IsinSelect />
@@ -37,7 +37,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>fuzzy query</span>
+              <span>Fuzzy Query</span>
             </div>
           </template>
           <ContainsSelect />

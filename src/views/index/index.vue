@@ -19,7 +19,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>下载数据</span>
+              <span>Download Data</span>
             </div>
           </template>
           <Data4mysql />
@@ -29,7 +29,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>数据透视</span>
+              <span>Pivot Data</span>
             </div>
           </template>
           <Pivot />
@@ -41,7 +41,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>concat</span>
+              <span>Concat</span>
             </div>
           </template>
           <Concat />
@@ -51,7 +51,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>concat specific</span>
+              <span>Concat Specific</span>
             </div>
           </template>
           <ConcatSpecific />
@@ -61,7 +61,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>excel to csv</span>
+              <span>Excel to Csv</span>
             </div>
           </template>
           <Excel2csv />
@@ -71,7 +71,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>csv to xlsx</span>
+              <span>Csv to xlsx</span>
             </div>
           </template>
           <Csv2xlsx />
@@ -81,7 +81,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>unique</span>
+              <span>Unique</span>
             </div>
           </template>
           <Unique />
