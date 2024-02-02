@@ -23,8 +23,8 @@
 
   listen('ymlerr', (event: any) => {
     const error: any = event.payload;
-    const isinerr: any = 'read yaml error: ' + error;
-    ElMessage.error(isinerr);
+    const ymlerr: any = 'read yaml error: ' + error;
+    ElMessage.error(ymlerr);
   });
 
   listen('containsErr', (event: any) => {
