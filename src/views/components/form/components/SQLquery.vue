@@ -17,6 +17,12 @@
     memory: true,
   });
 
+  listen('shape', (event: any) => {
+    const info: any = event.payload;
+    const shapeInfo: any = 'query shape: ' + info;
+    ElMessage.info(shapeInfo);
+  });
+
   listen('queryErr', (event: any) => {
     const error: any = event.payload;
     const queryErrmsg: any = 'sql query error: ' + error;

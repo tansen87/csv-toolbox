@@ -15,7 +15,6 @@ use polars::{
         SerReader,
         DataFrame,
         SerWriter,
-        NullValues,
         LazyCsvReader,
         LazyFileListReader,
     },
@@ -82,7 +81,7 @@ impl std::str::FromStr for OutputMode {
     }
 }
 
-fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: bool) -> Result<(), Box<dyn std::error::Error>> {
+fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: bool, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
     let mut ctx = SQLContext::new();
     let sepu8 = sep.clone().into_bytes()[0];
     let mut output: Vec<Option<String>> = Vec::new();
@@ -119,16 +118,6 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: boo
     let mut table_name;
     let mut schema = Schema::new();
 
-    let flag_rnull_values = "<empty string>".to_string();
-    let rnull_values = if flag_rnull_values == "<empty string>" {
-        vec![String::new()]
-    } else {
-        flag_rnull_values
-            .split(',')
-            .map(String::from)
-            .collect()
-    };
-
     for (idx, table) in filepath.iter().enumerate() 
     {
         // as we are using the table name as alias, we need to make sure that the table name is a
@@ -163,7 +152,6 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: boo
             .with_missing_is_null(true)
             .with_separator(sepu8)
             .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
-            .with_null_values(Some(NullValues::AllColumns(rnull_values.clone())))
             .low_memory(low_memory)
             .finish().unwrap();
 
@@ -215,17 +203,18 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: boo
             // this is not the last query, we only execute the query, but don't write the output
             no_output.execute_query(&current_query, &mut ctx, sep.clone(), output[0].clone()).unwrap()
         };
-
-        println!("query_result_shape: {:?}", query_result_shape);
+        window.emit("shape", query_result_shape)?;
     }
+
     Ok(())
 }
 
 #[tauri::command]
 pub async fn query(path: String, sqlsrc: String, sep: String, memory: bool, window: tauri::Window) {
     let filepath: Vec<&str> = path.split(',').collect();
+    let prep_window = window.clone();
     match async {
-        prepare_query(filepath, &sqlsrc.as_str(), sep, memory)
+        prepare_query(filepath, &sqlsrc.as_str(), sep, memory, prep_window)
     }.await {
         Ok(result) => result,
         Err(error) => {
