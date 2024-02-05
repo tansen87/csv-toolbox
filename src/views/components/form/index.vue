@@ -2,6 +2,7 @@
   import Count from './components/Count.vue';
   import IsinSelect from './components/IsinSelect.vue';
   import ContainsSelect from './components/ContainsSelect.vue';
+  import SQLquery from './components/SQLquery.vue';
 
   defineOptions({
     name: 'RtWelcome',
@@ -41,6 +42,18 @@
             </div>
           </template>
           <ContainsSelect />
+        </el-card>
+      </el-col>
+    </el-row>
+    <el-row :gutter="20" class="enter-y">
+      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header cursor">
+              <span>SQL Query</span>
+            </div>
+          </template>
+          <SQLquery />
         </el-card>
       </el-col>
     </el-row>

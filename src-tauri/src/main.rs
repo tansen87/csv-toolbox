@@ -7,6 +7,7 @@ use dlib::excel2csv;
 use dlib::csv2xlsx;
 use dlib::count;
 use dlib::select;
+use dlib::sqlp;
 
 fn main() {
     tauri::Builder::default()
@@ -21,6 +22,7 @@ fn main() {
             count::countr,
             select::isin,
             select::contains,
+            sqlp::query,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

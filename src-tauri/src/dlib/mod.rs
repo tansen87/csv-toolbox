@@ -4,3 +4,4 @@ pub mod excel2csv;
 pub mod csv2xlsx;
 pub mod count;
 pub mod select;
+pub mod sqlp;
