@@ -12,8 +12,8 @@ fn read_yaml(path: String) -> Result<Config, Box<dyn std::error::Error>> {
     Ok(yaml)
 }
 
-fn isin_select(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
-    let file = std::fs::File::open(path.clone())?;
+fn equal_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+    let file: std::fs::File = std::fs::File::open(path.clone())?;
     let mut rdr = csv::ReaderBuilder::new()
         .delimiter(sep.as_bytes()[0])
         .from_reader(std::io::BufReader::new(file));
@@ -64,7 +64,7 @@ fn isin_select(path: String, sep: String, column: String, conditions: Vec<String
     Ok(())
 }
 
-fn contains_select(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+fn contains_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
     let file = std::fs::File::open(path.clone())?;
     let mut rdr = csv::ReaderBuilder::new()
         .delimiter(sep.as_bytes()[0])
@@ -125,61 +125,63 @@ fn contains_select(path: String, sep: String, column: String, conditions: Vec<St
 }
 
 #[tauri::command]
-pub async fn isin(path: String, ymlpath: String, sep: String, column: String, window: tauri::Window) {
-    let yml_window = window.clone();
-    let yaml = match read_yaml(ymlpath) {
-        Ok(yaml) => yaml,
-        Err(e) => {
-            let errmsg = format!("Error loading YAML: {:?}", e);
-            eprintln!("{}", errmsg);
-            yml_window.emit("ymlerr", errmsg).unwrap();
-            return ();
-        },
-    };
-
-    let mut vec_cond = Vec::new();
-    for name in &yaml.conditions {
-        vec_cond.push(name.to_string())
-    }
-
-    match async {
-        isin_select(path, sep, column, vec_cond)
-    }.await {
-        Ok(result) => result,
-        Err(error) => {
-            eprintln!("Error: {}", error);
-            window.emit("isinErr", &error.to_string()).unwrap();
-            return ();
+pub async fn filter(path: String, ymlpath: String, sep: String, column: String, mode: String, isinput: bool, condition: String, window: tauri::Window) {
+    if isinput {
+        let vec_conditions: Vec<&str> = condition.split('|').collect();
+        let vec_strings: Vec<String> = vec_conditions.iter().map(|&condition| condition.to_string()).collect();
+        if mode == "equal" {
+            match async { equal_filter(path, sep, column, vec_strings) }.await {
+                Ok(result) => result,
+                Err(error) => {
+                    eprintln!("Error: {}", error);
+                    window.emit("equalErr", &error.to_string()).unwrap();
+                    return ();
+                }
+            };
+        } else if mode == "contains" {
+            match async { contains_filter(path, sep, column, vec_strings) }.await {
+                Ok(result) => result,
+                Err(error) => {
+                    eprintln!("Error: {}", error);
+                    window.emit("containsErr", &error.to_string()).unwrap();
+                    return ();
+                }
+            };
         }
-    };
-}
-
-#[tauri::command]
-pub async fn contains(path: String, ymlpath: String, sep: String, column: String, window: tauri::Window) {
-    let yml_window = window.clone();
-    let yaml = match read_yaml(ymlpath) {
-        Ok(yaml) => yaml,
-        Err(e) => {
-            let errmsg = format!("Error loading YAML: {:?}", e);
-            eprintln!("{}", errmsg);
-            yml_window.emit("ymlerr", errmsg).unwrap();
-            return ();
-        },
-    };
-    
-    let mut vec_cond = Vec::new();
-    for name in &yaml.conditions {
-        vec_cond.push(name.to_string())
-    }
-
-    match async {
-        contains_select(path, sep, column, vec_cond)
-    }.await {
-        Ok(result) => result,
-        Err(error) => {
-            eprintln!("Error: {}", error);
-            window.emit("containsErr", &error.to_string()).unwrap();
-            return ();
+    } else {
+        let yml_window = window.clone();
+        let mut vec_cond = Vec::new();
+        let yaml = match read_yaml(ymlpath) {
+            Ok(yaml) => yaml,
+            Err(e) => {
+                let errmsg = format!("Error loading YAML: {:?}", e);
+                eprintln!("{}", errmsg);
+                yml_window.emit("ymlerr", errmsg).unwrap();
+                return ();
+            },
+        };
+        for name in &yaml.conditions {
+            vec_cond.push(name.to_string())
         }
-    };
+
+        if mode == "equal" {
+            match async { equal_filter(path, sep, column, vec_cond) }.await {
+                Ok(result) => result,
+                Err(error) => {
+                    eprintln!("Error: {}", error);
+                    window.emit("equalErr", &error.to_string()).unwrap();
+                    return ();
+                }
+            };
+        } else if mode == "contains" {
+            match async { contains_filter(path, sep, column, vec_cond) }.await {
+                Ok(result) => result,
+                Err(error) => {
+                    eprintln!("Error: {}", error);
+                    window.emit("containsErr", &error.to_string()).unwrap();
+                    return ();
+                }
+            };
+        }
+    }
 }

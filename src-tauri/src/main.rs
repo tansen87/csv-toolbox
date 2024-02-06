@@ -6,7 +6,7 @@ use dlib::dataprocess;
 use dlib::excel2csv;
 use dlib::csv2xlsx;
 use dlib::count;
-use dlib::select;
+use dlib::filter;
 use dlib::sqlp;
 
 fn main() {
@@ -20,8 +20,7 @@ fn main() {
             excel2csv::etoc,
             csv2xlsx::ctox,
             count::countr,
-            select::isin,
-            select::contains,
+            filter::filter,
             sqlp::query,
         ])
         .run(tauri::generate_context!())

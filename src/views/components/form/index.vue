@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import Count from './components/Count.vue';
-  import IsinSelect from './components/IsinSelect.vue';
-  import ContainsSelect from './components/ContainsSelect.vue';
+  import Filter from './components/Filter.vue';
   import SQLquery from './components/SQLquery.vue';
 
   defineOptions({
@@ -22,26 +21,14 @@
           <Count />
         </el-card>
       </el-col>
-    </el-row>
-    <el-row :gutter="20" class="enter-y">
       <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>Precision Query</span>
+              <span>Streaming Filter</span>
             </div>
           </template>
-          <IsinSelect />
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>Fuzzy Query</span>
-            </div>
-          </template>
-          <ContainsSelect />
+          <Filter />
         </el-card>
       </el-col>
     </el-row>

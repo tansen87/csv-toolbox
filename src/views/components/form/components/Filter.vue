@@ -4,6 +4,7 @@
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
+  import { Search } from '@element-plus/icons-vue';
 
   const getCSVMsg = ref('');
   const getYamlMsg = ref('');
@@ -19,6 +20,9 @@
   const form = reactive({
     sep: '|',
     column: '科目名称',
+    mode: 'equal',
+    isinput: true,
+    condition: '银行存款|应收账款',
   });
 
   listen('ymlerr', (event: any) => {
@@ -26,35 +30,42 @@
     const ymlerr: any = 'read yaml error: ' + error;
     ElMessage.error(ymlerr);
   });
-
-  listen('isinErr', (event: any) => {
+  listen('equalErr', (event: any) => {
     const error: any = event.payload;
-    const isinerr: any = 'isin error: ' + error;
-    ElMessage.error(isinerr);
+    const equalerr: any = 'equal error: ' + error;
+    ElMessage.error(equalerr);
+  });
+  listen('containsErr', (event: any) => {
+    const error: any = event.payload;
+    const containserr: any = 'contains error: ' + error;
+    ElMessage.error(containserr);
   });
 
-  // select data - isin
+  // filter data
   async function isinData() {
     if (data.filePath == '') {
       ElMessage.warning('未选择csv文件');
       return;
     }
-    if (yml.filePath == '') {
+    if (yml.filePath == '' && form.isinput === false) {
       ElMessage.warning('未选择yaml文件');
       return;
     }
 
-    if (data.filePath != '' && yml.filePath != '') {
+    if (data.filePath != '') {
       ElMessage.info('waiting...');
       loading.value = true;
-      await invoke('isin', {
+      await invoke('filter', {
         path: data.filePath,
         ymlpath: yml.filePath,
         sep: form.sep,
         column: form.column,
+        mode: form.mode,
+        isinput: form.isinput,
+        condition: form.condition,
       });
       loading.value = false;
-      ElMessage.success('precision query done.');
+      ElMessage.success('filter done.');
     }
   }
 
@@ -110,9 +121,22 @@
     <el-form-item label="Filter col">
       <el-input v-model="form.column" placeholder="Please input column" />
     </el-form-item>
+    <el-form-item label="Filter mode">
+      <el-select v-model="form.mode" placeholder="please select filter mode">
+        <el-option label="equal" value="equal" />
+        <el-option label="contains" value="contains" />
+      </el-select>
+    </el-form-item>
+    <el-form-item label="Input or Yaml">
+      <el-switch v-model="form.isinput" inline-prompt active-text="input" inactive-text="yaml" />
+      <ElText>---</ElText>
+      <el-button type="warning" :icon="Search" circle @click="selectYmlFile()" />
+    </el-form-item>
+    <el-form-item label="conditions">
+      <el-input v-model="form.condition" placeholder="Please input conditions" clearable />
+    </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
-      <el-button type="warning" @click="selectYmlFile()">Open Yaml</el-button>
       <el-button type="success" @click="isinData()">Query</el-button>
     </el-form-item>
   </el-form>
