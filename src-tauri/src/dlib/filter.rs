@@ -1,3 +1,10 @@
+use std::{
+    fs,
+    io,
+    path,
+    error
+};
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
@@ -5,18 +12,71 @@ struct Config {
     conditions: Vec<String>,
 }
 
-fn read_yaml(path: String) -> Result<Config, Box<dyn std::error::Error>> {
-    let yaml_file = std::fs::File::open(path)?;
-    let yaml_reader = std::io::BufReader::new(yaml_file);
+fn read_yaml(path: String) -> Result<Config, Box<dyn error::Error>> {
+    let yaml_file = fs::File::open(path)?;
+    let yaml_reader = io::BufReader::new(yaml_file);
     let yaml: Config = serde_yaml::from_reader(yaml_reader)?;
     Ok(yaml)
 }
 
-fn equal_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
-    let file: std::fs::File = std::fs::File::open(path.clone())?;
-    let mut rdr = csv::ReaderBuilder::new()
+pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<io::BufReader<fs::File>>, Box<dyn error::Error>> {
+    let file = fs::File::open(path.clone())?;
+    let rdr = csv::ReaderBuilder::new()
         .delimiter(sep.as_bytes()[0])
-        .from_reader(std::io::BufReader::new(file));
+        .from_reader(io::BufReader::new(file));
+
+    Ok(rdr)
+}
+
+pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<io::BufWriter<fs::File>>, Box<dyn error::Error>> {
+    let path = path::PathBuf::from(path);
+    let file_name = path.file_stem()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "File stem not found"))?
+        .to_str()
+        .map_or("", |s| s);
+
+    let path_parent = path.parent()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Parent path not found"))?;
+
+    let current_time = chrono::Local::now();
+    
+    let mut vec_output = Vec::new();
+    if mode == "equal" {
+        let output_path = format!(
+            "{}/{}_equal {}.csv",
+            path_parent.display(),
+            file_name,
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
+        vec_output.push(output_path);
+    } else if mode == "contains" {
+        let output_path = format!(
+            "{}/{}_contains {}.csv",
+            path_parent.display(),
+            file_name,
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
+        vec_output.push(output_path);
+    } else if mode == "startswith" {
+        let output_path = format!(
+            "{}/{}_startswith {}.csv",
+            path_parent.display(),
+            file_name,
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
+        vec_output.push(output_path);
+    };
+
+    let file = fs::File::create(&vec_output[0])?;
+    let wtr = csv::WriterBuilder::new()
+        .delimiter(sep.into_bytes()[0]) 
+        .from_writer(io::BufWriter::new(file));
+
+    Ok(wtr)
+}
+
+fn equal_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn error::Error>> {
+    let mut rdr = read_csv(path.clone(), sep.clone())?;
 
     let headers = rdr.headers()?.clone();
 
@@ -27,28 +87,7 @@ fn equal_filter(path: String, sep: String, column: String, conditions: Vec<Strin
         }
     };
 
-    let path = std::path::PathBuf::from(path);
-    let file_name = path.file_stem()
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "File stem not found"))?
-        .to_str()
-        .map_or("", |s| s);
-
-    let path_parent = path.parent()
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "Parent path not found"))?;
-
-    let current_time = chrono::Local::now();
-    
-    let output_path = format!(
-        "{}/{}_precision {}.csv",
-        path_parent.display(),
-        file_name,
-        current_time.format("%Y-%m-%d %H.%M.%S")
-    );
-
-    let file = std::fs::File::create(&output_path)?;
-    let mut wtr = csv::WriterBuilder::new()
-        .delimiter(b'|') 
-        .from_writer(std::io::BufWriter::new(file));
+    let mut wtr = write_csv(path, sep, "equal")?;
 
     // Write headers to the output file
     wtr.write_record(&headers)?;
@@ -64,39 +103,10 @@ fn equal_filter(path: String, sep: String, column: String, conditions: Vec<Strin
     Ok(())
 }
 
-fn contains_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
-    let file = std::fs::File::open(path.clone())?;
-    let mut rdr = csv::ReaderBuilder::new()
-        .delimiter(sep.as_bytes()[0])
-        .from_reader(std::io::BufReader::new(file));
+fn contains_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn error::Error>> {
+    let mut rdr = read_csv(path.clone(), sep.clone())?;
 
     let headers = rdr.headers()?.clone();
-
-    let path = std::path::PathBuf::from(path);
-    let file_name = path.file_stem()
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "File stem not found"))?
-        .to_str()
-        .map_or("", |s| s);
-
-    let path_parent = path.parent()
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "Parent path not found"))?;
-
-    let current_time = chrono::Local::now();
-    
-    let output_path = format!(
-        "{}/{}_fuzzy {}.csv",
-        path_parent.display(),
-        file_name,
-        current_time.format("%Y-%m-%d %H.%M.%S")
-    );
-
-    let file = std::fs::File::create(&output_path)?;
-    let mut wtr = csv::WriterBuilder::new()
-        .delimiter(b'|')
-        .from_writer(std::io::BufWriter::new(file));
-
-    // Write headers to the output file
-    wtr.write_record(&headers)?;
 
     let name_idx = match headers.iter().position(|field| field == column) {
         Some(idx) => idx,
@@ -104,6 +114,11 @@ fn contains_filter(path: String, sep: String, column: String, conditions: Vec<St
             return Err(format!("The column '{}' was not found in the headers.", column).into());
         }
     };
+
+    let mut wtr = write_csv(path, sep, "contains")?;
+
+    // Write headers to the output file
+    wtr.write_record(&headers)?;
 
     for result in rdr.records() {
         let record = result?;
@@ -117,6 +132,35 @@ fn contains_filter(path: String, sep: String, column: String, conditions: Vec<St
         }
 
         if found {
+            wtr.write_record(&record)?;
+        }
+    }
+
+    Ok(())
+}
+
+fn startswith_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn error::Error>> {
+    let mut rdr = read_csv(path.clone(), sep.clone())?;
+
+    let headers = rdr.headers()?.clone();
+
+    let name_idx = match headers.iter().position(|field| field == column) {
+        Some(idx) => idx,
+        None => {
+            return Err(format!("The column '{}' was not found in the headers.", column).into());
+        }
+    };
+
+    let mut wtr = write_csv(path, sep, "startswith")?;
+
+    // Write headers to the output file
+    wtr.write_record(&headers)?;
+
+    for result in rdr.records() {
+        let record = result?;
+        let value = record.get(name_idx).unwrap();
+        // Check if any condition matches
+        if conditions.iter().any(|cond| value.starts_with(cond)) {
             wtr.write_record(&record)?;
         }
     }
@@ -147,6 +191,15 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
                     return ();
                 }
             };
+        } else if mode == "startswith" {
+            match async { startswith_filter(path, sep, column, vec_strings) }.await {
+                Ok(result) => result,
+                Err(error) => {
+                    eprintln!("Error: {}", error);
+                    window.emit("startswithErr", &error.to_string()).unwrap();
+                    return ();
+                }
+            }
         }
     } else {
         let yml_window = window.clone();
@@ -182,6 +235,15 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
                     return ();
                 }
             };
+        } else if mode == "startswith" {
+            match async { startswith_filter(path, sep, column, vec_cond) }.await {
+                Ok(result) => result,
+                Err(error) => {
+                    eprintln!("Error: {}", error);
+                    window.emit("startswithErr", &error.to_string()).unwrap();
+                    return ();
+                }
+            }
         }
     }
 }

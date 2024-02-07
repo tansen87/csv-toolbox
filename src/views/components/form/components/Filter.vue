@@ -125,6 +125,7 @@
       <el-select v-model="form.mode" placeholder="please select filter mode">
         <el-option label="equal" value="equal" />
         <el-option label="contains" value="contains" />
+        <el-option label="startswith" value="startswith" />
       </el-select>
     </el-form-item>
     <el-form-item label="Input or Yaml">
