@@ -1,14 +1,17 @@
-use std::path;
+use std::{
+    error::Error,
+    path::PathBuf
+};
 use rayon::prelude::*;
 use calamine::{Reader, Range, DataType};
 
-fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
+fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* convert excel to csv */
     let vec_path: Vec<&str> = path.split(',').collect();
 
     for file in vec_path.iter() 
     {
-        let sce = path::PathBuf::from(file);
+        let sce = PathBuf::from(file);
         let dest = sce.with_extension("csv");
         let mut wtr = csv::WriterBuilder::new()
             .delimiter(b'|')
@@ -156,25 +159,24 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn std::e
                 wtr.write_record(&processed_row)?;
             }
         }
+
         wtr.flush()?;
 
         let msg = format!("{} converted.", file);
         window.emit("success_msg", msg)?;
-    } 
+    }
+
     Ok(())
 }
 
 #[tauri::command]
 pub async fn etoc(path: String, window: tauri::Window) {
-    let wtr_window = window.clone();
     let file_window = window.clone();
-    let _e2c = match async {
-        write_range(path, file_window)
-    }.await {
+    match async { write_range(path, file_window) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("Error: {}", error);
-            wtr_window.emit("etocerr", &error.to_string()).unwrap();
+            window.emit("etocerr", &error.to_string()).unwrap();
             error.to_string();
         }
     };

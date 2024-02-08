@@ -1,4 +1,10 @@
-fn count_rows(path: String, sep: String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+use std::{
+    fs::File,
+    path::Path,
+    error::Error
+};
+
+fn count_rows(path: String, sep: String) -> Result<Vec<String>, Box<dyn Error>> {
     /* count csv rows */
     let mut separator = Vec::new();
     if sep.clone() == "\\t" {
@@ -14,7 +20,7 @@ fn count_rows(path: String, sep: String) -> Result<Vec<String>, Box<dyn std::err
         let mut rdr = csv::ReaderBuilder::new()
             .delimiter(separator[0])
             .has_headers(true)
-            .from_reader(std::fs::File::open(file)?);
+            .from_reader(File::open(file)?);
 
         let mut record = csv::ByteRecord::new();
 
@@ -24,7 +30,7 @@ fn count_rows(path: String, sep: String) -> Result<Vec<String>, Box<dyn std::err
         while rdr.read_byte_record(&mut record)? {
             count += 1;
         }
-        let filename = std::path::Path::new(file).file_name().unwrap().to_str().unwrap();
+        let filename = Path::new(file).file_name().unwrap().to_str().unwrap();
         let cntmsg = format!("{}|{}", filename, count);
         vec_file.push(cntmsg);
     }
@@ -34,9 +40,7 @@ fn count_rows(path: String, sep: String) -> Result<Vec<String>, Box<dyn std::err
 
 #[tauri::command]
 pub async fn countr(path: String, sep: String, window: tauri::Window) -> Vec<String> {
-    let cnt = match async {
-        count_rows(path, sep)
-    }.await {
+    let cnt = match async { count_rows(path, sep) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("Error: {}", error);

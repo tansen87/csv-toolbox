@@ -14,7 +14,6 @@
   const form = reactive({
     sqlsrc: 'select * from table',
     sep: '|',
-    memory: true,
   });
 
   listen('shape', (event: any) => {
@@ -47,7 +46,6 @@
         path: data.filePath,
         sqlsrc: form.sqlsrc,
         sep: form.sep,
-        memory: form.memory,
       });
 
       loading.value = false;
@@ -84,15 +82,6 @@
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
       </el-select>
-    </el-form-item>
-    <el-form-item label="Memory">
-      <el-switch
-        v-model="form.memory"
-        inline-prompt
-        active-text="high"
-        inactive-text="low"
-        width="50px"
-      />
     </el-form-item>
     <el-form-item>
       <el-input

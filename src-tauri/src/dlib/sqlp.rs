@@ -1,9 +1,10 @@
 use std::{
     borrow::Cow,
     collections::HashMap,
+    error::Error,
     fs::File,
-    io::{Read, Write},
-    path::Path,
+    io::{Read, Write, BufWriter},
+    path::{Path, PathBuf},
 };
 
 use polars::{
@@ -29,7 +30,7 @@ enum OutputMode {
 }
 
 impl OutputMode {
-    fn execute_query(&self, query: &str, ctx: &mut SQLContext, sep: String, output: Option<String>) -> Result<(usize, usize), Box<dyn std::error::Error>> {
+    fn execute_query(&self, query: &str, ctx: &mut SQLContext, sep: String, output: Option<String>) -> Result<(usize, usize), Box<dyn Error>> {
         let mut df = DataFrame::default();
         let execute_inner = || {
             df = ctx
@@ -48,10 +49,11 @@ impl OutputMode {
                 },
                 None => Box::new(std::io::stdout()) as Box<dyn Write>,
             };
-            let mut w = std::io::BufWriter::with_capacity(256_000, w);
+            let mut w = BufWriter::with_capacity(256_000, w);
             let out_result = match self {
                 OutputMode::Csv => CsvWriter::new(&mut w)
                     .with_separator(sep.into_bytes()[0])
+                    .n_threads(4)
                     .finish(&mut df),
                 OutputMode::None => Ok(()),
             };
@@ -81,14 +83,14 @@ impl std::str::FromStr for OutputMode {
     }
 }
 
-fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: bool, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
+fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     let mut ctx = SQLContext::new();
     let sepu8 = sep.clone().into_bytes()[0];
     let mut output: Vec<Option<String>> = Vec::new();
     let current_time = chrono::Local::now().format("%Y-%m-%d %H.%M.%S");
-    let output_suffix = format!("_sqlp {}.csv", current_time);
+    let output_suffix = format!("sqlp {}.csv", current_time);
     for path in filepath.clone() {
-        let mut output_path = std::path::PathBuf::from(path);
+        let mut output_path = PathBuf::from(path);
         output_path.set_extension(output_suffix.clone());
         let output_str = if let Some(output_path_str) = output_path.to_str() {
             Some(output_path_str.to_string())
@@ -104,11 +106,11 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: boo
             predicate_pushdown:  true,
             type_coercion:       true,
             simplify_expr:       true,
-            file_caching:        low_memory,
+            file_caching:        true,
             slice_pushdown:      true,
-            comm_subplan_elim:   low_memory,
+            comm_subplan_elim:   true,
             comm_subexpr_elim:   true,
-            streaming:           !low_memory,
+            streaming:           false,
             fast_projection:     true,
             eager:               false,
         };
@@ -134,6 +136,7 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: boo
         let tmp_df = match CsvReader::from_path(table).unwrap()
             .with_separator(sepu8)
             .with_n_rows(Some(1))
+            .with_n_threads(Some(1))
             .finish() {
                 Ok(df ) => df,
                 Err(err) => {
@@ -152,8 +155,8 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: boo
             .with_missing_is_null(true)
             .with_separator(sepu8)
             .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
-            .low_memory(low_memory)
-            .finish().unwrap();
+            .low_memory(true)
+            .finish()?;
 
         ctx.register(table_name, lf.with_optimizations(optimization_state));
     }
@@ -162,7 +165,7 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: boo
     let no_output: OutputMode = OutputMode::None;
 
     // check if the query is a SQL script
-    let queries = if std::path::Path::new(&sqlsrc)
+    let queries = if Path::new(&sqlsrc)
         .extension()
         .map_or(false, |ext| ext.eq_ignore_ascii_case("sql"))
     {
@@ -210,11 +213,11 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, low_memory: boo
 }
 
 #[tauri::command]
-pub async fn query(path: String, sqlsrc: String, sep: String, memory: bool, window: tauri::Window) {
+pub async fn query(path: String, sqlsrc: String, sep: String, window: tauri::Window) {
     let filepath: Vec<&str> = path.split(',').collect();
     let prep_window = window.clone();
     match async {
-        prepare_query(filepath, &sqlsrc.as_str(), sep, memory, prep_window)
+        prepare_query(filepath, &sqlsrc.as_str(), sep, prep_window)
     }.await {
         Ok(result) => result,
         Err(error) => {

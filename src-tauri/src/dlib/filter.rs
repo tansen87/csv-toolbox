@@ -1,8 +1,8 @@
 use std::{
-    fs,
-    io,
-    path,
-    error
+    fs::File,
+    io::{BufReader, BufWriter},
+    path::PathBuf,
+    error::Error
 };
 
 use serde::{Deserialize, Serialize};
@@ -12,31 +12,31 @@ struct Config {
     conditions: Vec<String>,
 }
 
-fn read_yaml(path: String) -> Result<Config, Box<dyn error::Error>> {
-    let yaml_file = fs::File::open(path)?;
-    let yaml_reader = io::BufReader::new(yaml_file);
+fn read_yaml(path: String) -> Result<Config, Box<dyn Error>> {
+    let yaml_file = File::open(path)?;
+    let yaml_reader = BufReader::new(yaml_file);
     let yaml: Config = serde_yaml::from_reader(yaml_reader)?;
     Ok(yaml)
 }
 
-pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<io::BufReader<fs::File>>, Box<dyn error::Error>> {
-    let file = fs::File::open(path.clone())?;
+pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<BufReader<File>>, Box<dyn Error>> {
+    let file = File::open(path.clone())?;
     let rdr = csv::ReaderBuilder::new()
         .delimiter(sep.as_bytes()[0])
-        .from_reader(io::BufReader::new(file));
+        .from_reader(BufReader::new(file));
 
     Ok(rdr)
 }
 
-pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<io::BufWriter<fs::File>>, Box<dyn error::Error>> {
-    let path = path::PathBuf::from(path);
+pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<BufWriter<File>>, Box<dyn Error>> {
+    let path = PathBuf::from(path);
     let file_name = path.file_stem()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "File stem not found"))?
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "File stem not found"))?
         .to_str()
         .map_or("", |s| s);
 
     let path_parent = path.parent()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Parent path not found"))?;
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "Parent path not found"))?;
 
     let current_time = chrono::Local::now();
     
@@ -67,15 +67,15 @@ pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<io:
         vec_output.push(output_path);
     };
 
-    let file = fs::File::create(&vec_output[0])?;
+    let file = File::create(&vec_output[0])?;
     let wtr = csv::WriterBuilder::new()
         .delimiter(sep.into_bytes()[0]) 
-        .from_writer(io::BufWriter::new(file));
+        .from_writer(BufWriter::new(file));
 
     Ok(wtr)
 }
 
-fn equal_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn error::Error>> {
+fn equal_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut rdr = read_csv(path.clone(), sep.clone())?;
 
     let headers = rdr.headers()?.clone();
@@ -103,7 +103,7 @@ fn equal_filter(path: String, sep: String, column: String, conditions: Vec<Strin
     Ok(())
 }
 
-fn contains_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn error::Error>> {
+fn contains_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut rdr = read_csv(path.clone(), sep.clone())?;
 
     let headers = rdr.headers()?.clone();
@@ -139,7 +139,7 @@ fn contains_filter(path: String, sep: String, column: String, conditions: Vec<St
     Ok(())
 }
 
-fn startswith_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn error::Error>> {
+fn startswith_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut rdr = read_csv(path.clone(), sep.clone())?;
 
     let headers = rdr.headers()?.clone();

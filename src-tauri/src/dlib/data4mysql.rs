@@ -1,10 +1,12 @@
 use std::io::prelude::*;
+use std::{
+    fs::{File, OpenOptions},
+    io::BufReader,
+    error::Error
+};
 
-use csv::WriterBuilder;
 use sqlx::{MySqlPool, Row, Column};
 use serde::{Deserialize, Serialize};
-use rust_decimal::Decimal;
-use chrono::Local;
 use futures::TryStreamExt;
 // use tauri::api::file;
 
@@ -19,14 +21,14 @@ pub struct Config {
     project_name: Vec<String>,
 }
 
-pub fn read_yaml(file_path: String) -> Result<Config, Box<dyn std::error::Error>> {
-    let yaml_file = std::fs::File::open(file_path)?;
-    let yaml_reader = std::io::BufReader::new(yaml_file);
+pub fn read_yaml(file_path: String) -> Result<Config, Box<dyn Error>> {
+    let yaml_file = File::open(file_path)?;
+    let yaml_reader = BufReader::new(yaml_file);
     let yaml: Config = serde_yaml::from_reader(yaml_reader)?;
     Ok(yaml)
 }
 
-pub async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec<String>, Config), Box<dyn std::error::Error>> {
+async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec<String>, Config), Box<dyn Error>> {
     // query the code corresponding to the company name
     let yaml = read_yaml(file_path)?;
     let mut vec_code: Vec<String> = Vec::new();
@@ -54,7 +56,7 @@ pub async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec
     // Write the incorrect names to a text file
     if !incorrect_names.is_empty() 
     {
-        let mut file = match std::fs::File::create(
+        let mut file = match File::create(
             format!("{}/0_error_project.log", &epath)) 
             {
                 Ok(file) => file,
@@ -75,14 +77,12 @@ pub async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec
     Ok((vec_code, yaml))
 }
 
-pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String, rcolumn: String, epath: String, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
+async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String, rcolumn: String, epath: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     let mut company_count = 1;
     let pool: sqlx::Pool<sqlx::MySql> = MySqlPool::connect(&yaml.url).await?;
     let mut message_log = String::new();
-    let _log_file = std::fs::File::create(
-        format!("{}/2_logs.log", &epath)
-    ).expect("Failed to create file"); 
-    let mut log_file = std::fs::OpenOptions::new()
+    File::create(format!("{}/2_logs.log", &epath)).expect("Failed to create file"); 
+    let mut log_file = OpenOptions::new()
         .append(true)
         .open(format!("{}/2_logs.log", &epath))?;
     let mut gl_table = "".to_string();
@@ -111,7 +111,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
     {
         let company = yaml.project_name[idx].split("_").nth(2).unwrap_or(&yaml.project_name[idx]);
         let check_msg = format!("Checking {}, please wait...", &company);
-        let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         let check_msg_log = format!("{} => {}\n", &timestamp, &check_msg);
         log_file.write_all(check_msg_log.as_bytes())?;
         window.emit("check", &check_msg)?;
@@ -138,7 +138,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                 let filename = split_filename.nth(2).unwrap_or(&yaml.project_name[idx]);
 
                 let emit_msg = format!("({}) {}", company_count, filename);
-                let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+                let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                 let check_done_log = format!("{} => {}\n", &timestamp, &emit_msg);
                 log_file.write_all(check_done_log.as_bytes())?;
 
@@ -150,7 +150,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
 
                 // gl save path
                 let gl_output_path = format!("{}\\{}_{}.csv", &folder_path, &gl_table, filename);
-                let mut csv_writer_gl = WriterBuilder::new()
+                let mut csv_writer_gl = csv::WriterBuilder::new()
                     .delimiter(b'|')
                     .from_path(gl_output_path)?;
                 // write gl headers
@@ -164,7 +164,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                         {
                             "DECIMAL" => 
                             {
-                                let num: Decimal = row.get(num);
+                                let num: rust_decimal::Decimal = row.get(num);
                                 num.to_string()
                             }
                             "SMALLINT" | "TINYINT" | "INT" => 
@@ -193,7 +193,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                     csv_writer_gl.serialize(vec_wtr_str)?;
                 }
                 csv_writer_gl.flush()?;
-                let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+                let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                 let out_gl = format!("{}\\{}_{}.csv", &folder_path, filename, &gl_table);
                 let out_gl_log = format!("{} => {}\n", &timestamp, out_gl);
                 log_file.write_all(out_gl_log.as_bytes())?;
@@ -211,7 +211,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                         vec_col_type.push(one_tb.column(num).type_info().to_string())
                     }
                 let output_path = format!("{}\\{}_{}.csv", &folder_path, &tb_table, filename);
-                let mut csv_writer_tb = WriterBuilder::new()
+                let mut csv_writer_tb = csv::WriterBuilder::new()
                     .delimiter(b'|')
                     // .quote_style(csv::QuoteStyle::Always)
                     .from_path(output_path)?;
@@ -224,7 +224,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                     {
                         if vec_col_type[num] == "DECIMAL" 
                         {
-                            let num: Decimal = data.get(num);
+                            let num: rust_decimal::Decimal = data.get(num);
                             vec_wtr_str.push(num.to_string())
                         } 
                         else if vec_col_type[num] == "SMALLINT" || vec_col_type[num] == "TINYINT"
@@ -242,7 +242,7 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                 }
                 csv_writer_tb.flush()?;
                 let out_tb = format!("{}\\{}_{}.csv", &folder_path, filename, &tb_table);
-                let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+                let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                 let out_tb_log = format!("{} => {}\n", &timestamp, out_tb);
                 log_file.write_all(out_tb_log.as_bytes())?;
                 
@@ -252,28 +252,28 @@ pub async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: Str
                 message_log.push_str(&msg_tb);
                 window.emit("message", &emit_msg)?;
             },
-            Err(error) => 
-            {
-                let err_msg = format!("Error with company {}: {}", &company, error);
-                let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+            Err(error) => {
+                let err_msg = format!("{} | Error: {}", &company, error);
+                let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                 let err_msg_log = format!("{} => {}\n", &timestamp, &err_msg);
                 window.emit("errcode", &err_msg)?;
-                let mut file = std::fs::File::create(
-                    format!("{}/0_error_company.log", &epath)
-                ).expect("Failed to create file");
-                file.write_all(err_msg.as_bytes()).expect("Failed to write to file");
+                File::create(format!("{}/0_error_company.log", &epath)).expect("Failed to create file");
+                let mut err_file = OpenOptions::new()
+                    .append(true)
+                    .open(format!("{}/0_error_company.log", &epath))?;
+                err_file.write_all(err_msg.as_bytes()).expect("Failed to write to file");
                 log_file.write_all(&err_msg_log.as_bytes())?;
                 continue;
             }
         }
     }
     
-    let mut successful_file = std::fs::File::create(
+    let mut successful_file = File::create(
         format!("{}/1_successful_company.log", &epath)
     ).expect("failed to create file");
     successful_file.write_all(message_log.as_bytes()).expect("failed to write to file");
     let msg_done = "Congratulations! 数据下载成功!".to_string();
-    let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
     let msg_done_log = format!("{} => {}\n", &timestamp, &msg_done);
     log_file.write_all(msg_done_log.as_bytes())?;
     Ok(())
@@ -284,29 +284,25 @@ fn folder_exists(path: &str) -> bool {
 }
 
 #[tauri::command]
-pub async fn download(etable: String, rcolumn: String, epath: String, file_path: String, window: tauri::Window) -> String {
+pub async fn download(etable: String, rcolumn: String, epath: String, file_path: String, window: tauri::Window) {
     let window_prep = window.clone();
     let window_exec = window.clone();
     let pre_epath = epath.clone();
-    let (vec_code, yaml) = match prepare_query_data(file_path, pre_epath).await 
-    {
+    let (vec_code, yaml) = match prepare_query_data(file_path, pre_epath).await {
         Ok((vec_code, yaml)) => (vec_code, yaml),
-        Err(error) => 
-        {
+        Err(error) => {
             eprintln!("Error: {}", error);
             window_prep.emit("prepareErr", &error.to_string()).unwrap();
-            return error.to_string();
+            return ();
         }
     };
-    let _result_done = match execute_query_data(vec_code, yaml, etable, rcolumn, epath, window).await 
-    {
+
+    match execute_query_data(vec_code, yaml, etable, rcolumn, epath, window).await {
         Ok(result) => result,
-        Err(error) => 
-        {
+        Err(error) => {
             eprintln!("Error: {}", error);
             window_exec.emit("executeErr", &error.to_string()).unwrap();
             error.to_string();
         }
     };
-    "done".to_string()
 }

@@ -1,3 +1,8 @@
+use std::{
+    path::PathBuf,
+    error::Error
+};
+
 use polars::{
     io::SerReader,
     frame::DataFrame,
@@ -5,7 +10,7 @@ use polars::{
     prelude::{Arc, CsvReader, Schema}
 };
 
-fn write_xlsx(df: DataFrame, dest: std::path::PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
     /* write dataframe to xlsx */
     let mut workbook = rust_xlsxwriter::Workbook::new();
     let worksheet = workbook.add_worksheet();
@@ -37,7 +42,7 @@ fn write_xlsx(df: DataFrame, dest: std::path::PathBuf) -> Result<(), Box<dyn std
     Ok(())
 }
 
-fn write_range(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
+fn write_range(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* csv to xlsx */
     let vec_path: Vec<&str> = path.split(',').collect();
     let vec_col: Vec<&str> = column.split(',').collect();
@@ -57,15 +62,14 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
         let tmp_df = match CsvReader::from_path(file)?
             .with_separator(separator[0])
             .with_n_rows(Some(0))
-            .finish()
-        {
-            Ok(df) => df,
-            Err(err) => {
-                let err_msg = format!("error: {} | {}", file, err);
-                window.emit("readerr", err_msg)?;
-                return Err(Box::new(err));
-            }
-        };
+            .finish() {
+                Ok(df) => df,
+                Err(err) => {
+                    let err_msg = format!("error: {} | {}", file, err);
+                    window.emit("readerr", err_msg)?;
+                    return Err(Box::new(err));
+                }
+            };
         let headers = tmp_df.get_column_names();
         for s in headers.iter() {
             schema.with_column(s.to_string().into(), DataType::String);
@@ -74,7 +78,7 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
             schema.with_column(num.to_string().into(), DataType::Float64);
         }
 
-        let sce = std::path::PathBuf::from(file);
+        let sce = PathBuf::from(file);
         let dest = sce.with_extension("xlsx");
         let df = CsvReader::from_path(file)?
             .with_separator(separator[0])
@@ -97,9 +101,7 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
 #[tauri::command]
 pub async fn ctox(path: String, sep: String, column: String, window: tauri::Window) {
     let copy_window = window.clone();
-    let _c2x = match async {
-        write_range(path, sep, column, copy_window)
-    }.await {
+    let _c2x = match async { write_range(path, sep, column, copy_window) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("Error: {}", error);

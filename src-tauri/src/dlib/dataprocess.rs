@@ -1,3 +1,9 @@
+use std::{
+    fs::File,
+    path::Path,
+    error::Error
+};
+
 use polars::{
     io::SerReader,
     frame::DataFrame,
@@ -6,9 +12,9 @@ use polars::{
     prelude::{Arc, Schema, CsvReader, CsvWriter, SerWriter, UnionArgs, LazyCsvReader, LazyFileListReader}
 };
 
-fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn std::error::Error>> {
+fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn Error>> {
     /*  Write dataframe to xlsx */
-    let file_path = std::path::Path::new(&path);
+    let file_path = Path::new(&path);
     let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
     let mut workbook = rust_xlsxwriter::Workbook::new();
     let worksheet = workbook.add_worksheet();
@@ -56,9 +62,9 @@ fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dy
     Ok(())
 }
 
-fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn std::error::Error>> {
+fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn Error>> {
     /*  Write dataframe to csv */
-    let file_path = std::path::Path::new(&path);
+    let file_path = Path::new(&path);
     let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
     let current_time = chrono::Local::now();
     let file_path_copy = file_path.parent().unwrap().to_string_lossy();
@@ -70,14 +76,14 @@ fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn
         let output_path = format!("{}/{} {}.csv", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
         vec_output.push(output_path);
     }
-    let mut file = std::fs::File::create(vec_output[0].clone())?;
+    let mut file = File::create(vec_output[0].clone())?;
     CsvWriter::new(&mut file)
         .with_separator(b'|')
         .finish(&mut df.clone())?;
     Ok(())
 }
 
-fn groupby_sum(path: String, sep: String, index: String, values: String) -> Result<(), Box<dyn std::error::Error>> {
+fn groupby_sum(path: String, sep: String, index: String, values: String) -> Result<(), Box<dyn Error>> {
     /* group by - sum */
     let mut separator = Vec::new();
     if sep.clone() == "\\t" {
@@ -89,7 +95,7 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     }
     let idx: Vec<&str> = index.split(',').collect();
     let val: Vec<&str> = values.split(',').collect();
-    let file_path = std::path::Path::new(&path);
+    let file_path = Path::new(&path);
 
     // Convert idx field datatype to utf8, val field datatype to float64
     let mut schema = Schema::new();
@@ -102,7 +108,6 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
 
     // load csv file
     let lf = LazyCsvReader::new(&file_path)
-        // .with_infer_schema_length(Some(10))
         .with_separator(separator[0])
         .with_dtype_overwrite(Some(&Arc::new(schema)))
         .finish()?;
@@ -115,10 +120,11 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     
     let fn_type = "pivot".to_string();
     write_xlsx(gb.clone(), path, fn_type)?;
+
     Ok(())
 }
 
-fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn std::error::Error>> {
+fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn Error>> {
     /* Getting a unique value for a column */
     let mut separator = Vec::new();
     if sep.clone() == "\\t" {
@@ -128,7 +134,7 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
         let sep_u8 = sep.into_bytes()[0];
         separator.push(sep_u8);
     }
-    let file_path = std::path::Path::new(&path);
+    let file_path = Path::new(&path);
 
     // Convert column field datatype to utf8
     let mut schema = Schema::new();
@@ -147,10 +153,11 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
     .collect()?;
     let fn_type = "unique".to_string();
     write_xlsx(uni, path, fn_type)?;
+
     Ok(())
 }
 
-fn concat_all(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
+fn concat_all(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* merge csv files into a xlsx or csv file */
     let mut separator = Vec::new();
     if sep.clone() == "\\t" {
@@ -178,8 +185,7 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
         let tmp_df = match CsvReader::from_path(file)?
             .with_separator(separator[0])
             .with_n_rows(Some(0))
-            .finish() 
-            {
+            .finish() {
                 Ok(df ) => df,
                 Err(err) => {
                     let err_msg = format!("error: {} | {}", file, err);
@@ -203,7 +209,9 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
     }
 
     // concat dataframe
-    let union_df = concat_lf_diagonal(lfs, UnionArgs{parallel: true, rechunk: true, to_supertypes: true})?.collect()?;
+    let union_df = concat_lf_diagonal(
+        lfs, UnionArgs{parallel: true, rechunk: true, to_supertypes: true})?
+        .collect()?;
     let save_path = vec_path[0].to_string();
     let row_len = union_df.shape().0;
     let fn_type = "concat".to_string();
@@ -212,10 +220,11 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
     } else {
         write_csv(union_df, save_path, fn_type)?;
     }
+
     Ok(())
 }
 
-fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<dyn std::error::Error>> {
+fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<dyn Error>> {
     /* merge sepecific columns */
     let mut separator = Vec::new();
     if sep.clone() == "\\t" {
@@ -245,7 +254,9 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
     }
 
     // concat specific dataframe
-    let union_df = concat_lf_diagonal(lfs, UnionArgs{parallel: true, rechunk: true, to_supertypes: true})?.collect()?;
+    let union_df = concat_lf_diagonal(
+        lfs, UnionArgs{parallel: true, rechunk: true, to_supertypes: true})?
+        .collect()?;
     let save_path = vec_path[0].to_string();
     let row_len = union_df.shape().0;
     let fn_type = "concat".to_string();
@@ -254,14 +265,13 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
     } else {
         write_csv(union_df, save_path, fn_type)?;
     }
+
     Ok(())
 }
 
 #[tauri::command]
 pub async fn pivot(path: String, sep: String, index: String, values: String, window: tauri::Window) {
-    let _pt = match async {
-        groupby_sum(path, sep, index, values)
-    }.await {
+    match async { groupby_sum(path, sep, index, values) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("Error: {}", error);
@@ -273,9 +283,7 @@ pub async fn pivot(path: String, sep: String, index: String, values: String, win
 
 #[tauri::command]
 pub async fn unique(path: String, sep: String, column: String, window: tauri::Window) {
-    let _uni = match async {
-        unique_value(path, sep, column)
-    }.await {
+    match async { unique_value(path, sep, column) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("Error: {}", error);
@@ -288,9 +296,7 @@ pub async fn unique(path: String, sep: String, column: String, window: tauri::Wi
 #[tauri::command]
 pub async fn concat(path: String, sep: String, column: String, window: tauri::Window) {
     let cat_window = window.clone();
-    let _cat = match async {
-        concat_all(path, sep, column, cat_window)
-    }.await {
+    match async { concat_all(path, sep, column, cat_window) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("Error: {}", error);
@@ -302,9 +308,7 @@ pub async fn concat(path: String, sep: String, column: String, window: tauri::Wi
 
 #[tauri::command]
 pub async fn concatsp(path: String, sep: String, column: String, window: tauri::Window) {
-    let _cat = match async {
-        concat_specific(path, sep, column)
-    }.await {
+    match async { concat_specific(path, sep, column) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("concat_sepecific error: {}", error);
