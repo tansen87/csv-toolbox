@@ -3,9 +3,9 @@
   import { open } from '@tauri-apps/api/dialog';
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
-  import { ElMessage } from 'element-plus';
+  import { ElMessage, ElIcon } from 'element-plus';
 
-  const getCSVMsg = ref([]);
+  const selectedFiles = ref([]);
   const loading = ref(false);
   const data = reactive({
     filePath: '',
@@ -33,8 +33,13 @@
   });
 
   listen('convertmsg', (event: any) => {
-    const error: any = event.payload;
-    ElMessage.success(error);
+    const cntmsg: any = event.payload;
+    // ElMessage.success(error);
+    selectedFiles.value.forEach((file) => {
+      if (file.filename === cntmsg.split('|')[0]) {
+        file.status = 'completed';
+      }
+    });
   });
 
   // data concat
@@ -70,6 +75,10 @@
     if (Array.isArray(selected)) {
       // user selected multiple files
       data.filePath = selected.toString();
+      const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
+      selectedFiles.value = nonEmptyRows.map((file: any) => {
+        return { filename: file, status: 'awaiting' };
+      });
     } else if (selected === null) {
       // user cancelled the selection
       return;
@@ -77,7 +86,6 @@
       // user selected a single file
       data.filePath = selected;
     }
-    getCSVMsg.value = selected as never;
   }
 </script>
 
@@ -98,7 +106,20 @@
       <el-button type="success" @click="concatData()">Convert</el-button>
     </el-form-item>
   </el-form>
-  <el-text class="mx-1" type="success">{{ getCSVMsg[0] }}</el-text>
+  <el-table :data="selectedFiles" height="250" style="width: 100%">
+    <el-table-column prop="filename" label="file"></el-table-column>
+    <el-table-column label="status">
+      <template #default="scope">
+        <ElIcon v-if="scope.row.status === 'awaiting'" class="is-loading">
+          <Loading />
+        </ElIcon>
+        <ElIcon v-else-if="scope.row.status === 'completed'">
+          <Check />
+        </ElIcon>
+        <!-- <span>{{ scope.row.status }}</span> -->
+      </template>
+    </el-table-column>
+  </el-table>
 </template>
 
 <style>

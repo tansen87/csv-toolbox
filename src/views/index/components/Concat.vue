@@ -5,7 +5,7 @@
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
 
-  const getCSVMsg = ref([]);
+  const selectedFiles = ref([]);
   const loading = ref(false);
   const data = reactive({
     filePath: '',
@@ -60,6 +60,10 @@
     if (Array.isArray(selected)) {
       // user selected multiple files
       data.filePath = selected.toString();
+      const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
+      selectedFiles.value = nonEmptyRows.map((row: any) => {
+        return { filename: row };
+      });
     } else if (selected === null) {
       // user cancelled the selection
       return;
@@ -67,7 +71,6 @@
       // user selected a single file
       data.filePath = selected;
     }
-    getCSVMsg.value = selected as never;
   }
 </script>
 
@@ -88,7 +91,9 @@
       <el-button type="success" @click="concatData()">Concat</el-button>
     </el-form-item>
   </el-form>
-  <el-text class="mx-1" type="success">{{ getCSVMsg[0] }}</el-text>
+  <el-table :data="selectedFiles" height="250" style="width: 100%">
+    <el-table-column prop="filename" label="File"></el-table-column>
+  </el-table>
 </template>
 
 <style>

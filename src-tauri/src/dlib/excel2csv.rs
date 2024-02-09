@@ -162,7 +162,7 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
 
         wtr.flush()?;
 
-        let msg = format!("{} converted.", file);
+        let msg = format!("{}|done", file);
         window.emit("success_msg", msg)?;
     }
 

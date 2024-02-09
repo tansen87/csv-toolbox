@@ -5,8 +5,8 @@
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
 
-  const getCSVMsg = ref([]);
   const tableData = ref([]);
+  const selectedFiles = ref([]);
   const loading = ref(false);
   const data = reactive({
     filePath: '',
@@ -20,6 +20,15 @@
     const error: any = event.payload;
     const countErrmsg: any = 'count error: ' + error;
     ElMessage.error(countErrmsg);
+  });
+
+  listen('cntmsg', (event: any) => {
+    const cntmsg: any = event.payload;
+    selectedFiles.value.forEach((file) => {
+      if (file.filename.split('\\').pop() === cntmsg.split('|')[0]) {
+        file.status = cntmsg.split('|')[1];
+      }
+    });
   });
 
   // count csv rows
@@ -36,12 +45,11 @@
       path: data.filePath,
       sep: form.sep,
     });
-    const vls = JSON.parse(JSON.stringify(countrows));
 
-    // 过滤掉空行并填充tableData
+    const vls = JSON.parse(JSON.stringify(countrows));
     const nonEmptyRows = vls.filter((row: any) => row.trim() !== '');
     tableData.value = nonEmptyRows.map((row: any) => {
-      const [fileName, rows] = row.split('|'); // 分割文件名和行数
+      const [fileName, rows] = row.split('|');
       return { File: fileName, Rows: rows };
     });
 
@@ -61,17 +69,20 @@
     });
     if (Array.isArray(selected)) {
       data.filePath = selected.toString();
+      const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
+      selectedFiles.value = nonEmptyRows.map((file: any) => {
+        return { filename: file, status: '' };
+      });
     } else if (selected === null) {
       return;
     } else {
       data.filePath = selected;
     }
-    getCSVMsg.value = selected as never;
   }
 </script>
 
 <template>
-  <el-form v-loading="loading" element-loading-text="Counting..." :model="form">
+  <el-form :model="form">
     <el-form-item label="Separator">
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
@@ -83,12 +94,22 @@
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="countData()">Count</el-button>
     </el-form-item>
-    <el-table :data="tableData" height="250" style="width: 100%">
+    <!-- <el-table :data="tableData" height="250" style="width: 100%">
       <el-table-column prop="File" label="File" width="400"></el-table-column>
       <el-table-column prop="Rows" label="Rows" width="200"></el-table-column>
+    </el-table> -->
+    <el-table :data="selectedFiles" height="250" style="width: 100%">
+      <el-table-column prop="filename" label="file"></el-table-column>
+      <el-table-column label="rows">
+        <template #default="scope">
+          <ElIcon v-if="scope.row.status === ''" class="is-loading">
+            <Loading />
+          </ElIcon>
+          <span>{{ scope.row.status }}</span>
+        </template>
+      </el-table-column>
     </el-table>
   </el-form>
-  <el-text class="mx-1" type="success">{{ getCSVMsg[0] }}</el-text>
 </template>
 
 <style>

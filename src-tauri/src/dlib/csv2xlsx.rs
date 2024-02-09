@@ -88,7 +88,7 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
         let rows = df.shape().0;
         if rows < 104_0000 {
             write_xlsx(df, dest)?;
-            let convert_msg = format!("{} converted.", file);
+            let convert_msg = format!("{}|done", file);
             window.emit("convertmsg", convert_msg)?;
         } else {
             let rows_msg = format!("{} - {}, cannot converted.", file, rows);
@@ -101,7 +101,7 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
 #[tauri::command]
 pub async fn ctox(path: String, sep: String, column: String, window: tauri::Window) {
     let copy_window = window.clone();
-    let _c2x = match async { write_range(path, sep, column, copy_window) }.await {
+    match async { write_range(path, sep, column, copy_window) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("Error: {}", error);

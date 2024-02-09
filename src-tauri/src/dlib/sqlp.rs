@@ -30,7 +30,7 @@ enum OutputMode {
 }
 
 impl OutputMode {
-    fn execute_query(&self, query: &str, ctx: &mut SQLContext, sep: String, output: Option<String>) -> Result<(usize, usize), Box<dyn Error>> {
+    fn execute_query(&self, query: &str, ctx: &mut SQLContext, sep: String, output: Option<String>, window: tauri::Window) -> Result<(usize, usize), Box<dyn Error>> {
         let mut df = DataFrame::default();
         let execute_inner = || {
             df = ctx
@@ -66,6 +66,8 @@ impl OutputMode {
             Ok(()) => Ok(df.shape()),
             Err(e) => {
                 eprintln!("Failed to execute query: {query}: {e}");
+                let errmsg = format!("Failed to execute query: {query}: {e}");
+                window.emit("execerr", errmsg)?;
                 return Ok((0, 0));
             },
         }
@@ -199,14 +201,16 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, window: tauri::
             current_query = current_query.replace(table_alias, &(format!(r#""{table_name}""#)));
         }
 
-        let query_result_shape = if is_last_query {
+        let exec_window = window.clone();
+        let exec1_window = window.clone();
+
+        if is_last_query {
             // if this is the last query, we use the output mode specified by the user
-            output_mode.execute_query(&current_query, &mut ctx, sep.clone(), output[0].clone()).unwrap()
+            output_mode.execute_query(&current_query, &mut ctx, sep.clone(), output[0].clone(), exec_window).unwrap()
         } else {
             // this is not the last query, we only execute the query, but don't write the output
-            no_output.execute_query(&current_query, &mut ctx, sep.clone(), output[0].clone()).unwrap()
+            no_output.execute_query(&current_query, &mut ctx, sep.clone(), output[0].clone(), exec1_window).unwrap()
         };
-        window.emit("shape", query_result_shape)?;
     }
 
     Ok(())

@@ -3,9 +3,9 @@
   import { open } from '@tauri-apps/api/dialog';
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
-  import { ElMessage } from 'element-plus';
+  import { ElMessage, ElIcon } from 'element-plus';
 
-  const getExcelMsg = ref([]);
+  const selectedFiles = ref([]);
   const loading = ref(false);
   const data = reactive({
     filePath: '',
@@ -18,7 +18,12 @@
 
   listen('success_msg', (event: any) => {
     const msg: any = event.payload;
-    ElMessage.success(msg);
+    // ElMessage.success(msg);
+    selectedFiles.value.forEach((file) => {
+      if (file.filename === msg.split('|')[0]) {
+        file.status = 'completed';
+      }
+    });
   });
 
   listen('etocerr', (event: any) => {
@@ -55,27 +60,40 @@
       ],
     });
     if (Array.isArray(selected)) {
-      // user selected multiple files
       data.filePath = selected.toString();
+      const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
+      selectedFiles.value = nonEmptyRows.map((file: any) => {
+        return { filename: file, status: 'awaiting' };
+      });
     } else if (selected === null) {
-      // user cancelled the selection
       return;
     } else {
-      // user selected a single file
       data.filePath = selected;
     }
-    getExcelMsg.value = selected as never;
   }
 </script>
 
 <template>
-  <el-form v-loading="loading" element-loading-text="Converting..." :model="form">
+  <el-form v-loading="loading" element-loading-text="Loading..." :model="form">
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="excelTocsv()">Convert</el-button>
     </el-form-item>
   </el-form>
-  <el-text class="mx-1" type="success">{{ getExcelMsg[0] }}</el-text>
+  <el-table :data="selectedFiles" height="250" style="width: 100%">
+    <el-table-column prop="filename" label="file"></el-table-column>
+    <el-table-column label="status">
+      <template #default="scope">
+        <ElIcon v-if="scope.row.status === 'awaiting'" class="is-loading">
+          <Loading />
+        </ElIcon>
+        <ElIcon v-else-if="scope.row.status === 'completed'">
+          <Check />
+        </ElIcon>
+        <!-- <span>{{ scope.row.status }}</span> -->
+      </template>
+    </el-table-column>
+  </el-table>
 </template>
 
 <style>

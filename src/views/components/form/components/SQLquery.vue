@@ -5,7 +5,7 @@
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
 
-  const getCSVMsg = ref([]);
+  const selectedFiles = ref([]);
   const loading = ref(false);
   const data = reactive({
     filePath: '',
@@ -16,16 +16,15 @@
     sep: '|',
   });
 
-  listen('shape', (event: any) => {
-    const info: any = event.payload;
-    const shapeInfo: any = 'query shape: ' + info;
-    ElMessage.info(shapeInfo);
-  });
-
   listen('queryErr', (event: any) => {
     const error: any = event.payload;
     const queryErrmsg: any = 'sql query error: ' + error;
     ElMessage.error(queryErrmsg);
+  });
+
+  listen('execerr', (event: any) => {
+    const error: any = event.payload;
+    ElMessage.error(error);
   });
 
   // count csv rows
@@ -65,12 +64,15 @@
     });
     if (Array.isArray(selected)) {
       data.filePath = selected.toString();
+      const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
+      selectedFiles.value = nonEmptyRows.map((row: any) => {
+        return { filename: row };
+      });
     } else if (selected === null) {
       return;
     } else {
       data.filePath = selected;
     }
-    getCSVMsg.value = selected as never;
   }
 </script>
 
@@ -86,7 +88,7 @@
     <el-form-item>
       <el-input
         v-model="form.sqlsrc"
-        :autosize="{ minRows: 3, maxRows: 5 }"
+        :autosize="{ minRows: 3, maxRows: 6 }"
         type="textarea"
         placeholder="Please input sql script"
       />
@@ -96,7 +98,9 @@
       <el-button type="success" @click="countData()">Query</el-button>
     </el-form-item>
   </el-form>
-  <el-text class="mx-1" type="success">{{ getCSVMsg[0] }}</el-text>
+  <el-table :data="selectedFiles" height="250" style="width: 100%">
+    <el-table-column prop="filename" label="File"></el-table-column>
+  </el-table>
 </template>
 
 <style>
