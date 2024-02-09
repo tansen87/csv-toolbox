@@ -5,9 +5,8 @@
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
 
-  const tableData = ref([]);
+  // const tableData = ref([]);
   const selectedFiles = ref([]);
-  const loading = ref(false);
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -33,27 +32,24 @@
 
   // count csv rows
   async function countData() {
-    tableData.value = [];
     if (data.filePath == '') {
       ElMessage.warning('未选择csv文件');
       return;
     }
 
     ElMessage.info('waiting...');
-    loading.value = true;
-    let countrows: any = await invoke('countr', {
+    await invoke('countr', {
       path: data.filePath,
       sep: form.sep,
     });
 
-    const vls = JSON.parse(JSON.stringify(countrows));
-    const nonEmptyRows = vls.filter((row: any) => row.trim() !== '');
-    tableData.value = nonEmptyRows.map((row: any) => {
-      const [fileName, rows] = row.split('|');
-      return { File: fileName, Rows: rows };
-    });
+    // const vls = JSON.parse(JSON.stringify(countrows));
+    // const nonEmptyRows = vls.filter((row: any) => row.trim() !== '');
+    // tableData.value = nonEmptyRows.map((row: any) => {
+    //   const [fileName, rows] = row.split('|');
+    //   return { File: fileName, Rows: rows };
+    // });
 
-    loading.value = false;
     ElMessage.success('count done.');
   }
 
