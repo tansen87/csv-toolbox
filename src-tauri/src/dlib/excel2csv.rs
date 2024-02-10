@@ -8,6 +8,8 @@ use calamine::{Reader, Range, DataType};
 fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* convert excel to csv */
     let vec_path: Vec<&str> = path.split(',').collect();
+    let mut count: usize = 0;
+    let file_len = vec_path.len();
 
     for file in vec_path.iter() 
     {
@@ -24,6 +26,13 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
         };
 
         let (row_count, col_count) = range.get_size();
+        // check row count
+        if row_count == 0 {
+            let warning_msg = format!("{file}| is empty, skipping processing."); 
+            window.emit("rowcnterr", warning_msg)?;
+            count += 1;
+            continue;
+        }
 
         let mut rows_iter = range.rows();
 
@@ -62,9 +71,10 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
         }
 
         // set RAYON_NUM_THREADS
-        let ncpus = 2;
+        let ncpus = 4;
         // set chunk_size to number of rows per core/thread
-        let chunk_size = row_count.div_ceil(ncpus);
+        // let chunk_size = row_count.div_ceil(ncpus);
+        let chunk_size = (row_count + ncpus - 1) / ncpus;
 
         let processed_rows: Vec<Vec<csv::StringRecord>> = rows
             .par_chunks(chunk_size)
@@ -162,8 +172,13 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
 
         wtr.flush()?;
 
-        let msg = format!("{}|done", file);
-        window.emit("success_msg", msg)?;
+        let info_msg = format!("{}|done", file);
+        window.emit("infomsg", info_msg)?;
+
+        count += 1;
+        let progress = (count as f32) / (file_len as f32) * 100.0;
+        let progress_s = format!("{progress:.0}");
+        window.emit("pgse2c", progress_s)?;
     }
 
     Ok(())

@@ -4,9 +4,26 @@
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage, ElIcon } from 'element-plus';
+  import { CloseBold, Select } from '@element-plus/icons-vue';
 
+  interface User {
+    filename: string;
+    status: string;
+  }
   const selectedFiles = ref([]);
-  const loading = ref(false);
+  const isProcessing = ref(false);
+  const progress = ref(0);
+  const customColors = [
+    { color: '#98FB98', percentage: 20 },
+    { color: '#7CFC00', percentage: 40 },
+    { color: '#7FFF00', percentage: 60 },
+    { color: '#ADFF2F', percentage: 80 },
+    { color: '#9ACD32', percentage: 100 },
+  ];
+  const filterHandler = (value: string, row: User, column: TableColumnCtx<User>) => {
+    const property = column['property'];
+    return row[property] === value;
+  };
   const data = reactive({
     filePath: '',
     fileFormats: ['xlsx', 'xls', 'xlsb', 'xlsm', 'xlam', 'xla', 'ods'],
@@ -16,14 +33,28 @@
     column: '',
   });
 
-  listen('success_msg', (event: any) => {
+  listen('rowcnterr', (event: any) => {
     const msg: any = event.payload;
-    // ElMessage.success(msg);
+    ElMessage.warning(msg);
     selectedFiles.value.forEach((file) => {
       if (file.filename === msg.split('|')[0]) {
+        file.status = 'error';
+      }
+    });
+  });
+
+  listen('infomsg', (event: any) => {
+    const infoMsg: any = event.payload;
+    selectedFiles.value.forEach((file) => {
+      if (file.filename === infoMsg.split('|')[0]) {
         file.status = 'completed';
       }
     });
+  });
+
+  listen('pgse2c', (event: any) => {
+    const pgs: any = event.payload;
+    progress.value = pgs;
   });
 
   listen('etocerr', (event: any) => {
@@ -40,16 +71,16 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      loading.value = true;
+      isProcessing.value = true;
       await invoke('etoc', {
         path: data.filePath,
       });
-      loading.value = false;
       ElMessage.success('convert done.');
     }
   }
 
   async function selectFile() {
+    isProcessing.value = false;
     const selected = await open({
       multiple: true,
       filters: [
@@ -74,26 +105,39 @@
 </script>
 
 <template>
-  <el-form v-loading="loading" element-loading-text="Loading..." :model="form">
+  <el-form :model="form">
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="excelTocsv()">Convert</el-button>
     </el-form-item>
   </el-form>
-  <el-table :data="selectedFiles" height="250" style="width: 100%">
-    <el-table-column prop="filename" label="file"></el-table-column>
-    <el-table-column label="status">
+  <el-table :data="selectedFiles" height="330" style="width: 100%">
+    <el-table-column prop="filename" label="file" width="480"></el-table-column>
+    <el-table-column
+      prop="status"
+      label="status"
+      :filters="[
+        { text: 'x', value: 'error' },
+        { text: '√', value: 'completed' },
+      ]"
+      :filter-method="filterHandler"
+      width="120"
+    >
       <template #default="scope">
         <ElIcon v-if="scope.row.status === 'awaiting'" class="is-loading">
           <Loading />
         </ElIcon>
-        <ElIcon v-else-if="scope.row.status === 'completed'">
-          <Check />
+        <ElIcon v-else-if="scope.row.status === 'completed'" color="#00CD66">
+          <Select />
+        </ElIcon>
+        <ElIcon v-else-if="scope.row.status === 'error'" color="#FF0000">
+          <CloseBold />
         </ElIcon>
         <!-- <span>{{ scope.row.status }}</span> -->
       </template>
     </el-table-column>
   </el-table>
+  <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>
 
 <style>

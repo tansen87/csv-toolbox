@@ -55,6 +55,8 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
         separator.push(sep_u8);
     }
 
+    let mut count: usize = 0;
+    let file_len = vec_path.len();
     let mut schema = Schema::new();
 
     for file in vec_path.iter() 
@@ -65,7 +67,7 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
             .finish() {
                 Ok(df) => df,
                 Err(err) => {
-                    let err_msg = format!("error: {} | {}", file, err);
+                    let err_msg = format!("{}| {}", file, err);
                     window.emit("readerr", err_msg)?;
                     return Err(Box::new(err));
                 }
@@ -88,12 +90,17 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
         let rows = df.shape().0;
         if rows < 104_0000 {
             write_xlsx(df, dest)?;
-            let convert_msg = format!("{}|done", file);
-            window.emit("convertmsg", convert_msg)?;
+            let info_msg = format!("{}|done.", file);
+            window.emit("infomsg", info_msg)?;
         } else {
-            let rows_msg = format!("{} - {}, cannot converted.", file, rows);
+            let rows_msg = format!("{}| - {}, cannot converted.", file, rows);
             window.emit("rowserr", rows_msg)?;
         }
+
+        count += 1;
+        let progress = (count as f32) / (file_len as f32) * 100.0;
+        let progress_s = format!("{progress:.0}");
+        window.emit("pgsc2x", progress_s)?;
     }
     Ok(())
 }

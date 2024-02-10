@@ -16,6 +16,9 @@ fn count_rows(path: String, sep: String, window: tauri::Window) -> Result<Vec<St
     }
     let vec_path: Vec<&str> = path.split(',').collect();
     let mut vec_file = Vec::new();
+    let mut countf: usize = 0;
+    let file_len = vec_path.len();
+
     for file in vec_path.iter() {
         let mut rdr = csv::ReaderBuilder::new()
             .delimiter(separator[0])
@@ -32,8 +35,13 @@ fn count_rows(path: String, sep: String, window: tauri::Window) -> Result<Vec<St
         }
         let filename = Path::new(file).file_name().unwrap().to_str().unwrap();
         let cntmsg = format!("{}|{}", filename, count);
-        window.emit("cntmsg", cntmsg.clone())?;
+        window.emit("infomsg", cntmsg.clone())?;
         vec_file.push(cntmsg);
+
+        countf += 1;
+        let progress = (countf as f32) / (file_len as f32) * 100.0;
+        let progress_s = format!("{progress:.0}");
+        window.emit("pgscount", progress_s)?;
     }
 
     Ok(vec_file)

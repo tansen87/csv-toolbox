@@ -6,7 +6,16 @@
   import { ElMessage } from 'element-plus';
 
   // const tableData = ref([]);
+  const isProcessing = ref(false);
+  const progress = ref(0);
   const selectedFiles = ref([]);
+  const customColors = [
+    { color: '#98FB98', percentage: 20 },
+    { color: '#7CFC00', percentage: 40 },
+    { color: '#7FFF00', percentage: 60 },
+    { color: '#ADFF2F', percentage: 80 },
+    { color: '#9ACD32', percentage: 100 },
+  ];
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -21,13 +30,18 @@
     ElMessage.error(countErrmsg);
   });
 
-  listen('cntmsg', (event: any) => {
-    const cntmsg: any = event.payload;
+  listen('infomsg', (event: any) => {
+    const infoMsg: any = event.payload;
     selectedFiles.value.forEach((file) => {
-      if (file.filename.split('\\').pop() === cntmsg.split('|')[0]) {
-        file.status = cntmsg.split('|')[1];
+      if (file.filename.split('\\').pop() === infoMsg.split('|')[0]) {
+        file.status = infoMsg.split('|')[1];
       }
     });
+  });
+
+  listen('pgscount', (event: any) => {
+    const pgs: any = event.payload;
+    progress.value = pgs;
   });
 
   // count csv rows
@@ -36,7 +50,7 @@
       ElMessage.warning('未选择csv文件');
       return;
     }
-
+    isProcessing.value = true;
     ElMessage.info('waiting...');
     await invoke('countr', {
       path: data.filePath,
@@ -54,6 +68,7 @@
   }
 
   async function selectFile() {
+    isProcessing.value = false;
     const selected = await open({
       multiple: true,
       filters: [
@@ -94,9 +109,9 @@
       <el-table-column prop="File" label="File" width="400"></el-table-column>
       <el-table-column prop="Rows" label="Rows" width="200"></el-table-column>
     </el-table> -->
-    <el-table :data="selectedFiles" height="250" style="width: 100%">
-      <el-table-column prop="filename" label="file"></el-table-column>
-      <el-table-column label="rows">
+    <el-table :data="selectedFiles" height="240" style="width: 100%">
+      <el-table-column prop="filename" label="file" width="480"></el-table-column>
+      <el-table-column label="rows" width="120">
         <template #default="scope">
           <ElIcon v-if="scope.row.status === ''" class="is-loading">
             <Loading />
@@ -106,6 +121,7 @@
       </el-table-column>
     </el-table>
   </el-form>
+  <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>
 
 <style>

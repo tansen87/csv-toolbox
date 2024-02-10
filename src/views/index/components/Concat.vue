@@ -3,10 +3,19 @@
   import { open } from '@tauri-apps/api/dialog';
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
-  import { ElMessage } from 'element-plus';
+  import { ElMessage, ElIcon } from 'element-plus';
+  import { CloseBold, Select } from '@element-plus/icons-vue';
 
   const selectedFiles = ref([]);
-  const loading = ref(false);
+  const isProcessing = ref(false);
+  const progress = ref(0);
+  const customColors = [
+    { color: '#98FB98', percentage: 20 },
+    { color: '#7CFC00', percentage: 40 },
+    { color: '#7FFF00', percentage: 60 },
+    { color: '#ADFF2F', percentage: 80 },
+    { color: '#9ACD32', percentage: 100 },
+  ];
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -15,6 +24,20 @@
     sep: '|',
     column:
       '借方发生额,贷方发生额,借方发生额-外币,贷方发生额-外币,借方数量,贷方数量,期初数-外币,期初数,期末数外币,期末数,期初数量,期末数量',
+  });
+
+  listen('pgscat', (event: any) => {
+    const pgs: any = event.payload;
+    progress.value = pgs;
+  });
+
+  listen('infomsg', (event: any) => {
+    const infoMsg: any = event.payload;
+    selectedFiles.value.forEach((file) => {
+      if (file.filename === infoMsg.split('|')[0]) {
+        file.status = 'completed';
+      }
+    });
   });
 
   listen('concatErr', (event: any) => {
@@ -36,18 +59,18 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      loading.value = true;
+      isProcessing.value = true;
       await invoke('concat', {
         path: data.filePath,
         sep: form.sep,
         column: form.column,
       });
-      loading.value = false;
       ElMessage.success('concat done.');
     }
   }
 
   async function selectFile() {
+    isProcessing.value = false;
     const selected = await open({
       multiple: true,
       filters: [
@@ -61,8 +84,8 @@
       // user selected multiple files
       data.filePath = selected.toString();
       const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
-      selectedFiles.value = nonEmptyRows.map((row: any) => {
-        return { filename: row };
+      selectedFiles.value = nonEmptyRows.map((file: any) => {
+        return { filename: file, status: 'awaiting' };
       });
     } else if (selected === null) {
       // user cancelled the selection
@@ -75,7 +98,7 @@
 </script>
 
 <template>
-  <el-form v-loading="loading" element-loading-text="Concating..." :model="form">
+  <el-form :model="form">
     <el-form-item label="Separator">
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
@@ -92,8 +115,23 @@
     </el-form-item>
   </el-form>
   <el-table :data="selectedFiles" height="250" style="width: 100%">
-    <el-table-column prop="filename" label="File"></el-table-column>
+    <el-table-column prop="filename" label="file" width="480"></el-table-column>
+    <el-table-column prop="status" label="status" width="120">
+      <template #default="scope">
+        <ElIcon v-if="scope.row.status === 'awaiting'" class="is-loading">
+          <Loading />
+        </ElIcon>
+        <ElIcon v-else-if="scope.row.status === 'completed'" color="#00CD66">
+          <Select />
+        </ElIcon>
+        <ElIcon v-else-if="scope.row.status === 'error'" color="#FF0000">
+          <CloseBold />
+        </ElIcon>
+        <!-- <span>{{ scope.row.status }}</span> -->
+      </template>
+    </el-table-column>
   </el-table>
+  <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>
 
 <style>

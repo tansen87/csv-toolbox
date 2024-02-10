@@ -170,6 +170,8 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
     let vec_path: Vec<&str> = path.split(',').collect();
     let vec_col: Vec<&str> = column.split(',').collect();
     let mut lfs = Vec::new();
+    let mut count: usize = 0;
+    let file_len = vec_path.len();
 
     // Convert column field datatype to float64
     let mut schema = Schema::new();
@@ -206,6 +208,14 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
             .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
             .finish()?;
         lfs.push(tmp_lf);
+
+        let info_msg = format!("{}|done", file);
+        window.emit("infomsg", info_msg)?;
+
+        count += 1;
+        let progress = (count as f32) / (file_len as f32) * 100.0;
+        let progress_s = format!("{progress:.0}");
+        window.emit("pgscat", progress_s)?;
     }
 
     // concat dataframe
@@ -224,7 +234,7 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
     Ok(())
 }
 
-fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<dyn Error>> {
+fn concat_specific(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* merge sepecific columns */
     let mut separator = Vec::new();
     if sep.clone() == "\\t" {
@@ -237,6 +247,8 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
     let vec_path: Vec<&str> = path.split(',').collect();
     let vec_col: Vec<&str> = column.split(',').collect();
     let mut lfs = Vec::new();
+    let mut count: usize = 0;
+    let file_len = vec_path.len();
 
     let mut schema = Schema::new();
     for file in vec_path.iter() 
@@ -251,6 +263,14 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
             .finish()?
             .select([cols(vec_col.clone())]);
         lfs.push(tmp_lf);
+
+        let info_msg = format!("{}|done", file);
+        window.emit("infomsg", info_msg)?;
+
+        count += 1;
+        let progress = (count as f32) / (file_len as f32) * 100.0;
+        let progress_s = format!("{progress:.0}");
+        window.emit("pgscatsp", progress_s)?;
     }
 
     // concat specific dataframe
@@ -308,7 +328,8 @@ pub async fn concat(path: String, sep: String, column: String, window: tauri::Wi
 
 #[tauri::command]
 pub async fn concatsp(path: String, sep: String, column: String, window: tauri::Window) {
-    match async { concat_specific(path, sep, column) }.await {
+    let cat_window = window.clone();
+    match async { concat_specific(path, sep, column, cat_window) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("concat_sepecific error: {}", error);
