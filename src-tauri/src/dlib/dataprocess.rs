@@ -15,7 +15,13 @@ use polars::{
 fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn Error>> {
     /*  Write dataframe to xlsx */
     let file_path = Path::new(&path);
-    let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
+    let file_name = match file_path.file_name() {
+        Some(name) => match name.to_str() {
+            Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
+            None => vec![],
+        },
+        None => vec![],
+    };
     let mut workbook = rust_xlsxwriter::Workbook::new();
     let worksheet = workbook.add_worksheet();
 
@@ -42,44 +48,96 @@ fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dy
             }
         }
     }
+
     let current_time = chrono::Local::now();
-    let file_path_copy = file_path.parent().unwrap().to_string_lossy();
+    let file_path_copy = file_path.parent()
+        .map(|parent| parent.to_string_lossy())
+        .unwrap_or_else(|| "Default Path".to_string().into());
     let mut vec_output = Vec::new();
     if fn_type == "pivot" {
-        let output_path = format!("{}/{}_pivot {}.xlsx", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        let output_path = format!(
+            "{}/{}_pivot {}.xlsx",
+            file_path_copy,
+            file_name[0],
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
         vec_output.push(output_path);
     } else if fn_type == "unique" {
-        let output_path = format!("{}/{}_unique {}.xlsx", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        let output_path = format!(
+            "{}/{}_unique {}.xlsx",
+            file_path_copy,
+            file_name[0],
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
         vec_output.push(output_path);
     } else if fn_type == "concat" {
-        let output_path = format!("{}/{}_concat {}.xlsx", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        let output_path = format!(
+            "{}/{}_concat {}.xlsx",
+            file_path_copy,
+            file_name[0],
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
         vec_output.push(output_path);
     } else {
-        let output_path = format!("{}/{} {}.xlsx", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        let output_path = format!(
+            "{}/{} {}.xlsx",
+            file_path_copy,
+            file_name[0],
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
         vec_output.push(output_path);
     }
     workbook.save(vec_output[0].clone())?;
+
     Ok(())
 }
 
 fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn Error>> {
     /*  Write dataframe to csv */
     let file_path = Path::new(&path);
-    let file_name: Vec<&str> = file_path.file_name().unwrap().to_str().unwrap().split('.').collect();
+    let file_name = match file_path.file_name() {
+        Some(name) => match name.to_str() {
+            Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
+            None => vec![],
+        },
+        None => vec![],
+    };
     let current_time = chrono::Local::now();
-    let file_path_copy = file_path.parent().unwrap().to_string_lossy();
+    let file_path_copy = file_path.parent()
+        .map(|parent| parent.to_string_lossy())
+        .unwrap_or_else(|| "Default Path".to_string().into());
     let mut vec_output = Vec::new();
+
     if fn_type == "concat" {
-        let output_path = format!("{}/{}_concat {}.csv", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        let output_path = format!(
+            "{}/{}_concat {}.csv",
+            file_path_copy,
+            file_name[0],
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
+        vec_output.push(output_path);
+    } else if fn_type == "pivot" {
+        let output_path = format!(
+            "{}/{}_pivot {}.csv",
+            file_path_copy,
+            file_name[0],
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
         vec_output.push(output_path);
     } else {
-        let output_path = format!("{}/{} {}.csv", file_path_copy, file_name[0], current_time.format("%Y-%m-%d %H.%M.%S"));
+        let output_path = format!(
+            "{}/{} {}.csv",
+            file_path_copy,
+            file_name[0],
+            current_time.format("%Y-%m-%d %H.%M.%S")
+        );
         vec_output.push(output_path);
     }
     let mut file = File::create(vec_output[0].clone())?;
     CsvWriter::new(&mut file)
         .with_separator(b'|')
         .finish(&mut df.clone())?;
+
     Ok(())
 }
 
@@ -119,7 +177,7 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
         ]).collect()?;
     
     let fn_type = "pivot".to_string();
-    write_xlsx(gb.clone(), path, fn_type)?;
+    write_csv(gb.clone(), path, fn_type)?;
 
     Ok(())
 }
