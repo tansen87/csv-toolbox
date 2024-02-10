@@ -6,7 +6,7 @@
   import { ElMessage } from 'element-plus';
 
   const getCSVMsg = ref('');
-  const loading = ref(false);
+  const isProcessing = ref(false);
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -30,18 +30,19 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      loading.value = true;
+      isProcessing.value = true;
       await invoke('unique', {
         path: data.filePath,
         sep: form.sep,
         column: form.column,
       });
-      loading.value = false;
+      isProcessing.value = false;
       ElMessage.success('unique done.');
     }
   }
 
   async function selectFile() {
+    isProcessing.value = false;
     const selected = await open({
       multiple: false,
       filters: [
@@ -66,7 +67,7 @@
 </script>
 
 <template>
-  <el-form v-loading="loading" element-loading-text="Loading..." :model="form">
+  <el-form :model="form">
     <el-form-item label="Separator">
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
@@ -83,4 +84,11 @@
     </el-form-item>
   </el-form>
   <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
+  <el-progress
+    v-if="isProcessing"
+    :percentage="50"
+    :indeterminate="true"
+    status="warning"
+    :duration="5"
+  />
 </template>
