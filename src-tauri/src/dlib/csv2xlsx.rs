@@ -39,6 +39,7 @@ fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
         }
     }
     workbook.save(dest)?;
+
     Ok(())
 }
 
@@ -102,6 +103,7 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
         let progress_s = format!("{progress:.0}");
         window.emit("pgsc2x", progress_s)?;
     }
+
     Ok(())
 }
 
