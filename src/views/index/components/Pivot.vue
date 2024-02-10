@@ -6,7 +6,7 @@
   import { ElMessage } from 'element-plus';
 
   const getCSVMsg = ref('');
-  const loading = ref(false);
+  const isProcessing = ref(false);
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -31,19 +31,20 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      loading.value = true;
+      isProcessing.value = true;
       await invoke('pivot', {
         path: data.filePath,
         sep: form.sep,
         index: form.index,
         values: form.values,
       });
-      loading.value = false;
+      isProcessing.value = false;
       ElMessage.success('pivot done.');
     }
   }
 
   async function selectFile() {
+    isProcessing.value = false;
     const selected = await open({
       multiple: false,
       filters: [
@@ -68,7 +69,7 @@
 </script>
 
 <template>
-  <el-form v-loading="loading" element-loading-text="Pivoting..." :model="form">
+  <el-form :model="form">
     <el-form-item label="Sepa">
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
@@ -88,6 +89,13 @@
     </el-form-item>
   </el-form>
   <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
+  <el-progress
+    v-if="isProcessing"
+    :percentage="50"
+    :indeterminate="true"
+    status="warning"
+    :duration="3"
+  />
 </template>
 
 <style>
