@@ -1,13 +1,16 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
 
-use dlib::data4mysql;
-use dlib::dataprocess;
-use dlib::excel2csv;
-use dlib::csv2xlsx;
-use dlib::count;
-use dlib::filter;
-use dlib::sqlp;
+use dlib::{
+    data4mysql,
+    dataprocess,
+    excel2csv,
+    csv2xlsx,
+    count,
+    filter,
+    sqlp,
+    rename
+};
 
 fn main() {
     tauri::Builder::default()
@@ -22,6 +25,8 @@ fn main() {
             count::countr,
             filter::filter,
             sqlp::query,
+            rename::get,
+            rename::rename,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
