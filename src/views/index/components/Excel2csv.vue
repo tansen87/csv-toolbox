@@ -33,9 +33,10 @@
     column: '',
   });
 
-  listen('rowcnterr', (event: any) => {
+  listen('row_count_err', (event: any) => {
     const msg: any = event.payload;
-    ElMessage.warning(msg);
+    const warning_msg = 'row_count_err: ' + event.payload;
+    ElMessage.warning(warning_msg);
     selectedFiles.value.forEach((file) => {
       if (file.filename === msg.split('|')[0]) {
         file.status = 'error';
@@ -43,22 +44,22 @@
     });
   });
 
-  listen('infomsg', (event: any) => {
-    const infoMsg: any = event.payload;
+  listen('e2c_msg', (event: any) => {
+    const e2cMsg: any = event.payload;
     selectedFiles.value.forEach((file) => {
-      if (file.filename === infoMsg.split('|')[0]) {
+      if (file.filename === e2cMsg.split('|')[0]) {
         file.status = 'completed';
       }
     });
   });
 
-  listen('pgse2c', (event: any) => {
+  listen('e2c_progress', (event: any) => {
     const pgs: any = event.payload;
     progress.value = pgs;
   });
 
-  listen('etocerr', (event: any) => {
-    const error: any = event.payload;
+  listen('e2c_err', (event: any) => {
+    const error: any = 'e2c_err: ' + event.payload;
     ElMessage.error(error);
   });
 
@@ -139,9 +140,3 @@
   </el-table>
   <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>
-
-<style>
-  .el-input {
-    width: 500px;
-  }
-</style>

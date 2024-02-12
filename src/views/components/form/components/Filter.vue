@@ -25,20 +25,25 @@
     condition: '银行存款|应收账款',
   });
 
-  listen('ymlerr', (event: any) => {
+  listen('yml_err', (event: any) => {
     const error: any = event.payload;
-    const ymlerr: any = 'read yaml error: ' + error;
+    const ymlerr: any = 'yml_err error: ' + error;
     ElMessage.error(ymlerr);
   });
-  listen('equalErr', (event: any) => {
+  listen('equal_err', (event: any) => {
     const error: any = event.payload;
-    const equalerr: any = 'equal error: ' + error;
+    const equalerr: any = 'equal_err error: ' + error;
     ElMessage.error(equalerr);
   });
-  listen('containsErr', (event: any) => {
+  listen('contains_err', (event: any) => {
     const error: any = event.payload;
-    const containserr: any = 'contains error: ' + error;
+    const containserr: any = 'contains_err error: ' + error;
     ElMessage.error(containserr);
+  });
+  listen('startswith_err', (event: any) => {
+    const error: any = event.payload;
+    const startswitherr: any = 'startswith_err error: ' + error;
+    ElMessage.error(startswitherr);
   });
 
   // filter data
@@ -145,9 +150,3 @@
   <p />
   <el-text class="mx-1" type="warning">{{ getYamlMsg }}</el-text>
 </template>
-
-<style>
-  .el-input {
-    width: 500px;
-  }
-</style>

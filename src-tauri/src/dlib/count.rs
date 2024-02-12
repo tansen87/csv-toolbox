@@ -19,7 +19,8 @@ fn count_rows(path: String, sep: String, window: tauri::Window) -> Result<Vec<St
     let mut countf: usize = 0;
     let file_len = vec_path.len();
 
-    for file in vec_path.iter() {
+    for file in vec_path.iter()
+    {
         let mut rdr = csv::ReaderBuilder::new()
             .delimiter(separator[0])
             .has_headers(true)
@@ -34,14 +35,14 @@ fn count_rows(path: String, sep: String, window: tauri::Window) -> Result<Vec<St
             count += 1;
         }
         let filename = Path::new(file).file_name().unwrap().to_str().unwrap();
-        let cntmsg = format!("{}|{}", filename, count);
-        window.emit("infomsg", cntmsg.clone())?;
-        vec_file.push(cntmsg);
+        let count_msg = format!("{}|{}", filename, count);
+        window.emit("count_msg", count_msg.clone())?;
+        vec_file.push(count_msg);
 
         countf += 1;
         let progress = (countf as f32) / (file_len as f32) * 100.0;
         let progress_s = format!("{progress:.0}");
-        window.emit("pgscount", progress_s)?;
+        window.emit("count_progress", progress_s)?;
     }
 
     Ok(vec_file)
@@ -49,14 +50,15 @@ fn count_rows(path: String, sep: String, window: tauri::Window) -> Result<Vec<St
 
 #[tauri::command]
 pub async fn countr(path: String, sep: String, window: tauri::Window) -> Vec<String> {
-    let cnt_window = window.clone();
-    let cnt = match async { count_rows(path, sep, cnt_window) }.await {
+    let count_window = window.clone();
+    let cnt = match async { count_rows(path, sep, count_window) }.await {
         Ok(result) => result,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            window.emit("countErr", &error.to_string()).unwrap();
+            eprintln!("count_rows error:: {error}");
+            window.emit("count_err", &error.to_string()).unwrap();
             return Vec::new();
         }
     };
+
     cnt
 }

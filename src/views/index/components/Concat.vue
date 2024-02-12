@@ -26,27 +26,27 @@
       '借方发生额,贷方发生额,借方发生额-外币,贷方发生额-外币,借方数量,贷方数量,期初数-外币,期初数,期末数外币,期末数,期初数量,期末数量',
   });
 
-  listen('pgscat', (event: any) => {
+  listen('cat_progress', (event: any) => {
     const pgs: any = event.payload;
     progress.value = pgs;
   });
 
-  listen('infomsg', (event: any) => {
-    const infoMsg: any = event.payload;
+  listen('cat_msg', (event: any) => {
+    const catMsg: any = event.payload;
     selectedFiles.value.forEach((file) => {
-      if (file.filename === infoMsg.split('|')[0]) {
+      if (file.filename === catMsg.split('|')[0]) {
         file.status = 'completed';
       }
     });
   });
 
-  listen('concatErr', (event: any) => {
-    const error: any = event.payload;
+  listen('cat_err', (event: any) => {
+    const error: any = 'cat_err: ' + event.payload;
     ElMessage.error(error);
   });
 
-  listen('readerr', (event: any) => {
-    const error: any = event.payload;
+  listen('read_err', (event: any) => {
+    const error: any = 'read_err: ' + event.payload;
     ElMessage.error(error);
   });
 
@@ -81,17 +81,14 @@
       ],
     });
     if (Array.isArray(selected)) {
-      // user selected multiple files
       data.filePath = selected.toString();
       const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
       selectedFiles.value = nonEmptyRows.map((file: any) => {
         return { filename: file, status: 'awaiting' };
       });
     } else if (selected === null) {
-      // user cancelled the selection
       return;
     } else {
-      // user selected a single file
       data.filePath = selected;
     }
   }
@@ -133,9 +130,3 @@
   </el-table>
   <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>
-
-<style>
-  .el-input {
-    width: 500px;
-  }
-</style>

@@ -54,7 +54,8 @@ fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dy
         .map(|parent| parent.to_string_lossy())
         .unwrap_or_else(|| "Default Path".to_string().into());
     let mut vec_output = Vec::new();
-    if fn_type == "pivot" {
+    if fn_type == "pivot" 
+    {
         let output_path = format!(
             "{}/{}_pivot {}.xlsx",
             file_path_copy,
@@ -62,7 +63,9 @@ fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dy
             current_time.format("%Y-%m-%d %H.%M.%S")
         );
         vec_output.push(output_path);
-    } else if fn_type == "unique" {
+    } 
+    else if fn_type == "unique" 
+    {
         let output_path = format!(
             "{}/{}_unique {}.xlsx",
             file_path_copy,
@@ -70,7 +73,9 @@ fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dy
             current_time.format("%Y-%m-%d %H.%M.%S")
         );
         vec_output.push(output_path);
-    } else if fn_type == "concat" {
+    } 
+    else if fn_type == "concat" 
+    {
         let output_path = format!(
             "{}/{}_concat {}.xlsx",
             file_path_copy,
@@ -78,7 +83,9 @@ fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dy
             current_time.format("%Y-%m-%d %H.%M.%S")
         );
         vec_output.push(output_path);
-    } else {
+    } 
+    else 
+    {
         let output_path = format!(
             "{}/{} {}.xlsx",
             file_path_copy,
@@ -108,7 +115,8 @@ fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn
         .unwrap_or_else(|| "Default Path".to_string().into());
     let mut vec_output = Vec::new();
 
-    if fn_type == "concat" {
+    if fn_type == "concat" 
+    {
         let output_path = format!(
             "{}/{}_concat {}.csv",
             file_path_copy,
@@ -116,7 +124,9 @@ fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn
             current_time.format("%Y-%m-%d %H.%M.%S")
         );
         vec_output.push(output_path);
-    } else if fn_type == "pivot" {
+    } 
+    else if fn_type == "pivot" 
+    {
         let output_path = format!(
             "{}/{}_pivot {}.csv",
             file_path_copy,
@@ -124,7 +134,9 @@ fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn
             current_time.format("%Y-%m-%d %H.%M.%S")
         );
         vec_output.push(output_path);
-    } else {
+    } 
+    else 
+    {
         let output_path = format!(
             "{}/{} {}.csv",
             file_path_copy,
@@ -249,7 +261,7 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
                 Ok(df ) => df,
                 Err(err) => {
                     let err_msg = format!("error: {} | {}", file, err);
-                    window.emit("readerr", err_msg)?;
+                    window.emit("read_err", err_msg)?;
                     return Err(Box::new(err));
                 }
             };
@@ -268,12 +280,12 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
         lfs.push(tmp_lf);
 
         let info_msg = format!("{}|done", file);
-        window.emit("infomsg", info_msg)?;
+        window.emit("cat_msg", info_msg)?;
 
         count += 1;
         let progress = (count as f32) / (file_len as f32) * 100.0;
         let progress_s = format!("{progress:.0}");
-        window.emit("pgscat", progress_s)?;
+        window.emit("cat_progress", progress_s)?;
     }
 
     // concat dataframe
@@ -322,13 +334,13 @@ fn concat_specific(path: String, sep: String, column: String, window: tauri::Win
             .select([cols(vec_col.clone())]);
         lfs.push(tmp_lf);
 
-        let info_msg = format!("{}|done", file);
-        window.emit("infomsg", info_msg)?;
+        let catsp_msg = format!("{}|done", file);
+        window.emit("catsp_msg", catsp_msg)?;
 
         count += 1;
         let progress = (count as f32) / (file_len as f32) * 100.0;
         let progress_s = format!("{progress:.0}");
-        window.emit("pgscatsp", progress_s)?;
+        window.emit("catsp_progress", progress_s)?;
     }
 
     // concat specific dataframe
@@ -352,8 +364,8 @@ pub async fn pivot(path: String, sep: String, index: String, values: String, win
     match async { groupby_sum(path, sep, index, values) }.await {
         Ok(result) => result,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            window.emit("pivotErr", &error.to_string()).unwrap();
+            eprintln!("groupby_sum error: {error}");
+            window.emit("pivot_err", &error.to_string()).unwrap();
             error.to_string();
         }
     };
@@ -364,8 +376,8 @@ pub async fn unique(path: String, sep: String, column: String, window: tauri::Wi
     match async { unique_value(path, sep, column) }.await {
         Ok(result) => result,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            window.emit("uniqueErr", &error.to_string()).unwrap();
+            eprintln!("unique error: {error}");
+            window.emit("unique_err", &error.to_string()).unwrap();
             error.to_string();
         }
     };
@@ -377,8 +389,8 @@ pub async fn concat(path: String, sep: String, column: String, window: tauri::Wi
     match async { concat_all(path, sep, column, cat_window) }.await {
         Ok(result) => result,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            window.emit("concatErr", &error.to_string()).unwrap();
+            eprintln!("concat error: {error}");
+            window.emit("cat_err", &error.to_string()).unwrap();
             error.to_string();
         }
     };
@@ -390,8 +402,8 @@ pub async fn concatsp(path: String, sep: String, column: String, window: tauri::
     match async { concat_specific(path, sep, column, cat_window) }.await {
         Ok(result) => result,
         Err(error) => {
-            eprintln!("concat_sepecific error: {}", error);
-            window.emit("catspErr", &error.to_string()).unwrap();
+            eprintln!("concat_sepecific error: {error}");
+            window.emit("catsp_err", &error.to_string()).unwrap();
             error.to_string();
         }
     };

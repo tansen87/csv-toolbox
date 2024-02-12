@@ -24,22 +24,22 @@
     sep: '|',
   });
 
-  listen('countErr', (event: any) => {
+  listen('count_err', (event: any) => {
     const error: any = event.payload;
-    const countErrmsg: any = 'count error: ' + error;
-    ElMessage.error(countErrmsg);
+    const countErrMsg: any = 'count error: ' + error;
+    ElMessage.error(countErrMsg);
   });
 
-  listen('infomsg', (event: any) => {
-    const infoMsg: any = event.payload;
+  listen('count_msg', (event: any) => {
+    const countMsg: any = event.payload;
     selectedFiles.value.forEach((file) => {
-      if (file.filename.split('\\').pop() === infoMsg.split('|')[0]) {
-        file.status = infoMsg.split('|')[1];
+      if (file.filename.split('\\').pop() === countMsg.split('|')[0]) {
+        file.status = countMsg.split('|')[1];
       }
     });
   });
 
-  listen('pgscount', (event: any) => {
+  listen('count_progress', (event: any) => {
     const pgs: any = event.payload;
     progress.value = pgs;
   });
@@ -123,9 +123,3 @@
   </el-form>
   <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>
-
-<style>
-  .el-input {
-    width: 500px;
-  }
-</style>

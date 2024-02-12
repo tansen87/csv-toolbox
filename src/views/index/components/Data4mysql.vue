@@ -22,12 +22,12 @@
     ElMessage.info(check);
   });
 
-  listen('prepareErr', (event: any) => {
-    const error: any = event.payload;
+  listen('prepare_err', (event: any) => {
+    const error: any = 'prepare_err: ' + event.payload;
     ElMessage.error(error);
   });
-  listen('executeErr', (event: any) => {
-    const error: any = event.payload;
+  listen('execute_err', (event: any) => {
+    const error: any = 'execute_err: ' + event.payload;
     ElMessage.error(error);
   });
 

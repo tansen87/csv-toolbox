@@ -8,16 +8,10 @@ use std::{
 use sqlx::{MySqlPool, Row, Column};
 use serde::{Deserialize, Serialize};
 use futures::TryStreamExt;
-// use tauri::api::file;
-
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
     url: String,
-    // save_path: String,
-    // replace_column: String,
-    // general_ledger_table: String,
-    // trial_balance_table: String,
     project_name: Vec<String>,
 }
 
@@ -25,6 +19,7 @@ pub fn read_yaml(file_path: String) -> Result<Config, Box<dyn Error>> {
     let yaml_file = File::open(file_path)?;
     let yaml_reader = BufReader::new(yaml_file);
     let yaml: Config = serde_yaml::from_reader(yaml_reader)?;
+
     Ok(yaml)
 }
 
@@ -39,11 +34,9 @@ async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec<Str
             "SELECT DbName FROM deloitte.b_projectlist WHERE ProjectName = '{}'",
             name
         );
-        let unique_code = match sqlx::query(&sql_query_code).fetch_one(&pool).await 
-        {
+        let unique_code = match sqlx::query(&sql_query_code).fetch_one(&pool).await {
             Ok(result) => result,
-            Err(_) => 
-            {
+            Err(_) => {
                 // If the query fails, add the incorrect name to the list
                 incorrect_names.push(name.to_string());
                 continue;
@@ -54,26 +47,22 @@ async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec<Str
     }
 
     // Write the incorrect names to a text file
-    if !incorrect_names.is_empty() 
-    {
+    if !incorrect_names.is_empty() {
         let mut file = match File::create(
-            format!("{}/0_error_project.log", &epath)) 
-            {
+            format!("{}/0_error_project.log", &epath)) {
                 Ok(file) => file,
-                Err(e) => 
-                {
-                    eprintln!("Error creating file: {}", e);
-                    return Err(Box::new(e));
+                Err(error) => {
+                    eprintln!("Error creating file: {error}");
+                    return Err(Box::new(error));
                 }
             };
-        for name in incorrect_names 
-        {
-            if let Err(e) = writeln!(file, "{}", name) 
-            {
-                eprintln!("Error writing to file: {}", e);
+        for name in incorrect_names {
+            if let Err(error) = writeln!(file, "{}", name) {
+                eprintln!("Error writing to file: {error}");
             }
         }
     }
+
     Ok((vec_code, yaml))
 }
 
@@ -87,8 +76,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
         .open(format!("{}/2_logs.log", &epath))?;
     let mut gl_table = "".to_string();
     let mut tb_table = "".to_string();
-    for item in etable.split("&") 
-    {
+    for item in etable.split("&") {
         if item == "凭证表" 
         {
             gl_table = item.to_string();
@@ -106,6 +94,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
             tb_table = item.to_string();
         }
     }
+
     // start query data
     for (idx, code) in vec_code.iter().enumerate()
     {
@@ -125,8 +114,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                 let col_num = rows.columns().len();
                 let mut vec_col_name: Vec<&str> = Vec::new();
                 let mut vec_col_type: Vec<String> = Vec::new();
-                for num in 0..col_num 
-                {
+                for num in 0..col_num {
                     vec_col_name.push(rows.column(num).name());
                     vec_col_type.push(rows.column(num).type_info().to_string())
                 }
@@ -143,8 +131,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                 log_file.write_all(check_done_log.as_bytes())?;
 
                 let folder_path = format!("{}\\{}", &epath, &filename);
-                if !folder_exists(&folder_path) 
-                {
+                if !folder_exists(&folder_path) {
                     std::fs::create_dir(&folder_path)?;
                 }
 
@@ -193,6 +180,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                     csv_writer_gl.serialize(vec_wtr_str)?;
                 }
                 csv_writer_gl.flush()?;
+
                 let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                 let out_gl = format!("{}\\{}_{}.csv", &folder_path, filename, &gl_table);
                 let out_gl_log = format!("{} => {}\n", &timestamp, out_gl);
@@ -205,8 +193,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                     let col_num = one_tb.columns().len();
                     let mut vec_col_name = Vec::new();
                     let mut vec_col_type = Vec::new();
-                    for num in 0..col_num 
-                    {
+                    for num in 0..col_num {
                         vec_col_name.push(one_tb.column(num).name());
                         vec_col_type.push(one_tb.column(num).type_info().to_string())
                     }
@@ -241,6 +228,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                     csv_writer_tb.serialize(vec_wtr_str)?;
                 }
                 csv_writer_tb.flush()?;
+
                 let out_tb = format!("{}\\{}_{}.csv", &folder_path, filename, &tb_table);
                 let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                 let out_tb_log = format!("{} => {}\n", &timestamp, out_tb);
@@ -276,6 +264,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
     let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
     let msg_done_log = format!("{} => {}\n", &timestamp, &msg_done);
     log_file.write_all(msg_done_log.as_bytes())?;
+
     Ok(())
 }
 
@@ -291,8 +280,8 @@ pub async fn download(etable: String, rcolumn: String, epath: String, file_path:
     let (vec_code, yaml) = match prepare_query_data(file_path, pre_epath).await {
         Ok((vec_code, yaml)) => (vec_code, yaml),
         Err(error) => {
-            eprintln!("Error: {}", error);
-            window_prep.emit("prepareErr", &error.to_string()).unwrap();
+            eprintln!("prepare_query_data error: {error}");
+            window_prep.emit("prepare_err", &error.to_string()).unwrap();
             return ();
         }
     };
@@ -300,8 +289,8 @@ pub async fn download(etable: String, rcolumn: String, epath: String, file_path:
     match execute_query_data(vec_code, yaml, etable, rcolumn, epath, window).await {
         Ok(result) => result,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            window_exec.emit("executeErr", &error.to_string()).unwrap();
+            eprintln!("execute_query_data error: {error}");
+            window_exec.emit("execute_err", &error.to_string()).unwrap();
             error.to_string();
         }
     };

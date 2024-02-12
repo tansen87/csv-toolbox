@@ -17,8 +17,8 @@
     values: '借方发生额,贷方发生额',
   });
 
-  listen('pivotErr', (event: any) => {
-    const error: any = event.payload;
+  listen('pivot_err', (event: any) => {
+    const error: any = 'pivot_err: ' + event.payload;
     ElMessage.error(error);
   });
 
@@ -55,13 +55,10 @@
       ],
     });
     if (Array.isArray(selected)) {
-      // user selected multiple files
       data.filePath = selected.toString();
     } else if (selected === null) {
-      // user cancelled the selection
       return;
     } else {
-      // user selected a single file
       data.filePath = selected;
     }
     getCSVMsg.value = selected.toString();
@@ -97,9 +94,3 @@
     :duration="3"
   />
 </template>
-
-<style>
-  .el-input {
-    width: 500px;
-  }
-</style>

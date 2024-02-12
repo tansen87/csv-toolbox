@@ -16,6 +16,7 @@ fn read_yaml(path: String) -> Result<Config, Box<dyn Error>> {
     let yaml_file = File::open(path)?;
     let yaml_reader = BufReader::new(yaml_file);
     let yaml: Config = serde_yaml::from_reader(yaml_reader)?;
+
     Ok(yaml)
 }
 
@@ -41,7 +42,8 @@ pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<Buf
     let current_time = chrono::Local::now();
     
     let mut vec_output = Vec::new();
-    if mode == "equal" {
+    if mode == "equal" 
+    {
         let output_path = format!(
             "{}/{}_equal {}.csv",
             path_parent.display(),
@@ -49,7 +51,9 @@ pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<Buf
             current_time.format("%Y-%m-%d %H.%M.%S")
         );
         vec_output.push(output_path);
-    } else if mode == "contains" {
+    } 
+    else if mode == "contains" 
+    {
         let output_path = format!(
             "{}/{}_contains {}.csv",
             path_parent.display(),
@@ -57,7 +61,9 @@ pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<Buf
             current_time.format("%Y-%m-%d %H.%M.%S")
         );
         vec_output.push(output_path);
-    } else if mode == "startswith" {
+    } 
+    else if mode == "startswith" 
+    {
         let output_path = format!(
             "{}/{}_startswith {}.csv",
             path_parent.display(),
@@ -173,30 +179,35 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
     if isinput {
         let vec_conditions: Vec<&str> = condition.split('|').collect();
         let vec_strings: Vec<String> = vec_conditions.iter().map(|&condition| condition.to_string()).collect();
-        if mode == "equal" {
+        if mode == "equal" 
+        {
             match async { equal_filter(path, sep, column, vec_strings) }.await {
                 Ok(result) => result,
                 Err(error) => {
-                    eprintln!("Error: {}", error);
-                    window.emit("equalErr", &error.to_string()).unwrap();
+                    eprintln!("equal_filter error: {error}");
+                    window.emit("equal_err", &error.to_string()).unwrap();
                     return ();
                 }
             };
-        } else if mode == "contains" {
+        } 
+        else if mode == "contains" 
+        {
             match async { contains_filter(path, sep, column, vec_strings) }.await {
                 Ok(result) => result,
                 Err(error) => {
-                    eprintln!("Error: {}", error);
-                    window.emit("containsErr", &error.to_string()).unwrap();
+                    eprintln!("contains_filter error: {error}");
+                    window.emit("contains_err", &error.to_string()).unwrap();
                     return ();
                 }
             };
-        } else if mode == "startswith" {
+        } 
+        else if mode == "startswith" 
+        {
             match async { startswith_filter(path, sep, column, vec_strings) }.await {
                 Ok(result) => result,
                 Err(error) => {
-                    eprintln!("Error: {}", error);
-                    window.emit("startswithErr", &error.to_string()).unwrap();
+                    eprintln!("startswith_filter error: {error}");
+                    window.emit("startswith_err", &error.to_string()).unwrap();
                     return ();
                 }
             }
@@ -209,7 +220,7 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
             Err(e) => {
                 let errmsg = format!("Error loading YAML: {:?}", e);
                 eprintln!("{}", errmsg);
-                yml_window.emit("ymlerr", errmsg).unwrap();
+                yml_window.emit("yml_err", errmsg).unwrap();
                 return ();
             },
         };
@@ -217,30 +228,35 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
             vec_cond.push(name.to_string())
         }
 
-        if mode == "equal" {
+        if mode == "equal" 
+        {
             match async { equal_filter(path, sep, column, vec_cond) }.await {
                 Ok(result) => result,
                 Err(error) => {
-                    eprintln!("Error: {}", error);
-                    window.emit("equalErr", &error.to_string()).unwrap();
+                    eprintln!("equal_filter error: {error}");
+                    window.emit("equal_err", &error.to_string()).unwrap();
                     return ();
                 }
             };
-        } else if mode == "contains" {
+        } 
+        else if mode == "contains" 
+        {
             match async { contains_filter(path, sep, column, vec_cond) }.await {
                 Ok(result) => result,
                 Err(error) => {
-                    eprintln!("Error: {}", error);
-                    window.emit("containsErr", &error.to_string()).unwrap();
+                    eprintln!("contains_filter error: {error}");
+                    window.emit("contains_err", &error.to_string()).unwrap();
                     return ();
                 }
             };
-        } else if mode == "startswith" {
+        } 
+        else if mode == "startswith" 
+        {
             match async { startswith_filter(path, sep, column, vec_cond) }.await {
                 Ok(result) => result,
                 Err(error) => {
-                    eprintln!("Error: {}", error);
-                    window.emit("startswithErr", &error.to_string()).unwrap();
+                    eprintln!("startswith_filter error: {error}");
+                    window.emit("startswith_err", &error.to_string()).unwrap();
                     return ();
                 }
             }

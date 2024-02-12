@@ -19,7 +19,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>Download Data</span>
+              <span>download</span>
             </div>
           </template>
           <Data4mysql />
@@ -29,7 +29,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>Pivot Data</span>
+              <span>pivot</span>
             </div>
           </template>
           <Pivot />
@@ -41,7 +41,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>Concat</span>
+              <span>concat</span>
             </div>
           </template>
           <Concat />
@@ -51,7 +51,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>Concat Specific</span>
+              <span>concat specific</span>
             </div>
           </template>
           <ConcatSpecific />
@@ -61,7 +61,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>Excel to Csv</span>
+              <span>excel to csv</span>
             </div>
           </template>
           <Excel2csv />
@@ -71,7 +71,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>Csv to xlsx</span>
+              <span>csv to xlsx</span>
             </div>
           </template>
           <Csv2xlsx />
@@ -81,7 +81,7 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
-              <span>Unique</span>
+              <span>unique</span>
             </div>
           </template>
           <Unique />

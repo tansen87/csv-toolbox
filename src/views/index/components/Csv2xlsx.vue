@@ -33,17 +33,17 @@
       '借方发生额,贷方发生额,借方发生额-外币,贷方发生额-外币,借方数量,贷方数量,期初数-外币,期初数,期末数外币,期末数,期初数量,期末数量',
   });
 
-  listen('ctoxerr', (event: any) => {
-    const error: any = event.payload;
+  listen('c2x_err', (event: any) => {
+    const error: any = 'c2x_err: ' + event.payload;
     ElMessage.error(error);
   });
 
-  listen('pgsc2x', (event: any) => {
+  listen('c2x_progress', (event: any) => {
     const pgs: any = event.payload;
     progress.value = pgs;
   });
 
-  listen('readerr', (event: any) => {
+  listen('read_err', (event: any) => {
     const error: any = event.payload;
     selectedFiles.value.forEach((file) => {
       if (file.filename === error.split('|')[0]) {
@@ -52,7 +52,7 @@
     });
   });
 
-  listen('rowserr', (event: any) => {
+  listen('rows_err', (event: any) => {
     const error: any = event.payload;
     selectedFiles.value.forEach((file) => {
       if (file.filename === error.split('|')[0]) {
@@ -61,10 +61,10 @@
     });
   });
 
-  listen('infomsg', (event: any) => {
-    const infoMsg: any = event.payload;
+  listen('c2x_msg', (event: any) => {
+    const c2xMsg: any = event.payload;
     selectedFiles.value.forEach((file) => {
-      if (file.filename === infoMsg.split('|')[0]) {
+      if (file.filename === c2xMsg.split('|')[0]) {
         file.status = 'completed';
       }
     });
@@ -159,9 +159,3 @@
   </el-table>
   <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>
-
-<style>
-  .el-input {
-    width: 500px;
-  }
-</style>

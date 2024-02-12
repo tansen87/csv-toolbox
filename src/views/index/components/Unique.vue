@@ -16,8 +16,8 @@
     column: '科目名称',
   });
 
-  listen('uniqueErr', (event: any) => {
-    const error: any = event.payload;
+  listen('unique_err', (event: any) => {
+    const error: any = 'unique_err: ' + event.payload;
     ElMessage.error(error);
   });
 
@@ -53,13 +53,10 @@
       ],
     });
     if (Array.isArray(selected)) {
-      // user selected multiple files
       data.filePath = selected.toString();
     } else if (selected === null) {
-      // user cancelled the selection
       return;
     } else {
-      // user selected a single file
       data.filePath = selected;
     }
     getCSVMsg.value = selected.toString();

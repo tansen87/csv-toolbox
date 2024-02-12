@@ -4,7 +4,7 @@
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
-  import { SuccessFilled, SwitchFilled } from '@element-plus/icons-vue';
+  import { SuccessFilled } from '@element-plus/icons-vue';
 
   const getCSVMsg = ref('');
   const tableData: any = ref([]);
@@ -129,7 +129,7 @@
         <template #default="{ row }">
           <el-input
             v-model="row.col2"
-            placeholder="Edit here"
+            placeholder="new header"
             class="custom-header-input"
             @blur="headerEdit(row)"
           ></el-input>
@@ -146,7 +146,7 @@
 
 <style>
   .custom-sep-form-item {
-    width: 100px !important;
+    width: 100px !important; /* 使用 !important 确保样式优先级 */
   }
   .custom-header-input {
     width: 275px !important; /* 使用 !important 确保样式优先级 */

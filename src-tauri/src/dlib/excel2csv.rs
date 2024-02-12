@@ -30,7 +30,7 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
         // check row count
         if row_count == 0 {
             let warning_msg = format!("{file}| is empty, skipping processing."); 
-            window.emit("rowcnterr", warning_msg)?;
+            window.emit("row_count_err", warning_msg)?;
             count += 1;
             continue;
         }
@@ -148,13 +148,13 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
 
         wtr.flush()?;
 
-        let info_msg = format!("{}|done", file);
-        window.emit("infomsg", info_msg)?;
+        let e2c_msg = format!("{}|done", file);
+        window.emit("e2c_msg", e2c_msg)?;
 
         count += 1;
         let progress = (count as f32) / (file_len as f32) * 100.0;
         let progress_s = format!("{progress:.0}");
-        window.emit("pgse2c", progress_s)?;
+        window.emit("e2c_progress", progress_s)?;
     }
 
     Ok(())
@@ -166,8 +166,8 @@ pub async fn etoc(path: String, window: tauri::Window) {
     match async { write_range(path, file_window) }.await {
         Ok(result) => result,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            window.emit("etocerr", &error.to_string()).unwrap();
+            eprintln!("write_range error: {error}");
+            window.emit("e2c_err", &error.to_string()).unwrap();
             error.to_string();
         }
     };

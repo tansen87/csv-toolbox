@@ -25,22 +25,22 @@
     column: '被审计单位,记账时间,凭证编号,科目编号,科目名称,借方发生额,贷方发生额',
   });
 
-  listen('pgscatsp', (event: any) => {
+  listen('catsp_progress', (event: any) => {
     const pgs: any = event.payload;
     progress.value = pgs;
   });
 
-  listen('infomsg', (event: any) => {
-    const infoMsg: any = event.payload;
+  listen('catsp_msg', (event: any) => {
+    const catspMsg: any = event.payload;
     selectedFiles.value.forEach((file) => {
-      if (file.filename === infoMsg.split('|')[0]) {
+      if (file.filename === catspMsg.split('|')[0]) {
         file.status = 'completed';
       }
     });
   });
 
-  listen('catspErr', (event: any) => {
-    const error: any = event.payload;
+  listen('catsp_err', (event: any) => {
+    const error: any = 'catsp_err: ' + event.payload;
     ElMessage.error(error);
   });
 
@@ -75,17 +75,14 @@
       ],
     });
     if (Array.isArray(selected)) {
-      // user selected multiple files
       data.filePath = selected.toString();
       const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
       selectedFiles.value = nonEmptyRows.map((file: any) => {
         return { filename: file, status: 'awaiting' };
       });
     } else if (selected === null) {
-      // user cancelled the selection
       return;
     } else {
-      // user selected a single file
       data.filePath = selected;
     }
   }
@@ -127,9 +124,3 @@
   </el-table>
   <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>
-
-<style>
-  .el-input {
-    width: 500px;
-  }
-</style>

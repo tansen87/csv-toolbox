@@ -69,7 +69,7 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
                 Ok(df) => df,
                 Err(err) => {
                     let err_msg = format!("{}| {}", file, err);
-                    window.emit("readerr", err_msg)?;
+                    window.emit("read_err", err_msg)?;
                     return Err(Box::new(err));
                 }
             };
@@ -91,17 +91,17 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
         let rows = df.shape().0;
         if rows < 104_0000 {
             write_xlsx(df, dest)?;
-            let info_msg = format!("{}|done.", file);
-            window.emit("infomsg", info_msg)?;
+            let c2x_msg = format!("{}|done.", file);
+            window.emit("c2x_msg", c2x_msg)?;
         } else {
             let rows_msg = format!("{}| - {}, cannot converted.", file, rows);
-            window.emit("rowserr", rows_msg)?;
+            window.emit("rows_err", rows_msg)?;
         }
 
         count += 1;
         let progress = (count as f32) / (file_len as f32) * 100.0;
         let progress_s = format!("{progress:.0}");
-        window.emit("pgsc2x", progress_s)?;
+        window.emit("c2x_progress", progress_s)?;
     }
 
     Ok(())
@@ -113,8 +113,8 @@ pub async fn ctox(path: String, sep: String, column: String, window: tauri::Wind
     match async { write_range(path, sep, column, copy_window) }.await {
         Ok(result) => result,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            window.emit("ctoxerr", &error.to_string()).unwrap();
+            eprintln!("write_range error: {error}");
+            window.emit("c2x_err", &error.to_string()).unwrap();
             error.to_string();
         }
     };
