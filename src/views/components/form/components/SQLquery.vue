@@ -98,7 +98,7 @@
       <el-button type="success" @click="countData()">Query</el-button>
     </el-form-item>
   </el-form>
-  <el-table :data="selectedFiles" height="250" style="width: 100%">
+  <el-table :data="selectedFiles" height="280" style="width: 100%">
     <el-table-column prop="filename" label="File"></el-table-column>
   </el-table>
 </template>

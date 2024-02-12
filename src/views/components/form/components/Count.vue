@@ -109,7 +109,7 @@
       <el-table-column prop="File" label="File" width="400"></el-table-column>
       <el-table-column prop="Rows" label="Rows" width="200"></el-table-column>
     </el-table> -->
-    <el-table :data="selectedFiles" height="240" style="width: 100%">
+    <el-table :data="selectedFiles" height="230" style="width: 100%">
       <el-table-column prop="filename" label="file" width="480"></el-table-column>
       <el-table-column label="rows" width="120">
         <template #default="scope">
