@@ -21,27 +21,6 @@ const component: AppRouteRecordRaw[] = [
         component: () => import('@/views/components/table-page/index.vue'),
         meta: { title: t('route.pathName.table') },
       },
-      {
-        path: 'date-time',
-        // Parent router-view
-        name: 'DateTime',
-        redirect: '/components/date-time/date',
-        meta: { title: t('route.pathName.date') },
-        children: [
-          {
-            path: 'date-select',
-            name: 'RtDate',
-            component: () => import('@/views/components/date/index.vue'),
-            meta: { title: t('route.pathName.dateSelect'), keepAlive: true },
-          },
-          {
-            path: 'calendar',
-            name: 'RtCalendar',
-            component: () => import('@/views/components/calendar/index.vue'),
-            meta: { title: t('route.pathName.calendar') },
-          },
-        ],
-      },
     ],
   },
 ];

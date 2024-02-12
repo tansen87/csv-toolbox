@@ -53,7 +53,7 @@
         v-model="ruleForm.username"
         :prefix-icon="Avatar"
         clearable
-        :placeholder="`${$t('sys.login.userName')}：admin`"
+        :placeholder="`${$t('sys.login.userName')}`"
       />
     </el-form-item>
     <el-form-item prop="password" class="enter-y">
@@ -62,8 +62,7 @@
         type="password"
         :prefix-icon="Lock"
         clearable
-        show-password
-        :placeholder="`${$t('sys.login.password')}：admin123`"
+        :placeholder="`${$t('sys.login.password')}`"
       />
     </el-form-item>
 
