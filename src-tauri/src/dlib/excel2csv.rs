@@ -3,7 +3,7 @@ use std::{
     path::PathBuf
 };
 use rayon::prelude::*;
-use calamine::{Reader, Range, DataType};
+use calamine::{Reader, Range, Data};
 
 fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* convert excel to csv */
@@ -11,13 +11,14 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
     let mut count: usize = 0;
     let file_len = vec_path.len();
 
-    for file in vec_path.iter() 
+    for file in vec_path.iter()
     {
         let sce = PathBuf::from(file);
         let dest = sce.with_extension("csv");
         let mut wtr = csv::WriterBuilder::new()
             .delimiter(b'|')
             .from_path(dest)?;
+
         let mut workbook = calamine::open_workbook_auto(&sce)?;
         let range = if let Some(result) = workbook.worksheet_range_at(0) {
             result?
@@ -38,30 +39,31 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
 
         // amortize allocations
         let mut record = csv::StringRecord::with_capacity(500, col_count);
-
         let mut col_name: String;
 
         // get the first row as header
         let first_row = match rows_iter.next() {
             Some(first_row) => first_row,
-            None => &[DataType::Empty],
+            None => &[Data::Empty],
         };
+
         for cell in first_row 
         {
-            col_name = match *cell 
-            {
-                DataType::String(ref s) => s.to_string(),
-                DataType::Empty => String::new(),
-                DataType::Error(ref _e) => String::new(),
-                DataType::Int(ref i) => i.to_string(),
-                DataType::DateTime(ref f) | DataType::Float(ref f) => f.to_string(),
-                DataType::Bool(ref b) => b.to_string(),
-                DataType::DateTimeIso(ref dt) => dt.to_string(),
-                DataType::DurationIso(ref d) => d.to_string(),
-                DataType::Duration(ref d) => d.to_string(),
+            col_name = match *cell {
+                Data::String(ref s) => s.to_string(),
+                Data::Empty => String::new(),
+                Data::Error(ref _e) => String::new(),
+                Data::Int(ref i) => i.to_string(),
+                Data::Float(ref f) => f.to_string(),
+                Data::DateTime(ref edt) => edt.to_string(),
+                Data::Bool(ref b) => b.to_string(),
+                Data::DateTimeIso(ref dt) => dt.to_string(),
+                Data::DurationIso(ref d) => d.to_string(),
+                // Data::Duration(ref d) => d.to_string(),
             };
             record.push_field(&col_name);
         }
+
         wtr.write_record(&record)?;
 
         let mut rows = Vec::with_capacity(row_count);
@@ -80,81 +82,55 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
             .par_chunks(chunk_size)
             .map(|chunk| {
                 let mut record = csv::StringRecord::with_capacity(500, col_count);
-                let mut cell_date_flag: bool = false;
-                let mut float_val = 0_f64;
-                let mut float_flag: bool = false;
-                let mut work_date;
+                let mut float_val;
+                let mut work_date = String::new();
                 let mut ryu_buffer = ryu::Buffer::new();
                 let mut itoa_buffer = itoa::Buffer::new();
-
+                let mut formatted_date = String::new();
                 let mut processed_chunk = Vec::with_capacity(chunk_size);
 
                 for row in chunk 
                 {
                     for cell in *row 
                     {
-                        match *cell 
-                        {
-                            DataType::Empty => record.push_field(""),
-                            DataType::String(ref s) => record.push_field(s),
-                            DataType::Int(ref i) => record.push_field(itoa_buffer.format(*i)),
-                            DataType::Float(ref f) => {
+                        match *cell {
+                            Data::Empty => record.push_field(""),
+                            Data::String(ref s) => record.push_field(s),
+                            Data::Int(ref i) => record.push_field(itoa_buffer.format(*i)),
+                            Data::Float(ref f) => {
                                 float_val = *f;
-                                float_flag = true;
-                                cell_date_flag = false;
+
+                                #[allow(clippy::cast_precision_loss)]
+                                if float_val.fract().abs() > f64::EPSILON
+                                    || float_val > i64::MAX as f64
+                                    || float_val < i64::MIN as f64
+                                {
+                                    record.push_field(ryu_buffer.format_finite(float_val));
+                                } else {
+                                    record.push_field(itoa_buffer.format(float_val as i64));
+                                }
                             },
-                            DataType::DateTime(ref f) => {
-                                float_val = *f;
-                                float_flag = true;
-                                cell_date_flag = true;
+                            Data::DateTime(ref edt) => {
+                                if edt.is_datetime() {
+                                    work_date.clear();
+                                    if let Some(dt) = edt.as_datetime() {
+                                        (formatted_date).clear();
+                                        work_date = dt.to_string();
+                                        
+                                    }
+                                } else {
+                                    work_date = edt.as_duration().unwrap().to_string();
+                                };
+
+                                record.push_field(&work_date);
                             },
-                            DataType::Error(ref e) => record.push_field(&format!("{e:?}")),
-                            DataType::Bool(ref b) => {
+                            Data::Error(ref e) => record.push_field(&format!("{e:?}")),
+                            Data::Bool(ref b) => {
                                 record.push_field(if *b { "true" } else { "false" });
                             },
-                            DataType::DateTimeIso(ref dt) => record.push_field(dt),
-                            DataType::DurationIso(ref d) => record.push_field(d),
-                            DataType::Duration(ref d) => record.push_field(ryu_buffer.format(*d)),
+                            Data::DateTimeIso(ref dt) => record.push_field(dt),
+                            Data::DurationIso(ref d) => record.push_field(d),
                         };
-
-                        #[allow(clippy::cast_precision_loss)]
-                        if float_flag {
-                            if cell_date_flag 
-                            {
-                                // its a date, so convert it
-                                work_date = if float_val.fract() > f64::EPSILON 
-                                {
-                                    // if it has a fractional part, then its a datetime
-                                    if let Some(dt) = cell.as_datetime() {
-                                        dt.to_string()
-                                    } else {
-                                        format!("ERROR: Cannot convert {float_val} to datetime")
-                                    }
-                                } else if let Some(d) = cell.as_date() {
-                                    // if it has no fractional part and calamine can return it
-                                    // as_date, then its a date
-                                    d.to_string()
-                                } else {
-                                    format!("ERROR: Cannot convert {float_val} to date")
-                                };
-                                record.push_field(&work_date);
-                                // its not a date, so just push the ryu-formatted float value if its
-                                // not an integer or the candidate
-                                // integer is too big or too small to be an i64
-                            } else if float_val.fract().abs() > f64::EPSILON
-                                || float_val > i64::MAX as f64
-                                || float_val < i64::MIN as f64
-                            {
-                                record.push_field(ryu_buffer.format_finite(float_val));
-                            } else {
-                                // its an i64 integer. We can't use ryu to format it, because it
-                                // will be formatted as a
-                                // float (have a ".0"). So we use itoa.
-                                record.push_field(itoa_buffer.format(float_val as i64));
-                            }
-                            // reset the float flag
-                            float_flag = false;
-                        }
                     }
 
                     processed_chunk.push(record.clone());
