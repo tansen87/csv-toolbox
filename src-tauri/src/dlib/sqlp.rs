@@ -42,7 +42,6 @@ impl OutputMode {
                 return Ok(());
             }
 
-            // let w = File::create(&flag_output)?;
             let w = match output {
                 Some(path) => {
                     Box::new(File::create(path)?) as Box<dyn Write>
@@ -67,7 +66,7 @@ impl OutputMode {
             Err(e) => {
                 eprintln!("Failed to execute query: {query}: {e}");
                 let errmsg = format!("Failed to execute query: {query}: {e}");
-                window.emit("execerr", errmsg)?;
+                window.emit("exec_err", errmsg)?;
                 return Ok((0, 0));
             },
         }
@@ -93,6 +92,17 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, window: tauri::
     let output_suffix = format!("sqlp {}.csv", current_time);
     for path in filepath.clone() {
         let mut output_path = PathBuf::from(path);
+
+        // check file size
+        let metadata = std::fs::metadata(path)?;
+        let file_size = metadata.len();
+        let kb = file_size / 1024;
+        if kb > 7_340_032 {
+            let size_msg = format!("{path} - {kb}, the data is too large.");
+            window.emit("size_msg", size_msg)?;
+            return Ok(());
+        }
+
         output_path.set_extension(output_suffix.clone());
         let output_str = if let Some(output_path_str) = output_path.to_str() {
             Some(output_path_str.to_string())
@@ -220,13 +230,11 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, window: tauri::
 pub async fn query(path: String, sqlsrc: String, sep: String, window: tauri::Window) {
     let filepath: Vec<&str> = path.split(',').collect();
     let prep_window = window.clone();
-    match async {
-        prepare_query(filepath, &sqlsrc.as_str(), sep, prep_window)
-    }.await {
+    match async { prepare_query(filepath, &sqlsrc.as_str(), sep, prep_window) }.await {
         Ok(result) => result,
         Err(error) => {
-            eprintln!("Error: {}", error);
-            window.emit("queryErr", &error.to_string()).unwrap();
+            eprintln!("sql query error: {error}");
+            window.emit("query_err", &error.to_string()).unwrap();
             return ();
         }
     }

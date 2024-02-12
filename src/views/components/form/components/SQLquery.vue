@@ -16,14 +16,20 @@
     sep: '|',
   });
 
-  listen('queryErr', (event: any) => {
+  listen('query_err', (event: any) => {
     const error: any = event.payload;
-    const queryErrmsg: any = 'sql query error: ' + error;
+    const queryErrmsg: any = 'query_err: ' + error;
     ElMessage.error(queryErrmsg);
   });
 
-  listen('execerr', (event: any) => {
+  listen('size_msg', (event: any) => {
     const error: any = event.payload;
+    const sizeMsg: any = 'file size error: ' + error;
+    ElMessage.error(sizeMsg);
+  });
+
+  listen('exec_err', (event: any) => {
+    const error: any = 'exec_err: ' + event.payload;
     ElMessage.error(error);
   });
 
@@ -102,9 +108,3 @@
     <el-table-column prop="filename" label="File"></el-table-column>
   </el-table>
 </template>
-
-<style>
-  .el-input {
-    width: 500px;
-  }
-</style>
