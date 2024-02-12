@@ -81,7 +81,8 @@ pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<Buf
     Ok(wtr)
 }
 
-fn equal_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn Error>> {
+fn equal_filter(path: String, sep: String, column: String, conditions: Vec<String>, window: tauri::Window) -> Result<(), Box<dyn Error>> {
+    let mut count: usize = 0;
     let mut rdr = read_csv(path.clone(), sep.clone())?;
 
     let headers = rdr.headers()?.clone();
@@ -103,13 +104,17 @@ fn equal_filter(path: String, sep: String, column: String, conditions: Vec<Strin
         let value = record.get(name_idx).unwrap();
         if conditions.contains(&value.to_string()) {
             wtr.write_record(&record)?;
+
+            count += 1;
+            window.emit("equal_count", count)?;
         }
     }
 
     Ok(())
 }
 
-fn contains_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn Error>> {
+fn contains_filter(path: String, sep: String, column: String, conditions: Vec<String>, window: tauri::Window) -> Result<(), Box<dyn Error>> {
+    let mut count: usize = 0;
     let mut rdr = read_csv(path.clone(), sep.clone())?;
 
     let headers = rdr.headers()?.clone();
@@ -139,13 +144,17 @@ fn contains_filter(path: String, sep: String, column: String, conditions: Vec<St
 
         if found {
             wtr.write_record(&record)?;
+
+            count += 1;
+            window.emit("contains_count", count)?;
         }
     }
 
     Ok(())
 }
 
-fn startswith_filter(path: String, sep: String, column: String, conditions: Vec<String>) -> Result<(), Box<dyn Error>> {
+fn startswith_filter(path: String, sep: String, column: String, conditions: Vec<String>, window: tauri::Window) -> Result<(), Box<dyn Error>> {
+    let mut count: usize = 0;
     let mut rdr = read_csv(path.clone(), sep.clone())?;
 
     let headers = rdr.headers()?.clone();
@@ -168,6 +177,9 @@ fn startswith_filter(path: String, sep: String, column: String, conditions: Vec<
         // Check if any condition matches
         if conditions.iter().any(|cond| value.starts_with(cond)) {
             wtr.write_record(&record)?;
+
+            count += 1;
+            window.emit("startswith_count", count)?;
         }
     }
 
@@ -176,12 +188,16 @@ fn startswith_filter(path: String, sep: String, column: String, conditions: Vec<
 
 #[tauri::command]
 pub async fn filter(path: String, ymlpath: String, sep: String, column: String, mode: String, isinput: bool, condition: String, window: tauri::Window) {
+    let equal_window = window.clone();
+    let contains_window = window.clone();
+    let startswith_window = window.clone();
+
     if isinput {
         let vec_conditions: Vec<&str> = condition.split('|').collect();
         let vec_strings: Vec<String> = vec_conditions.iter().map(|&condition| condition.to_string()).collect();
         if mode == "equal" 
         {
-            match async { equal_filter(path, sep, column, vec_strings) }.await {
+            match async { equal_filter(path, sep, column, vec_strings, equal_window) }.await {
                 Ok(result) => result,
                 Err(error) => {
                     eprintln!("equal_filter error: {error}");
@@ -192,7 +208,7 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
         } 
         else if mode == "contains" 
         {
-            match async { contains_filter(path, sep, column, vec_strings) }.await {
+            match async { contains_filter(path, sep, column, vec_strings, contains_window) }.await {
                 Ok(result) => result,
                 Err(error) => {
                     eprintln!("contains_filter error: {error}");
@@ -203,7 +219,7 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
         } 
         else if mode == "startswith" 
         {
-            match async { startswith_filter(path, sep, column, vec_strings) }.await {
+            match async { startswith_filter(path, sep, column, vec_strings, startswith_window) }.await {
                 Ok(result) => result,
                 Err(error) => {
                     eprintln!("startswith_filter error: {error}");
@@ -230,7 +246,7 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
 
         if mode == "equal" 
         {
-            match async { equal_filter(path, sep, column, vec_cond) }.await {
+            match async { equal_filter(path, sep, column, vec_cond, equal_window) }.await {
                 Ok(result) => result,
                 Err(error) => {
                     eprintln!("equal_filter error: {error}");
@@ -241,7 +257,7 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
         } 
         else if mode == "contains" 
         {
-            match async { contains_filter(path, sep, column, vec_cond) }.await {
+            match async { contains_filter(path, sep, column, vec_cond, contains_window) }.await {
                 Ok(result) => result,
                 Err(error) => {
                     eprintln!("contains_filter error: {error}");
@@ -252,7 +268,7 @@ pub async fn filter(path: String, ymlpath: String, sep: String, column: String, 
         } 
         else if mode == "startswith" 
         {
-            match async { startswith_filter(path, sep, column, vec_cond) }.await {
+            match async { startswith_filter(path, sep, column, vec_cond, startswith_window) }.await {
                 Ok(result) => result,
                 Err(error) => {
                     eprintln!("startswith_filter error: {error}");

@@ -8,7 +8,10 @@
 
   const getCSVMsg = ref('');
   const getYamlMsg = ref('');
-  const loading = ref(false);
+  const isLoading = ref(false);
+  const isFinish = ref(false);
+  const isWrite = ref(false);
+  const countRows = ref(0);
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
@@ -35,10 +38,18 @@
     const equalerr: any = 'equal_err error: ' + error;
     ElMessage.error(equalerr);
   });
+  listen('equal_count', (event: any) => {
+    const count: any = event.payload;
+    countRows.value = count;
+  });
   listen('contains_err', (event: any) => {
     const error: any = event.payload;
     const containserr: any = 'contains_err error: ' + error;
     ElMessage.error(containserr);
+  });
+  listen('contains_count', (event: any) => {
+    const count: any = event.payload;
+    countRows.value = count;
   });
   listen('startswith_err', (event: any) => {
     const error: any = event.payload;
@@ -59,7 +70,9 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      loading.value = true;
+      isLoading.value = true;
+      isFinish.value = false;
+      isWrite.value = true;
       await invoke('filter', {
         path: data.filePath,
         ymlpath: yml.filePath,
@@ -69,12 +82,16 @@
         isinput: form.isinput,
         condition: form.condition,
       });
-      loading.value = false;
+      isLoading.value = false;
+      isFinish.value = true;
       ElMessage.success('filter done.');
     }
   }
 
   async function selectFile() {
+    isFinish.value = false;
+    isLoading.value = false;
+    isWrite.value = false;
     const selected = await open({
       multiple: false,
       filters: [
@@ -115,7 +132,7 @@
 </script>
 
 <template>
-  <el-form v-loading="loading" element-loading-text="Querying..." :model="form">
+  <el-form :model="form">
     <el-form-item label="Separator">
       <el-select v-model="form.sep" placeholder="please select delimiter">
         <el-option label="," value="," />
@@ -147,6 +164,9 @@
     </el-form-item>
   </el-form>
   <el-text class="mx-1" type="primary">{{ getCSVMsg }}</el-text>
-  <p />
   <el-text class="mx-1" type="warning">{{ getYamlMsg }}</el-text>
+  <p></p>
+  <el-icon v-if="isLoading" color="#FF8C00" class="is-loading"> <Loading /> </el-icon>
+  <el-icon v-if="isFinish" color="#32CD32"> <SuccessFilled /> </el-icon>
+  <el-text v-if="isWrite" class="mx-1">{{ countRows }}</el-text>
 </template>
