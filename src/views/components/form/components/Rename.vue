@@ -91,7 +91,7 @@
 
     getCSVMsg.value = selected.toString();
 
-    let headers: any = await invoke('get', {
+    let headers: any = await invoke('geth', {
       path: data.filePath,
       sep: form.sep,
     });
@@ -148,6 +148,7 @@
   .custom-sep-form-item {
     width: 100px !important; /* 使用 !important 确保样式优先级 */
   }
+
   .custom-header-input {
     width: 275px !important; /* 使用 !important 确保样式优先级 */
   }

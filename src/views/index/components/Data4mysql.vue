@@ -3,10 +3,24 @@
   import { open } from '@tauri-apps/api/dialog';
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
-  import { ElMessage } from 'element-plus';
+  import { ElMessage, ElIcon } from 'element-plus';
+  import { CloseBold, Select } from '@element-plus/icons-vue';
 
+  interface User {
+    filename: string;
+    status: string;
+  }
   const getYamlMsg = ref('');
-  const loading = ref(false);
+  const isProcessing = ref(false);
+  const progress = ref(0);
+  const tableData: any = ref([]);
+  const customColors = [
+    { color: '#98FB98', percentage: 20 },
+    { color: '#7CFC00', percentage: 40 },
+    { color: '#7FFF00', percentage: 60 },
+    { color: '#ADFF2F', percentage: 80 },
+    { color: '#9ACD32', percentage: 100 },
+  ];
   const data = reactive({
     filePath: '',
     fileFormats: ['yaml', 'yml'],
@@ -16,7 +30,10 @@
     input: '业务说明',
     epath: 'C:\\Users',
   });
-
+  const filterHandler = (value: string, row: User, column: TableColumnCtx<User>) => {
+    const property = column['property'];
+    return row[property] === value;
+  };
   listen('check', (event: any) => {
     const check: any = event.payload;
     ElMessage.info(check);
@@ -30,15 +47,27 @@
     const error: any = 'execute_err: ' + event.payload;
     ElMessage.error(error);
   });
-
+  listen('get_err', (event: any) => {
+    const error: any = 'get_err: ' + event.payload;
+    ElMessage.error(error);
+  });
   listen('errcode', (event: any) => {
     const errCode: any = event.payload;
     ElMessage.error(errCode);
   });
 
   listen('message', (event: any) => {
-    const progress: any = event.payload;
-    ElMessage.success(progress);
+    const msg: any = event.payload;
+    ElMessage.success(msg);
+  });
+  listen('download_progress', (event: any) => {
+    const pgs: any = event.payload;
+    progress.value = pgs.split('|')[1];
+    tableData.value.forEach((file: any) => {
+      if (file.filename === pgs.split('|')[0]) {
+        file.status = 'completed';
+      }
+    });
   });
 
   // download mysql data
@@ -50,19 +79,19 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      loading.value = true;
+      isProcessing.value = true;
       await invoke('download', {
         filePath: data.filePath,
         etable: form.region,
         rcolumn: form.input,
         epath: form.epath,
       });
-      loading.value = false;
       ElMessage.success('download done.');
     }
   }
 
   async function selectFile() {
+    isProcessing.value = false;
     const selected = await open({
       multiple: false,
       filters: [
@@ -73,21 +102,26 @@
       ],
     });
     if (Array.isArray(selected)) {
-      // user selected multiple files
       data.filePath = selected.toString();
     } else if (selected === null) {
-      // user cancelled the selection
       return;
     } else {
-      // user selected a single file
       data.filePath = selected;
     }
     getYamlMsg.value = selected.toString();
+    let project: any = await invoke('getyml', {
+      path: data.filePath,
+    });
+
+    const nonEmptyRows = project.filter((row: any) => row.trim() !== '');
+    tableData.value = nonEmptyRows.map((file: any) => {
+      return { filename: file, status: 'awaiting' };
+    });
   }
 </script>
 
 <template>
-  <el-form v-loading="loading" element-loading-text="Downloading..." :model="form">
+  <el-form :model="form">
     <el-form-item label="Export table">
       <el-select v-model="form.region" placeholder="please select download table">
         <el-option label="凭证表&科目余额表" value="凭证表&科目余额表" />
@@ -104,8 +138,34 @@
       <el-button type="primary" @click="selectFile()">Open Yaml</el-button>
       <el-button type="success" @click="getData()">Download</el-button>
     </el-form-item>
+    <el-table :data="tableData" height="200" style="width: 100%">
+      <el-table-column prop="filename" label="file" width="480"></el-table-column>
+      <el-table-column
+        prop="status"
+        label="status"
+        :filters="[
+          { text: 'x', value: 'error' },
+          { text: '√', value: 'completed' },
+        ]"
+        :filter-method="filterHandler"
+        width="120"
+      >
+        <template #default="scope">
+          <ElIcon v-if="scope.row.status === 'awaiting'" class="is-loading">
+            <Loading />
+          </ElIcon>
+          <ElIcon v-else-if="scope.row.status === 'completed'" color="#00CD66">
+            <Select />
+          </ElIcon>
+          <ElIcon v-else-if="scope.row.status === 'error'" color="#FF0000">
+            <CloseBold />
+          </ElIcon>
+          <!-- <span>{{ scope.row.status }}</span> -->
+        </template>
+      </el-table-column>
+    </el-table>
   </el-form>
-  <el-text class="mx-1" type="success">{{ getYamlMsg }}</el-text>
+  <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>
 
 <style>

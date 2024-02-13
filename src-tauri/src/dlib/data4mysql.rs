@@ -68,6 +68,8 @@ async fn prepare_query_data(file_path: String, epath: String) -> Result<(Vec<Str
 
 async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String, rcolumn: String, epath: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     let mut company_count = 1;
+    let mut count: usize = 0;
+    let file_len = vec_code.len();
     let pool: sqlx::Pool<sqlx::MySql> = MySqlPool::connect(&yaml.url).await?;
     let mut message_log = String::new();
     File::create(format!("{}/2_logs.log", &epath)).expect("Failed to create file"); 
@@ -254,6 +256,12 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                 continue;
             }
         }
+
+        count += 1;
+        let progress = (count as f32) / (file_len as f32) * 100.0;
+        let proj = &yaml.project_name[idx];
+        let progress_s = format!("{proj}|{progress:.2}");
+        window.emit("download_progress", progress_s)?;
     }
     
     let mut successful_file = File::create(
@@ -270,6 +278,13 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
 
 fn folder_exists(path: &str) -> bool {
     std::fs::metadata(path).is_ok()
+}
+
+fn analyze_yaml(path: String) -> Result<Vec<String>, Box<dyn Error>> {
+    let yaml = read_yaml(path)?;
+    let project_name = yaml.project_name;
+
+    Ok(project_name)
 }
 
 #[tauri::command]
@@ -294,4 +309,18 @@ pub async fn download(etable: String, rcolumn: String, epath: String, file_path:
             error.to_string();
         }
     };
+}
+
+#[tauri::command]
+pub async fn getyml(path: String, window: tauri::Window) -> Vec<String> {
+    let proj = match async { analyze_yaml(path) }.await {
+        Ok(result) => result,
+        Err(error) => {
+            eprintln!("get error: {error}");
+            window.emit("get_err", &error.to_string()).unwrap();
+            return Vec::new();
+        }
+    };
+
+    proj
 }

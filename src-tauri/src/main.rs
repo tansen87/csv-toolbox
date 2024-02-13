@@ -16,6 +16,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             data4mysql::download,
+            data4mysql::getyml,
             dataprocess::pivot,
             dataprocess::unique,
             dataprocess::concat,
@@ -25,7 +26,7 @@ fn main() {
             count::countr,
             filter::filter,
             sqlp::query,
-            rename::get,
+            rename::geth,
             rename::rename,
         ])
         .run(tauri::generate_context!())
