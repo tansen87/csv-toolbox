@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, computed } from 'vue';
   import { open } from '@tauri-apps/api/dialog';
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
@@ -12,12 +12,18 @@
   const isFinish = ref(false);
   const isLoading = ref(false);
   const isWrite = ref(false);
+  const search = ref('');
+  const filterTableData = computed(() =>
+    tableData.value.filter(
+      (data: any) => !search.value || data.col1.toLowerCase().includes(search.value.toLowerCase()),
+    ),
+  );
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
   });
   const form = reactive({
-    sep: '|',
+    sep: ',',
   });
 
   listen('get_err', (event: any) => {
@@ -123,7 +129,7 @@
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="renameData()">Rename</el-button>
     </el-form-item>
-    <el-table :data="tableData" height="340" style="width: 100%">
+    <el-table :data="filterTableData" height="650" style="width: 100%">
       <el-table-column prop="col1" label="headers" width="300"></el-table-column>
       <el-table-column prop="col2" label="rename headers" width="300">
         <template #default="{ row }">
@@ -133,6 +139,11 @@
             class="custom-header-input"
             @blur="headerEdit(row)"
           ></el-input>
+        </template>
+      </el-table-column>
+      <el-table-column>
+        <template #header>
+          <el-input v-model="search" size="small" placeholder="Type to search" />
         </template>
       </el-table-column>
     </el-table>
