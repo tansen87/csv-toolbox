@@ -5,6 +5,7 @@ use std::{
     fs::File,
     io::{Read, Write, BufWriter},
     path::{Path, PathBuf},
+    time::Instant,
 };
 
 use polars::{
@@ -226,8 +227,36 @@ fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, window: tauri::
     Ok(())
 }
 
+fn get_headers(path: &str, sep: String) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut rdr = csv::ReaderBuilder::new()
+        .delimiter(sep.into_bytes()[0])
+        .has_headers(true)
+        .from_reader(File::open(path)?);
+
+    let headers = rdr.headers()?.clone();
+    let vec_headers: Vec<String> = headers.iter().map(|h| h.to_string()).collect();
+
+    Ok(vec_headers)
+}
+
+#[tauri::command]
+pub async fn queryh(path: String, sep: String, window: tauri::Window) -> Vec<String> {
+    let headers = match async { get_headers(path.as_str(), sep) }.await {
+        Ok(result) => result,
+        Err(err) => {
+            eprintln!("get headers error: {err}");
+            window.emit("get_err", &err.to_string()).unwrap();
+            return Vec::new();
+        }
+    };
+
+    headers
+}
+
 #[tauri::command]
 pub async fn query(path: String, sqlsrc: String, sep: String, window: tauri::Window) {
+    let start = Instant::now();
+    let time_window = window.clone();
     let filepath: Vec<&str> = path.split(',').collect();
     let prep_window = window.clone();
     match async { prepare_query(filepath, &sqlsrc.as_str(), sep, prep_window) }.await {
@@ -238,4 +267,9 @@ pub async fn query(path: String, sqlsrc: String, sep: String, window: tauri::Win
             return ();
         }
     }
+    let end = Instant::now();
+    let elapsed = end.duration_since(start);
+    let elapsed_seconds = elapsed.as_secs_f64();
+    let run_time = format!("{elapsed_seconds:.2} s");
+    time_window.emit("run_time", run_time).unwrap();
 }

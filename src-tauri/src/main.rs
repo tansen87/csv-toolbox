@@ -26,6 +26,7 @@ fn main() {
             count::countr,
             filter::filter,
             sqlp::query,
+            sqlp::queryh,
             rename::geth,
             rename::rename,
         ])
