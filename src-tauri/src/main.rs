@@ -9,7 +9,8 @@ use dlib::{
     count,
     filter,
     sqlp,
-    rename
+    rename,
+    getfilename,
 };
 
 fn main() {
@@ -29,6 +30,7 @@ fn main() {
             sqlp::queryh,
             rename::geth,
             rename::rename,
+            getfilename::filename,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -14,8 +14,8 @@ const power = [
         name: 'RtForm',
       },
       {
-        path: 'table',
-        name: 'RtTable',
+        path: 'file',
+        name: 'RtFile',
       },
       {
         path: 'drag',
