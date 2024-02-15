@@ -14,7 +14,7 @@
     username: 'admin',
     password: 'admin123',
   });
-  const checked = ref<boolean>(false);
+  // const checked = ref<boolean>(false);
 
   const { t } = useI18n();
 
@@ -66,12 +66,12 @@
       />
     </el-form-item>
 
-    <el-form-item class="enter-y">
+    <!-- <el-form-item class="enter-y">
       <div class="form-item-container">
         <el-checkbox v-model="checked" :label="$t('sys.login.rememberPassword')" />
         <el-button link type="primary"> {{ $t('sys.login.forgotPassword') }} </el-button>
       </div>
-    </el-form-item>
+    </el-form-item> -->
 
     <el-form-item class="enter-y">
       <el-button class="submit-btn" @click="submitForm(ruleFormRef)">
