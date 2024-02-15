@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  // import { ref } from 'vue'
   import { ref } from 'vue';
   import Sidebar from '../../components/Sidebar/index.vue';
   import MinSidebar from '../../components/Sidebar/MinSidebar.vue';
