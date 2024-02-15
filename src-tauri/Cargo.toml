@@ -1,6 +1,6 @@
 [package]
 name = "tauri-toolkit"
-version = "0.3.8"
+version = "0.3.9"
 description = "tauri toolkit"
 authors = ["tansen"]
 license = "MIT"
