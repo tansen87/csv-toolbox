@@ -7,8 +7,12 @@
 > * Convert CSV to Excel
 > * Data unique
 > * Quick count CSV rows
-> * Quick multi condition data precision query
-> * Quick multi condition data fuzzy query
+> * Quick multi condition data precision query (equal)
+> * Quick multi condition data fuzzy query (contains)
+> * Quick multi condition data starts with query (startswith)
+> * SQL query (SELECT, JOIN, UNION, GROUP BY, ORDER BY, LIMIT...)
+> * rename header
+> * get filename and write to xlsx
 
 ![image](https://github.com/tansen87/tauri-toolkit/assets/98570790/bb98f299-da9b-4616-9ef5-28765997bf49)
 
