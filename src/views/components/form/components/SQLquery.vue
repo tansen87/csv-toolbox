@@ -120,7 +120,7 @@
 <template>
   <el-form :model="form">
     <el-form-item label="Separator">
-      <el-select v-model="form.sep" placeholder="please select delimiter">
+      <el-select v-model="form.sep">
         <el-option label="," value="," />
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
@@ -129,7 +129,7 @@
     <el-form-item>
       <el-input
         v-model="form.sqlsrc"
-        :autosize="{ minRows: 3, maxRows: 6 }"
+        autosize
         type="textarea"
         placeholder="Please input sql script"
       />
