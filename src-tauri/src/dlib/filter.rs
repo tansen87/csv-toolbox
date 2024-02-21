@@ -104,11 +104,11 @@ fn equal_filter(path: String, sep: String, column: String, conditions: Vec<Strin
         let value = record.get(name_idx).unwrap();
         if conditions.contains(&value.to_string()) {
             wtr.write_record(&record)?;
-
             count += 1;
-            window.emit("equal_count", count)?;
         }
     }
+
+    window.emit("equal_count", count)?;
 
     Ok(())
 }
@@ -144,11 +144,11 @@ fn contains_filter(path: String, sep: String, column: String, conditions: Vec<St
 
         if found {
             wtr.write_record(&record)?;
-
             count += 1;
-            window.emit("contains_count", count)?;
         }
     }
+
+    window.emit("contains_count", count)?;
 
     Ok(())
 }
@@ -177,11 +177,11 @@ fn startswith_filter(path: String, sep: String, column: String, conditions: Vec<
         // Check if any condition matches
         if conditions.iter().any(|cond| value.starts_with(cond)) {
             wtr.write_record(&record)?;
-
             count += 1;
-            window.emit("startswith_count", count)?;
         }
     }
+
+    window.emit("startswith_count", count)?;
 
     Ok(())
 }
