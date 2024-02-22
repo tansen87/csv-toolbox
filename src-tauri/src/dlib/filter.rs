@@ -21,15 +21,16 @@ fn read_yaml(path: String) -> Result<Config, Box<dyn Error>> {
 }
 
 pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<BufReader<File>>, Box<dyn Error>> {
-    let file = File::open(path.clone())?;
     let mut separator = Vec::new();
-    if sep == "\\t" {
-        let sep_u8 = b'\t';
-        separator.push(sep_u8);
+    let sep_u8 = if sep == "\\t" {
+        b'\t'
     } else {
-        let sep_u8 = sep.into_bytes()[0];
-        separator.push(sep_u8);
-    }
+        sep.into_bytes()[0]
+    };
+    separator.push(sep_u8);
+
+    let file = File::open(path.clone())?;
+
     let rdr = csv::ReaderBuilder::new()
         .delimiter(separator[0])
         .from_reader(BufReader::new(file));
@@ -39,13 +40,13 @@ pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<BufReader<File>
 
 pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<BufWriter<File>>, Box<dyn Error>> {
     let mut separator = Vec::new();
-    if sep == "\\t" {
-        let sep_u8 = b'\t';
-        separator.push(sep_u8);
+    let sep_u8 = if sep == "\\t" {
+        b'\t'
     } else {
-        let sep_u8 = sep.into_bytes()[0];
-        separator.push(sep_u8);
-    }
+        sep.into_bytes()[0]
+    };
+    separator.push(sep_u8);
+
     let path = PathBuf::from(path);
     let file_name = path.file_stem()
         .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "File stem not found"))?
@@ -56,38 +57,35 @@ pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<Buf
         .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "Parent path not found"))?;
 
     let current_time = chrono::Local::now();
-    
+    let current_time_str = current_time.format("%Y-%m-%d %H.%M.%S").to_string();
     let mut vec_output = Vec::new();
-    if mode == "equal" 
-    {
-        let output_path = format!(
-            "{}/{}_equal {}.csv",
-            path_parent.display(),
-            file_name,
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    } 
-    else if mode == "contains" 
-    {
-        let output_path = format!(
-            "{}/{}_contains {}.csv",
-            path_parent.display(),
-            file_name,
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    } 
-    else if mode == "startswith" 
-    {
-        let output_path = format!(
-            "{}/{}_startswith {}.csv",
-            path_parent.display(),
-            file_name,
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    };
+    match mode {
+        "equal" => {
+            vec_output.push(format!(
+                "{}/{}_equal {}.csv",
+                path_parent.display(),
+                file_name,
+                current_time_str
+            ));
+        },
+        "contains" => {
+            vec_output.push(format!(
+                "{}/{}_contains {}.csv",
+                path_parent.display(),
+                file_name,
+                current_time_str
+            ));
+        },
+        "startswith" => {
+            vec_output.push(format!(
+                "{}/{}_startswith {}.csv",
+                path_parent.display(),
+                file_name,
+                current_time_str
+            ));
+        },
+        _ => {}
+    }
 
     let file = File::create(&vec_output[0])?;
     let wtr = csv::WriterBuilder::new()
