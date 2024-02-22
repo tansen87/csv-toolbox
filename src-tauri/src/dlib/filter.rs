@@ -22,14 +22,30 @@ fn read_yaml(path: String) -> Result<Config, Box<dyn Error>> {
 
 pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<BufReader<File>>, Box<dyn Error>> {
     let file = File::open(path.clone())?;
+    let mut separator = Vec::new();
+    if sep == "\\t" {
+        let sep_u8 = b'\t';
+        separator.push(sep_u8);
+    } else {
+        let sep_u8 = sep.into_bytes()[0];
+        separator.push(sep_u8);
+    }
     let rdr = csv::ReaderBuilder::new()
-        .delimiter(sep.as_bytes()[0])
+        .delimiter(separator[0])
         .from_reader(BufReader::new(file));
 
     Ok(rdr)
 }
 
 pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<BufWriter<File>>, Box<dyn Error>> {
+    let mut separator = Vec::new();
+    if sep == "\\t" {
+        let sep_u8 = b'\t';
+        separator.push(sep_u8);
+    } else {
+        let sep_u8 = sep.into_bytes()[0];
+        separator.push(sep_u8);
+    }
     let path = PathBuf::from(path);
     let file_name = path.file_stem()
         .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "File stem not found"))?
@@ -75,7 +91,7 @@ pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<Buf
 
     let file = File::create(&vec_output[0])?;
     let wtr = csv::WriterBuilder::new()
-        .delimiter(sep.into_bytes()[0]) 
+        .delimiter(separator[0]) 
         .from_writer(BufWriter::new(file));
 
     Ok(wtr)
