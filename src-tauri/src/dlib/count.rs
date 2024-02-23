@@ -7,13 +7,12 @@ use std::{
 fn count_rows(path: String, sep: String, window: tauri::Window) -> Result<Vec<String>, Box<dyn Error>> {
     /* count csv rows */
     let mut separator = Vec::new();
-    if sep.clone() == "\\t" {
-        let sep_u8 = b'\t';
-        separator.push(sep_u8);
+    let sep_u8 = if sep == "\\t" {
+        b'\t'
     } else {
-        let sep_u8 = sep.into_bytes()[0];
-        separator.push(sep_u8);
-    }
+        sep.into_bytes()[0]
+    };
+    separator.push(sep_u8);
     let vec_path: Vec<&str> = path.split(',').collect();
     let mut vec_file = Vec::new();
     let mut countf: usize = 0;
