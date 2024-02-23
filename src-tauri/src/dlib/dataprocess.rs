@@ -143,13 +143,13 @@ fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn
 fn groupby_sum(path: String, sep: String, index: String, values: String) -> Result<(), Box<dyn Error>> {
     /* group by - sum */
     let mut separator = Vec::new();
-    if sep.clone() == "\\t" {
-        let sep_u8 = b'\t';
-        separator.push(sep_u8);
+    let sep_u8 = if sep == "\\t" {
+        b'\t'
     } else {
-        let sep_u8 = sep.into_bytes()[0];
-        separator.push(sep_u8);
-    }
+        sep.into_bytes()[0]
+    };
+    separator.push(sep_u8);
+
     let idx: Vec<&str> = index.split(',').collect();
     let val: Vec<&str> = values.split(',').collect();
     let file_path = Path::new(&path);
@@ -184,13 +184,13 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
 fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn Error>> {
     /* Getting a unique value for a column */
     let mut separator = Vec::new();
-    if sep.clone() == "\\t" {
-        let sep_u8 = b'\t';
-        separator.push(sep_u8);
+    let sep_u8 = if sep == "\\t" {
+        b'\t'
     } else {
-        let sep_u8 = sep.into_bytes()[0];
-        separator.push(sep_u8);
-    }
+        sep.into_bytes()[0]
+    };
+    separator.push(sep_u8);
+
     let file_path = Path::new(&path);
 
     // Convert column field datatype to utf8
@@ -217,13 +217,13 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
 fn concat_all(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* merge csv files into a xlsx or csv file */
     let mut separator = Vec::new();
-    if sep.clone() == "\\t" {
-        let sep_u8 = b'\t';
-        separator.push(sep_u8);
+    let sep_u8 = if sep == "\\t" {
+        b'\t'
     } else {
-        let sep_u8 = sep.into_bytes()[0];
-        separator.push(sep_u8);
-    }
+        sep.into_bytes()[0]
+    };
+    separator.push(sep_u8);
+
     let vec_path: Vec<&str> = path.split(',').collect();
     let vec_col: Vec<&str> = column.split(',').collect();
     let mut lfs = Vec::new();
@@ -294,13 +294,13 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
 fn concat_specific(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* merge sepecific columns */
     let mut separator = Vec::new();
-    if sep.clone() == "\\t" {
-        let sep_u8 = b'\t';
-        separator.push(sep_u8);
+    let sep_u8 = if sep == "\\t" {
+        b'\t'
     } else {
-        let sep_u8 = sep.into_bytes()[0];
-        separator.push(sep_u8);
-    }
+        sep.into_bytes()[0]
+    };
+    separator.push(sep_u8);
+
     let vec_path: Vec<&str> = path.split(',').collect();
     let vec_col: Vec<&str> = column.split(',').collect();
     let mut lfs = Vec::new();
