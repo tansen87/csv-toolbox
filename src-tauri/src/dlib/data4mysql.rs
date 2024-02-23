@@ -260,7 +260,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
         count += 1;
         let progress = (count as f32) / (file_len as f32) * 100.0;
         let proj = &yaml.project_name[idx];
-        let progress_s = format!("{proj}|{progress:.2}");
+        let progress_s = format!("{proj}|{progress:.0}");
         window.emit("download_progress", progress_s)?;
     }
     
