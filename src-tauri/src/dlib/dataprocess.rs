@@ -49,51 +49,42 @@ fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dy
         }
     }
 
-    let current_time = chrono::Local::now();
     let file_path_copy = file_path.parent()
         .map(|parent| parent.to_string_lossy())
         .unwrap_or_else(|| "Default Path".to_string().into());
+
+    let current_time = chrono::Local::now();
+    let current_time_str = current_time.format("%Y-%m-%d %H.%M.%S");
+
     let mut vec_output = Vec::new();
-    if fn_type == "pivot" 
-    {
-        let output_path = format!(
+    let output_path = match fn_type.as_str() {
+        "pivot" => format!(
             "{}/{}_pivot {}.xlsx",
             file_path_copy,
             file_name[0],
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    } 
-    else if fn_type == "unique" 
-    {
-        let output_path = format!(
+            current_time_str
+        ),
+        "unique" => format!(
             "{}/{}_unique {}.xlsx",
             file_path_copy,
             file_name[0],
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    } 
-    else if fn_type == "concat" 
-    {
-        let output_path = format!(
+            current_time_str
+        ),
+        "concat" => format!(
             "{}/{}_concat {}.xlsx",
             file_path_copy,
             file_name[0],
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    } 
-    else 
-    {
-        let output_path = format!(
+            current_time_str
+        ),
+        _ => format!(
             "{}/{} {}.xlsx",
             file_path_copy,
             file_name[0],
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    }
+            current_time_str
+        ),
+    };
+
+    vec_output.push(output_path);
     workbook.save(vec_output[0].clone())?;
 
     Ok(())
@@ -109,42 +100,38 @@ fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn
         },
         None => vec![],
     };
-    let current_time = chrono::Local::now();
+
     let file_path_copy = file_path.parent()
         .map(|parent| parent.to_string_lossy())
         .unwrap_or_else(|| "Default Path".to_string().into());
+
+    let current_time = chrono::Local::now();
+    let current_time_str = current_time.format("%Y-%m-%d %H.%M.%S");
+
     let mut vec_output = Vec::new();
 
-    if fn_type == "concat" 
-    {
-        let output_path = format!(
+    let output_path = match fn_type.as_str() {
+        "concat" => format!(
             "{}/{}_concat {}.csv",
             file_path_copy,
             file_name[0],
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    } 
-    else if fn_type == "pivot" 
-    {
-        let output_path = format!(
+            current_time_str
+        ),
+        "pivot" => format!(
             "{}/{}_pivot {}.csv",
             file_path_copy,
             file_name[0],
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    } 
-    else 
-    {
-        let output_path = format!(
+            current_time_str
+        ),
+        _ => format!(
             "{}/{} {}.csv",
             file_path_copy,
             file_name[0],
-            current_time.format("%Y-%m-%d %H.%M.%S")
-        );
-        vec_output.push(output_path);
-    }
+            current_time_str
+        ),
+    };
+    vec_output.push(output_path);
+
     let mut file = File::create(vec_output[0].clone())?;
     CsvWriter::new(&mut file)
         .with_separator(b'|')
