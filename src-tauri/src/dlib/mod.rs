@@ -7,3 +7,4 @@ pub mod filter;
 pub mod sqlp;
 pub mod rename;
 pub mod getfilename;
+pub mod select;

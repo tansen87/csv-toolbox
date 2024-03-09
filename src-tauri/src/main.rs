@@ -11,6 +11,7 @@ use dlib::{
     sqlp,
     rename,
     getfilename,
+    select,
 };
 
 fn main() {
@@ -31,6 +32,7 @@ fn main() {
             rename::geth,
             rename::rename,
             getfilename::filename,
+            select::select,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
