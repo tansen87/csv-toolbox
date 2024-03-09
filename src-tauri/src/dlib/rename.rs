@@ -5,8 +5,16 @@ use std::{
 };
 
 fn get_headers(path: &str, sep: String) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut separator = Vec::new();
+    let sep_u8 = if sep == "\\t" {
+        b'\t'
+    } else {
+        sep.into_bytes()[0]
+    };
+    separator.push(sep_u8);
+
     let mut rdr = csv::ReaderBuilder::new()
-        .delimiter(sep.into_bytes()[0])
+        .delimiter(separator[0])
         .has_headers(true)
         .from_reader(File::open(path)?);
 
@@ -17,8 +25,16 @@ fn get_headers(path: &str, sep: String) -> Result<Vec<String>, Box<dyn Error>> {
 }
 
 fn rename_headers(path: &str, sep: String, r_header: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
+    let mut separator = Vec::new();
+    let sep_u8 = if sep == "\\t" {
+        b'\t'
+    } else {
+        sep.into_bytes()[0]
+    };
+    separator.push(sep_u8);
+
     let mut rdr = csv::ReaderBuilder::new()
-        .delimiter(sep.clone().into_bytes()[0])
+        .delimiter(separator[0])
         .has_headers(true)
         .from_reader(File::open(path)?);
 
@@ -54,7 +70,7 @@ fn rename_headers(path: &str, sep: String, r_header: String, window: tauri::Wind
     );
 
     let mut wtr = csv::WriterBuilder::new()
-        .delimiter(sep.into_bytes()[0])
+        .delimiter(separator[0])
         .from_path(output_path)?;
 
     wtr.write_record(new_headers)?;
