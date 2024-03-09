@@ -74,17 +74,6 @@ impl OutputMode {
     }
 }
 
-impl std::str::FromStr for OutputMode {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "csv" => Ok(OutputMode::Csv),
-            _ => Err(format!("Invalid output mode: {s}")),
-        }
-    }
-}
-
 fn prepare_query(filepath: Vec<&str>, sqlsrc: &str, sep: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     let mut ctx = SQLContext::new();
     let sepu8 = sep.clone().into_bytes()[0];
