@@ -41,7 +41,7 @@
     const selectMsg: any = event.payload;
     selectedFiles.value.forEach((file) => {
       if (file.filename.split('\\').pop() === selectMsg) {
-        file.status = 'completed';
+        file.status = 'complete';
       }
     });
   });
@@ -118,7 +118,7 @@
           <ElIcon v-if="scope.row.status === 'await'" class="is-loading">
             <Loading />
           </ElIcon>
-          <ElIcon v-else-if="scope.row.status === 'completed'" color="#00CD66">
+          <ElIcon v-else-if="scope.row.status === 'complete'" color="#00CD66">
             <Select />
           </ElIcon>
           <ElIcon v-else-if="scope.row.status === 'error'" color="#FF0000">
