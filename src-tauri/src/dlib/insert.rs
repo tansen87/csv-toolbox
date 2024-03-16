@@ -74,6 +74,88 @@ pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<Buf
     Ok(wtr)
 }
 
+fn insert_col(path: String, sep: String, col: String, input: String) -> Result<(), Box<dyn Error>> {
+    let mut vec_col: Vec<&str> = col.split('|').collect::<Vec<&str>>();
+    vec_col.reverse();
+    let vec_input: Vec<&str> = input.split('|').collect::<Vec<&str>>();
+    
+    let mut rdr = read_csv(path.clone(), sep.clone())?;
+    // 读取原始的列标题
+    let mut existing_headers = Vec::new();
+    let headers = rdr.headers()?.clone();
+    for h in headers.iter() {
+        existing_headers.push(h);
+    }
+
+    // 检查并插入新列标题
+    let insert_idx = headers.len();
+    for header in &vec_col {
+        if !existing_headers.contains(&header) {
+            existing_headers.insert(insert_idx, header);
+        }
+    }
+
+    let mut wtr = write_csv(path, sep, "ifill")?;
+
+    wtr.write_record(&existing_headers)?;
+
+    existing_headers.clear();
+    for h in headers.iter() {
+        existing_headers.push(h)
+    }
+
+    // 遍历记录并插入新列的空值
+    for result in rdr.records() {
+        let mut record = result?;
+
+        match vec_col.len() {
+            1 => {
+                if !existing_headers.contains(&vec_col[0]) {
+                    record.push_field(vec_input[0]);
+                }
+            },
+            2 => {
+                if !existing_headers.contains(&vec_col[0]) {
+                    record.push_field(vec_input[0]);
+                }
+                if !existing_headers.contains(&vec_col[1]) {
+                    record.push_field(vec_input[1]);
+                }
+            },
+            3 => {
+                if !existing_headers.contains(&vec_col[0]) {
+                    record.push_field(vec_input[0]);
+                }
+                if !existing_headers.contains(&vec_col[1]) {
+                    record.push_field(vec_input[1]);
+                }
+                if !existing_headers.contains(&vec_col[2]) {
+                    record.push_field(vec_input[2]);
+                }
+            }
+            4 => {
+                if !existing_headers.contains(&vec_col[0]) {
+                    record.push_field(vec_input[0]);
+                }
+                if !existing_headers.contains(&vec_col[1]) {
+                    record.push_field(vec_input[1]);
+                }
+                if !existing_headers.contains(&vec_col[2]) {
+                    record.push_field(vec_input[2]);
+                }
+                if !existing_headers.contains(&vec_col[3]) {
+                    record.push_field(vec_input[3]);
+                }
+            }
+            _ => {} // 如果 vec_col 有超过两个元素，这里可以添加更多的匹配逻辑
+        }
+        
+        wtr.write_record(&record)?;
+    }
+
+    Ok(())
+}
+
 fn insert_blank_cols(path: String, sep: String) -> Result<(), Box<dyn Error>> {
     let mut rdr = read_csv(path.clone(), sep.clone())?;
 
@@ -85,12 +167,13 @@ fn insert_blank_cols(path: String, sep: String) -> Result<(), Box<dyn Error>> {
     }
     
     // 定义要插入的新列标题
-    let insert_headers = vec![
+    let mut insert_headers = vec![
         "Spotlight Type", "Time Entered", "Time Updated", "UserID Entered", "Name of User Entered",
         "UserID Updated", "Name of User Updated", "Date of Journal", "Journal Type", "Journal Type Description",
         "Journal Description", "Exchange Rate", "Controlling Area for Cost and Profit Centre", "Cost Centre",
         "Cost Centre Description", "Profit Centre",	"Profit Centre Description", "Source Activity or Transaction Code"
     ];
+    insert_headers.reverse();
 
     // 检查并插入新列标题
     let insert_idx = headers.len();
@@ -174,6 +257,24 @@ fn insert_blank_cols(path: String, sep: String) -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+#[tauri::command]
+pub async fn insertcol(path: String, sep: String, col: String, input: String, window: tauri::Window) {
+    let start = Instant::now();
+    match async { insert_col(path, sep, col, input) }.await {
+        Ok(result) => result,
+        Err(error) => {
+            eprintln!("insert_col error:: {error}");
+            window.emit("insert_col_err", &error.to_string()).unwrap();
+            return ();
+        }
+    };
+    let end = Instant::now();
+    let elapsed = end.duration_since(start);
+    let elapsed_seconds = elapsed.as_secs_f64();
+    let run_time = format!("{elapsed_seconds:.2} s");
+    window.emit("run_time", run_time).unwrap();
 }
 
 #[tauri::command]

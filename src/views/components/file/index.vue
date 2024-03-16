@@ -2,6 +2,7 @@
   import GetFileName from './components/GetFileName.vue';
   import Select from './components/Select.vue';
   import InsertBlank from './components/InsertBlank.vue';
+  import InsertFill from './components/InsertFill.vue';
 
   defineOptions({
     name: 'RtWelcome',
@@ -29,6 +30,16 @@
             </div>
           </template>
           <InsertBlank />
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header cursor">
+              <span>insert fill cols</span>
+            </div>
+          </template>
+          <InsertFill />
         </el-card>
       </el-col>
     </el-row>

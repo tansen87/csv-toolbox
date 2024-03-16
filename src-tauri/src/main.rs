@@ -35,6 +35,7 @@ fn main() {
             getfilename::filename,
             select::select,
             insert::insertblank,
+            insert::insertcol,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
