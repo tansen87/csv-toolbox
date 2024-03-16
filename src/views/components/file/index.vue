@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import GetFileName from './components/GetFileName.vue';
   import Select from './components/Select.vue';
+  import InsertBlank from './components/InsertBlank.vue';
 
   defineOptions({
     name: 'RtWelcome',
@@ -9,8 +10,8 @@
 
 <template>
   <div>
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+    <el-row :gutter="24" class="enter-y">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
@@ -20,6 +21,18 @@
           <GetFileName />
         </el-card>
       </el-col>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header cursor">
+              <span>insert blank cols</span>
+            </div>
+          </template>
+          <InsertBlank />
+        </el-card>
+      </el-col>
+    </el-row>
+    <el-row :gutter="20" class="enter-y">
       <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
         <el-card class="box-card">
           <template #header>

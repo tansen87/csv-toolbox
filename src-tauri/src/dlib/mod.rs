@@ -8,3 +8,4 @@ pub mod sqlp;
 pub mod rename;
 pub mod getfilename;
 pub mod select;
+pub mod insert;

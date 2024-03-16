@@ -12,6 +12,7 @@ use dlib::{
     rename,
     getfilename,
     select,
+    insert,
 };
 
 fn main() {
@@ -33,6 +34,7 @@ fn main() {
             rename::rename,
             getfilename::filename,
             select::select,
+            insert::insertblank,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
