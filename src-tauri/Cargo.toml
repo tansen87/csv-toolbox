@@ -19,7 +19,7 @@ tauri-build = { version = "1.5.1", features = [] }
 [dependencies]
 tauri = { version = "1.6.1", features = ["api-all"] }
 csv = "1.3.0"
-sqlx = { version = "0.7.3", features = ["mysql", "runtime-tokio-native-tls", "rust_decimal"] }
+sqlx = { version = "0.7.4", features = ["mysql", "runtime-tokio-native-tls", "rust_decimal"] }
 tokio = { version="1.26.0", features= ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9.31"
