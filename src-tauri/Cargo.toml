@@ -38,7 +38,7 @@ polars = { version = "0.38.2", features = [
     ] }
 rust_xlsxwriter = "0.63.0"
 calamine = { version = "0.24.0", features = ["dates"] }
-rayon = "1.8.1"
+rayon = "1.9.0"
 ryu = "1"
 itoa = "1"
 
