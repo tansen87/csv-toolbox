@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::BTreeMap,
     fs::File,
     io::BufWriter,
     path::Path
@@ -48,8 +48,8 @@ fn select_columns(path: String, sep: String, cols: String, window: tauri::Window
 
         let headers = rdr.headers()?.clone();
 
-        // traverse the headers to find the index of the selected column
-        let mut col_indices: HashMap<&str, usize> = HashMap::new();
+        // 遍历header以查找所选列的索引
+        let mut col_indices: BTreeMap<&str, usize> = BTreeMap::new();
         let mut idx = 0;
         for header in headers.iter() {
             if cols_select.contains(&header) {
@@ -57,7 +57,14 @@ fn select_columns(path: String, sep: String, cols: String, window: tauri::Window
             }
             idx += 1;
         }
-        let vec_indices: Vec<usize> = col_indices.values().cloned().collect();
+
+        // 创建一个向量来存储按照cols_select顺序排列的索引值
+        let mut vec_indices = Vec::new();
+        for col_select in cols_select.iter() {
+            if let Some(&index) = col_indices.get(col_select) {
+                vec_indices.push(index);
+            }
+        }
 
         let mut wtr = csv::WriterBuilder::new()
             .delimiter(separator[0]) 
