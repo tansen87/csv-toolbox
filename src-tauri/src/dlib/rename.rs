@@ -66,7 +66,7 @@ fn rename_headers(path: &str, sep: String, r_header: String, window: tauri::Wind
         "{}/{}_rename {}.csv",
         file_path_copy,
         file_name[0],
-        current_time.format("%Y-%m-%d %H.%M.%S")
+        current_time.format("%Y-%m-%d-%H%M%S")
     );
 
     let mut wtr = csv::WriterBuilder::new()

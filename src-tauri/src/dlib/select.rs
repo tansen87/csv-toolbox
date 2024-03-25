@@ -38,7 +38,7 @@ fn select_columns(path: String, sep: String, cols: String, window: tauri::Window
             "{}/{}_select {}.csv",
             file_path_copy,
             file_name[0],
-            current_time.format("%Y-%m-%d %H.%M.%S")
+            current_time.format("%Y-%m-%d-%H%M%S")
         );
 
         let mut rdr = csv::ReaderBuilder::new()

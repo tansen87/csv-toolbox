@@ -27,7 +27,7 @@ fn write_xlsx(data: Vec<String>, path: String) -> Result<(), Box<dyn Error>> {
     let output_path = format!(
         "{}/Filename {}.xlsx",
         path_parent.display(),
-        current_time.format("%Y-%m-%d %H.%M.%S")
+        current_time.format("%Y-%m-%d-%H%M%S")
     );
     let mut workbook = rust_xlsxwriter::Workbook::new();
     let worksheet = workbook.add_worksheet();

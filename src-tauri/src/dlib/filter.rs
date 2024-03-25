@@ -57,7 +57,7 @@ pub fn write_csv(path: String, sep: String, mode: &str) ->Result<csv::Writer<Buf
         .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "Parent path not found"))?;
 
     let current_time = chrono::Local::now();
-    let current_time_str = current_time.format("%Y-%m-%d %H.%M.%S").to_string();
+    let current_time_str = current_time.format("%Y-%m-%d-%H%M%S").to_string();
     let mut vec_output = Vec::new();
     match mode {
         "equal" => {
