@@ -54,7 +54,7 @@ fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dy
         .unwrap_or_else(|| "Default Path".to_string().into());
 
     let current_time = chrono::Local::now();
-    let current_time_str = current_time.format("%Y-%m-%d %H.%M.%S");
+    let current_time_str = current_time.format("%Y-%m-%d-%H%M%S");
 
     let mut vec_output = Vec::new();
     let output_path = match fn_type.as_str() {
@@ -106,7 +106,7 @@ fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn
         .unwrap_or_else(|| "Default Path".to_string().into());
 
     let current_time = chrono::Local::now();
-    let current_time_str = current_time.format("%Y-%m-%d %H.%M.%S");
+    let current_time_str = current_time.format("%Y-%m-%d-%H%M%S");
 
     let mut vec_output = Vec::new();
 
@@ -172,11 +172,11 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     // group by dataframe
     let gb = lf.group_by(idx)
         .agg([
-            cols(val).sum()
+            cols(val).fill_null(0).sum()
         ]).collect()?;
     
     let fn_type = "pivot".to_string();
-    write_csv(gb.clone(), path, fn_type)?;
+    write_xlsx(gb.clone(), path, fn_type)?;
 
     Ok(())
 }
