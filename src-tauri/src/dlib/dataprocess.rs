@@ -150,8 +150,8 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     };
     separator.push(sep_u8);
 
-    let idx: Vec<&str> = index.split(',').collect();
-    let val: Vec<&str> = values.split(',').collect();
+    let idx: Vec<&str> = index.split('|').collect();
+    let val: Vec<&str> = values.split('|').collect();
     let file_path = Path::new(&path);
 
     // Convert idx field datatype to utf8, val field datatype to float64
@@ -225,7 +225,7 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
     separator.push(sep_u8);
 
     let vec_path: Vec<&str> = path.split(',').collect();
-    let vec_col: Vec<&str> = column.split(',').collect();
+    let vec_col: Vec<&str> = column.split('|').collect();
     let mut lfs = Vec::new();
     let mut count: usize = 0;
     let file_len = vec_path.len();
@@ -302,7 +302,7 @@ fn concat_specific(path: String, sep: String, column: String, window: tauri::Win
     separator.push(sep_u8);
 
     let vec_path: Vec<&str> = path.split(',').collect();
-    let vec_col: Vec<&str> = column.split(',').collect();
+    let vec_col: Vec<&str> = column.split('|').collect();
     let mut lfs = Vec::new();
     let mut count: usize = 0;
     let file_len = vec_path.len();

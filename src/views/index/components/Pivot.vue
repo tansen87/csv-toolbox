@@ -13,8 +13,8 @@
   });
   const form = reactive({
     sep: '|',
-    index: '被审计单位,科目编号',
-    values: '借方发生额,贷方发生额',
+    index: '被审计单位|科目编号',
+    values: '借方发生额|贷方发生额',
   });
 
   listen('pivot_err', (event: any) => {

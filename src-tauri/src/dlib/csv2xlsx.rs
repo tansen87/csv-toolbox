@@ -46,7 +46,7 @@ fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
 fn write_range(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* csv to xlsx */
     let vec_path: Vec<&str> = path.split(',').collect();
-    let vec_col: Vec<&str> = column.split(',').collect();
+    let vec_col: Vec<&str> = column.split('|').collect();
     let mut separator = Vec::new();
     if sep.clone() == "\\t" {
         let sep_u8 = b'\t';
