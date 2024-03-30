@@ -29,12 +29,6 @@ futures = "0.3.30"
 polars = { version = "0.38.3", features = [
     "lazy",
     "diagonal_concat",
-    "streaming",
-    "asof_join",
-    "cross_join",
-    "semi_anti_join",
-    "sql",
-    "cse",
     ] }
 rust_xlsxwriter = "0.64.0"
 calamine = { version = "0.24.0", features = ["dates"] }

@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import Count from './components/Count.vue';
   import Filter from './components/Filter.vue';
-  import SQLquery from './components/SQLquery.vue';
   import Rename from './components/Rename.vue';
 
   defineOptions({
@@ -34,16 +33,6 @@
       </el-col>
     </el-row>
     <el-row :gutter="20" class="enter-y">
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>SQL Query</span>
-            </div>
-          </template>
-          <SQLquery />
-        </el-card>
-      </el-col>
       <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
         <el-card class="box-card">
           <template #header>
