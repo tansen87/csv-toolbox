@@ -225,12 +225,8 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
     separator.push(sep_u8);
 
     let vec_path: Vec<&str> = path.split(',').collect();
-    // let vec_col: Vec<&str> = column.split('|').collect();
     let mut lfs = Vec::new();
-    let mut count: usize = 0;
-    let file_len = vec_path.len();
 
-    // Convert column field datatype to float64
     let mut schema = Schema::new();
     for file in vec_path.iter() 
     {
@@ -247,7 +243,7 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
             .finish() {
                 Ok(df ) => df,
                 Err(err) => {
-                    let err_msg = format!("error: {} | {}", file, err);
+                    let err_msg = format!("{}|Error|{}", file, err);
                     window.emit("read_err", err_msg)?;
                     return Err(Box::new(err));
                 }
@@ -256,23 +252,13 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
         for h in header.iter() {
             schema.with_column(h.to_string().into(), DataType::String);
         }
-        // for num in vec_col.iter() {
-        //     schema.with_column(num.to_string().into(), DataType::Float64);
-        // }
+
         let tmp_lf = LazyCsvReader::new(file)
             .with_separator(separator[0])
             .with_missing_is_null(false)
             .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
             .finish()?;
         lfs.push(tmp_lf);
-
-        let info_msg = format!("{}|done", file);
-        window.emit("cat_msg", info_msg)?;
-
-        count += 1;
-        let progress = (count as f32) / (file_len as f32) * 100.0;
-        let progress_s = format!("{progress:.0}");
-        window.emit("cat_progress", progress_s)?;
     }
 
     // concat dataframe
