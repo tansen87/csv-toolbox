@@ -22,8 +22,6 @@
   });
   const form = reactive({
     sep: '|',
-    column:
-      '借方发生额|贷方发生额|借方发生额-外币|贷方发生额-外币|借方数量|贷方数量|期初数-外币|期初数|期末数外币|期末数|期初数量|期末数量',
   });
 
   listen('cat_progress', (event: any) => {
@@ -63,7 +61,6 @@
       await invoke('concat', {
         path: data.filePath,
         sep: form.sep,
-        column: form.column,
       });
       ElMessage.success('concat done.');
     }
@@ -102,9 +99,6 @@
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
       </el-select>
-    </el-form-item>
-    <el-form-item label="Numeric col">
-      <el-input v-model="form.column" placeholder="Please input numeric column" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>

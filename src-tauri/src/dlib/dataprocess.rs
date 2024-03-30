@@ -214,7 +214,7 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
     Ok(())
 }
 
-fn concat_all(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
+fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
     /* merge csv files into a xlsx or csv file */
     let mut separator = Vec::new();
     let sep_u8 = if sep == "\\t" {
@@ -225,7 +225,7 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
     separator.push(sep_u8);
 
     let vec_path: Vec<&str> = path.split(',').collect();
-    let vec_col: Vec<&str> = column.split('|').collect();
+    // let vec_col: Vec<&str> = column.split('|').collect();
     let mut lfs = Vec::new();
     let mut count: usize = 0;
     let file_len = vec_path.len();
@@ -256,9 +256,9 @@ fn concat_all(path: String, sep: String, column: String, window: tauri::Window) 
         for h in header.iter() {
             schema.with_column(h.to_string().into(), DataType::String);
         }
-        for num in vec_col.iter() {
-            schema.with_column(num.to_string().into(), DataType::Float64);
-        }
+        // for num in vec_col.iter() {
+        //     schema.with_column(num.to_string().into(), DataType::Float64);
+        // }
         let tmp_lf = LazyCsvReader::new(file)
             .with_separator(separator[0])
             .with_missing_is_null(false)
@@ -371,9 +371,9 @@ pub async fn unique(path: String, sep: String, column: String, window: tauri::Wi
 }
 
 #[tauri::command]
-pub async fn concat(path: String, sep: String, column: String, window: tauri::Window) {
+pub async fn concat(path: String, sep: String, window: tauri::Window) {
     let cat_window = window.clone();
-    match async { concat_all(path, sep, column, cat_window) }.await {
+    match async { concat_all(path, sep, cat_window) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("concat error: {error}");
