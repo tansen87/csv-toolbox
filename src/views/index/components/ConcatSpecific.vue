@@ -105,7 +105,7 @@
       <el-button type="success" @click="concatData()">Concat</el-button>
     </el-form-item>
   </el-form>
-  <el-table :data="selectedFiles" height="250" style="width: 100%">
+  <el-table :data="selectedFiles" height="200" style="width: 100%">
     <el-table-column prop="filename" label="file" width="480"></el-table-column>
     <el-table-column prop="status" label="status" width="120">
       <template #default="scope">
