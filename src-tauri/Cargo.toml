@@ -24,7 +24,7 @@ tokio = { version="1.36.0", features= ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9.32"
 rust_decimal = "1.34.3"
-chrono = "0.4.35"
+chrono = "0.4.37"
 futures = "0.3.30"
 polars = { version = "0.38.3", features = [
     "lazy",
