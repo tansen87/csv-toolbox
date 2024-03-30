@@ -3,45 +3,25 @@
   import { open } from '@tauri-apps/api/dialog';
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
-  import { ElMessage, ElIcon } from 'element-plus';
-  import { CloseBold, Select } from '@element-plus/icons-vue';
+  import { ElMessage } from 'element-plus';
 
   const selectedFiles = ref([]);
-  const isProcessing = ref(false);
-  const progress = ref(0);
-  const customColors = [
-    { color: '#98FB98', percentage: 20 },
-    { color: '#7CFC00', percentage: 40 },
-    { color: '#7FFF00', percentage: 60 },
-    { color: '#ADFF2F', percentage: 80 },
-    { color: '#9ACD32', percentage: 100 },
-  ];
+  const isLoading = ref(false);
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
-  });
-  const form = reactive({
     sep: '|',
     column: '被审计单位|记账时间|凭证编号|科目编号|科目名称|借方发生额|贷方发生额',
   });
 
-  listen('catsp_progress', (event: any) => {
-    const pgs: any = event.payload;
-    progress.value = pgs;
-  });
-
-  listen('catsp_msg', (event: any) => {
-    const catspMsg: any = event.payload;
-    selectedFiles.value.forEach((file) => {
-      if (file.filename === catspMsg.split('|')[0]) {
-        file.status = 'completed';
-      }
-    });
-  });
-
   listen('catsp_err', (event: any) => {
     const error: any = 'catsp_err: ' + event.payload;
-    ElMessage.error(error);
+    ElMessage({
+      showClose: true,
+      message: error,
+      type: 'error',
+      duration: 0,
+    });
   });
 
   // data concat
@@ -53,18 +33,25 @@
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
-      isProcessing.value = true;
+      isLoading.value = true;
       await invoke('concatsp', {
         path: data.filePath,
-        sep: form.sep,
-        column: form.column,
+        sep: data.sep,
+        column: data.column,
       });
-      ElMessage.success('concat done.');
+      isLoading.value = false;
+      ElMessage({
+        showClose: true,
+        message: 'concat done.',
+        type: 'success',
+        duration: 0,
+      });
     }
   }
 
+  // open file
   async function selectFile() {
-    isProcessing.value = false;
+    selectedFiles.value = [];
     const selected = await open({
       multiple: true,
       filters: [
@@ -78,9 +65,10 @@
       data.filePath = selected.toString();
       const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
       selectedFiles.value = nonEmptyRows.map((file: any) => {
-        return { filename: file, status: 'awaiting' };
+        return { filename: file };
       });
     } else if (selected === null) {
+      ElMessage.warning('未选择文件');
       return;
     } else {
       data.filePath = selected;
@@ -89,38 +77,25 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form :model="data">
     <el-form-item label="Separator">
-      <el-select v-model="form.sep" placeholder="please select delimiter">
+      <el-select v-model="data.sep">
         <el-option label="," value="," />
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
       </el-select>
     </el-form-item>
     <el-form-item label="Specific col">
-      <el-input v-model="form.column" placeholder="Please input numeric column" />
+      <el-input v-model="data.column" placeholder="Please input columns" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
-      <el-button type="success" @click="concatData()">Concat</el-button>
+      <el-button type="success" :loading="isLoading" icon="el-icon-loading" @click="concatData()"
+        >Concat</el-button
+      >
     </el-form-item>
   </el-form>
   <el-table :data="selectedFiles" height="200" style="width: 100%">
     <el-table-column prop="filename" label="file" width="480"></el-table-column>
-    <el-table-column prop="status" label="status" width="120">
-      <template #default="scope">
-        <ElIcon v-if="scope.row.status === 'awaiting'" class="is-loading">
-          <Loading />
-        </ElIcon>
-        <ElIcon v-else-if="scope.row.status === 'completed'" color="#00CD66">
-          <Select />
-        </ElIcon>
-        <ElIcon v-else-if="scope.row.status === 'error'" color="#FF0000">
-          <CloseBold />
-        </ElIcon>
-        <!-- <span>{{ scope.row.status }}</span> -->
-      </template>
-    </el-table-column>
   </el-table>
-  <el-progress v-if="isProcessing" :percentage="progress" :color="customColors" />
 </template>

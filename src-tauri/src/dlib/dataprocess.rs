@@ -277,7 +277,7 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
     Ok(())
 }
 
-fn concat_specific(path: String, sep: String, column: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
+fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<dyn Error>> {
     /* merge sepecific columns */
     let mut separator = Vec::new();
     let sep_u8 = if sep == "\\t" {
@@ -290,8 +290,6 @@ fn concat_specific(path: String, sep: String, column: String, window: tauri::Win
     let vec_path: Vec<&str> = path.split(',').collect();
     let vec_col: Vec<&str> = column.split('|').collect();
     let mut lfs = Vec::new();
-    let mut count: usize = 0;
-    let file_len = vec_path.len();
 
     let mut schema = Schema::new();
     for file in vec_path.iter() 
@@ -306,14 +304,6 @@ fn concat_specific(path: String, sep: String, column: String, window: tauri::Win
             .finish()?
             .select([cols(vec_col.clone())]);
         lfs.push(tmp_lf);
-
-        let catsp_msg = format!("{}|done", file);
-        window.emit("catsp_msg", catsp_msg)?;
-
-        count += 1;
-        let progress = (count as f32) / (file_len as f32) * 100.0;
-        let progress_s = format!("{progress:.0}");
-        window.emit("catsp_progress", progress_s)?;
     }
 
     // concat specific dataframe
@@ -371,8 +361,7 @@ pub async fn concat(path: String, sep: String, window: tauri::Window) {
 
 #[tauri::command]
 pub async fn concatsp(path: String, sep: String, column: String, window: tauri::Window) {
-    let cat_window = window.clone();
-    match async { concat_specific(path, sep, column, cat_window) }.await {
+    match async { concat_specific(path, sep, column) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("concat_sepecific error: {error}");
