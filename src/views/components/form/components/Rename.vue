@@ -129,7 +129,7 @@
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="renameData()">Rename</el-button>
     </el-form-item>
-    <el-table :data="filterTableData" height="650" style="width: 100%">
+    <el-table :data="filterTableData" height="770" style="width: 100%">
       <el-table-column prop="col1" label="headers" width="300"></el-table-column>
       <el-table-column prop="col2" label="rename headers" width="300">
         <template #default="{ row }">

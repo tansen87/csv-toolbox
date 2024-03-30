@@ -111,7 +111,7 @@
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="SelectColumns()">Select</el-button>
     </el-form-item>
-    <el-table :data="selectedFiles" height="230" style="width: 100%">
+    <el-table :data="selectedFiles" height="200" style="width: 100%">
       <el-table-column prop="filename" label="file" width="480"></el-table-column>
       <el-table-column label="status" width="120">
         <template #default="scope">

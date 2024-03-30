@@ -1,12 +1,5 @@
 <script setup lang="ts">
   import GetFileName from './components/GetFileName.vue';
-  import Select from './components/Select.vue';
-  import InsertBlank from './components/InsertBlank.vue';
-  import InsertFill from './components/InsertFill.vue';
-
-  defineOptions({
-    name: 'RtWelcome',
-  });
 </script>
 
 <template>
@@ -20,38 +13,6 @@
             </div>
           </template>
           <GetFileName />
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>insert blank cols</span>
-            </div>
-          </template>
-          <InsertBlank />
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>insert fill cols</span>
-            </div>
-          </template>
-          <InsertFill />
-        </el-card>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>select columns</span>
-            </div>
-          </template>
-          <Select />
         </el-card>
       </el-col>
     </el-row>
