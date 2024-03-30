@@ -53,7 +53,13 @@
   });
   listen('errcode', (event: any) => {
     const errCode: any = event.payload;
+    let errCodeSp = errCode.split('|');
     ElMessage.error(errCode);
+    tableData.value.forEach((file: any) => {
+      if (file.filename === errCodeSp[0] && errCodeSp[1] === 'Error') {
+        file.status = 'error';
+      }
+    });
   });
 
   listen('message', (event: any) => {
@@ -115,7 +121,7 @@
 
     const nonEmptyRows = project.filter((row: any) => row.trim() !== '');
     tableData.value = nonEmptyRows.map((file: any) => {
-      return { filename: file, status: 'awaiting' };
+      return { filename: file, status: '' };
     });
   }
 </script>
@@ -138,7 +144,7 @@
       <el-button type="primary" @click="selectFile()">Open Yaml</el-button>
       <el-button type="success" @click="getData()">Download</el-button>
     </el-form-item>
-    <el-table :data="tableData" height="200" style="width: 100%">
+    <el-table :data="tableData" height="275" style="width: 100%">
       <el-table-column prop="filename" label="file" width="480"></el-table-column>
       <el-table-column
         prop="status"
@@ -160,7 +166,6 @@
           <ElIcon v-else-if="scope.row.status === 'error'" color="#FF0000">
             <CloseBold />
           </ElIcon>
-          <!-- <span>{{ scope.row.status }}</span> -->
         </template>
       </el-table-column>
     </el-table>

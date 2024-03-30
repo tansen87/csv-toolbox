@@ -243,7 +243,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                 window.emit("message", &emit_msg)?;
             },
             Err(error) => {
-                let err_msg = format!("{} | Error: {}", &company, error);
+                let err_msg = format!("{}|Error|{}", &company, error);
                 let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                 let err_msg_log = format!("{} => {}\n", &timestamp, &err_msg);
                 window.emit("errcode", &err_msg)?;
