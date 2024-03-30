@@ -22,7 +22,7 @@
   });
   const form = reactive({
     sep: '|',
-    column: '被审计单位|记账时间|凭证编号|科目编号|科目名|借方发生额|贷方发生额',
+    column: '被审计单位|记账时间|凭证编号|科目编号|科目名称|借方发生额|贷方发生额',
   });
 
   listen('catsp_progress', (event: any) => {
