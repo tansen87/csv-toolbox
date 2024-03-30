@@ -11,7 +11,7 @@
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
-    sep: ',',
+    sep: '|',
   });
 
   listen('cat_err', (event: any) => {
@@ -68,7 +68,9 @@
     }
   }
 
+  // open file
   async function selectFile() {
+    selectedFiles.value = [];
     const selected = await open({
       multiple: true,
       filters: [
