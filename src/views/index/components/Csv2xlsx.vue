@@ -26,8 +26,6 @@
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
-  });
-  const form = reactive({
     sep: '|',
     column:
       '借方发生额|贷方发生额|借方发生额-外币|贷方发生额-外币|借方数量|贷方数量|期初数-外币|期初数|期末数外币|期末数|期初数量|期末数量',
@@ -35,7 +33,12 @@
 
   listen('c2x_err', (event: any) => {
     const error: any = 'c2x_err: ' + event.payload;
-    ElMessage.error(error);
+    ElMessage({
+      showClose: true,
+      message: error,
+      type: 'error',
+      duration: 0,
+    });
   });
 
   listen('c2x_progress', (event: any) => {
@@ -50,21 +53,33 @@
         file.status = 'error';
       }
     });
+    ElMessage({
+      showClose: true,
+      message: 'read_err: ' + error,
+      type: 'error',
+      duration: 0,
+    });
   });
 
   listen('rows_err', (event: any) => {
     const error: any = event.payload;
     selectedFiles.value.forEach((file) => {
-      if (file.filename === error.split('|')[0]) {
+      if (file.filename.split('\\').pop() === error.split('|')[0]) {
         file.status = 'error';
       }
+    });
+    ElMessage({
+      showClose: true,
+      message: 'rows_err: ' + error,
+      type: 'error',
+      duration: 0,
     });
   });
 
   listen('c2x_msg', (event: any) => {
     const c2xMsg: any = event.payload;
     selectedFiles.value.forEach((file) => {
-      if (file.filename === c2xMsg.split('|')[0]) {
+      if (file.filename === c2xMsg) {
         file.status = 'completed';
       }
     });
@@ -82,20 +97,22 @@
       isProcessing.value = true;
       await invoke('ctox', {
         path: data.filePath,
-        sep: form.sep,
-        column: form.column,
+        sep: data.sep,
+        column: data.column,
       });
       ElMessage.success('convert done.');
     }
   }
 
+  // open file
   async function selectFile() {
+    selectedFiles.value = [];
     isProcessing.value = false;
     const selected = await open({
       multiple: true,
       filters: [
         {
-          name: 'Excel',
+          name: 'csv',
           extensions: data.fileFormats,
         },
       ],
@@ -104,9 +121,10 @@
       data.filePath = selected.toString();
       const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
       selectedFiles.value = nonEmptyRows.map((file: any) => {
-        return { filename: file, status: 'awaiting' };
+        return { filename: file, status: '' };
       });
     } else if (selected === null) {
+      ElMessage.warning('未选择文件');
       return;
     } else {
       data.filePath = selected;
@@ -115,16 +133,16 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form :model="data">
     <el-form-item label="Separator">
-      <el-select v-model="form.sep" placeholder="please select delimiter">
+      <el-select v-model="data.sep">
         <el-option label="," value="," />
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
       </el-select>
     </el-form-item>
     <el-form-item label="Numeric col">
-      <el-input v-model="form.column" placeholder="Please input numeric column" />
+      <el-input v-model="data.column" placeholder="Please input numeric column" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
@@ -153,7 +171,6 @@
         <ElIcon v-else-if="scope.row.status === 'error'" color="#FF0000">
           <CloseBold />
         </ElIcon>
-        <!-- <span>{{ scope.row.status }}</span> -->
       </template>
     </el-table-column>
   </el-table>

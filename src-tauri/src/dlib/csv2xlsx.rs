@@ -1,6 +1,6 @@
 use std::{
-    path::PathBuf,
-    error::Error
+    error::Error,
+    path::{Path, PathBuf}
 };
 
 use polars::{
@@ -62,6 +62,13 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
 
     for file in vec_path.iter() 
     {
+        let file_name = match Path::new(&file).file_name() {
+            Some(name) => match name.to_str() {
+                Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
+                None => vec![],
+            },
+            None => vec![],
+        };
         let tmp_df = match CsvReader::from_path(file)?
             .with_separator(separator[0])
             .with_n_rows(Some(0))
@@ -91,10 +98,10 @@ fn write_range(path: String, sep: String, column: String, window: tauri::Window)
         let rows = df.shape().0;
         if rows < 104_0000 {
             write_xlsx(df, dest)?;
-            let c2x_msg = format!("{}|done.", file);
+            let c2x_msg = format!("{}", file);
             window.emit("c2x_msg", c2x_msg)?;
         } else {
-            let rows_msg = format!("{}| - {}, cannot converted.", file, rows);
+            let rows_msg = format!("{}.{}|rows:{}, cannot converted.", file_name[0], file_name[1], rows);
             window.emit("rows_err", rows_msg)?;
         }
 
