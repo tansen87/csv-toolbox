@@ -28,15 +28,16 @@
     filePath: '',
     fileFormats: ['xlsx', 'xls', 'xlsb', 'xlsm', 'xlam', 'xla', 'ods'],
   });
-  const form = reactive({
-    sep: '',
-    column: '',
-  });
 
   listen('row_count_err', (event: any) => {
     const msg: any = event.payload;
     const warning_msg = 'row_count_err: ' + event.payload;
-    ElMessage.warning(warning_msg);
+    ElMessage({
+      showClose: true,
+      message: warning_msg,
+      type: 'warning',
+      duration: 0,
+    });
     selectedFiles.value.forEach((file) => {
       if (file.filename === msg.split('|')[0]) {
         file.status = 'error';
@@ -60,7 +61,12 @@
 
   listen('e2c_err', (event: any) => {
     const error: any = 'e2c_err: ' + event.payload;
-    ElMessage.error(error);
+    ElMessage({
+      showClose: true,
+      message: error,
+      type: 'error',
+      duration: 0,
+    });
   });
 
   // convert excel to csv
@@ -80,8 +86,10 @@
     }
   }
 
+  // open file
   async function selectFile() {
     isProcessing.value = false;
+    selectedFiles.value = [];
     const selected = await open({
       multiple: true,
       filters: [
@@ -95,9 +103,10 @@
       data.filePath = selected.toString();
       const nonEmptyRows = selected.filter((row: any) => row.trim() !== '');
       selectedFiles.value = nonEmptyRows.map((file: any) => {
-        return { filename: file, status: 'awaiting' };
+        return { filename: file, status: '' };
       });
     } else if (selected === null) {
+      ElMessage.warning('未选择文件');
       return;
     } else {
       data.filePath = selected;
@@ -106,13 +115,13 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form :model="data">
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
       <el-button type="success" @click="excelTocsv()">Convert</el-button>
     </el-form-item>
   </el-form>
-  <el-table :data="selectedFiles" height="330" style="width: 100%">
+  <el-table :data="selectedFiles" height="300" style="width: 100%">
     <el-table-column prop="filename" label="file" width="480"></el-table-column>
     <el-table-column
       prop="status"
