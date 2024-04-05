@@ -1,20 +1,22 @@
 # Tauri Toolkit
 > * Download MySQL data
 > * Data pivot
+> * Data unique
 > * Concatenate data
 > * Concatenate specific data
 > * Quick convert Excel to CSV
-> * Convert CSV to Excel
-> * Data unique
+> * Convert CSV to xlsx
 > * Quick count CSV rows
 > * Quick multi condition data precision query (equal)
 > * Quick multi condition data fuzzy query (contains)
 > * Quick multi condition data starts with query (startswith)
-> * SQL query (SELECT, JOIN, UNION, GROUP BY, ORDER BY, LIMIT...)
 > * rename header
+> * select, re-order CSV columns
+> * insert CSV blank columns
+> * insert CSV value columns
 > * get filename and write to xlsx
 
-![image](https://github.com/tansen87/tauri-toolkit/assets/98570790/bb98f299-da9b-4616-9ef5-28765997bf49)
+![image](https://github.com/tansen87/tauri-toolkit/assets/98570790/8906487e-eaa9-4355-b0be-359b453dd3f9)
 
 ## Usage
 ### Install dependencies
