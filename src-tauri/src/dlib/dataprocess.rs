@@ -18,9 +18,7 @@ use polars::{
         Schema,
         SerWriter,
         UnionArgs,
-        // NamedFrom,
     },
-    // series::Series,
 };
 
 fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn Error>> {
