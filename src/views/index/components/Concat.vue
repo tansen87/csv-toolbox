@@ -3,45 +3,32 @@
   import { open } from '@tauri-apps/api/dialog';
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
-  import { ElMessage, ElIcon } from 'element-plus';
-  import { CloseBold } from '@element-plus/icons-vue';
+  import { ElMessage } from 'element-plus';
 
   const selectedFiles = ref([]);
   const isLoading = ref(false);
   const data = reactive({
     filePath: '',
-    fileFormats: ['csv', 'txt', 'tsv', 'spext'],
+    fileFormats: ['csv', 'txt', 'tsv', 'spext', 'dat'],
     sep: '|',
   });
 
   listen('cat_err', (event: any) => {
     const error: any = 'cat_err: ' + event.payload;
-    let catErr = event.payload.split('|');
     ElMessage({
       showClose: true,
       message: error,
       type: 'error',
       duration: 0,
-    });
-    selectedFiles.value.forEach((file) => {
-      if (file.filename.split('\\').pop() === catErr[0] && catErr[1] === 'Error') {
-        file.status = 'error';
-      }
     });
   });
   listen('read_err', (event: any) => {
     const error: any = 'read_err: ' + event.payload;
-    let readErr = event.payload.split('|');
     ElMessage({
       showClose: true,
       message: error,
       type: 'error',
       duration: 0,
-    });
-    selectedFiles.value.forEach((file) => {
-      if (file.filename.split('\\').pop() === readErr[0] && readErr[1] === 'Error') {
-        file.status = 'error';
-      }
     });
   });
 
@@ -113,12 +100,5 @@
   </el-form>
   <el-table :data="selectedFiles" height="250" style="width: 100%">
     <el-table-column prop="filename" label="file" width="480"></el-table-column>
-    <el-table-column label="status" width="120">
-      <template #default="scope">
-        <ElIcon v-if="scope.row.status === 'error'" color="#FF0000">
-          <CloseBold />
-        </ElIcon>
-      </template>
-    </el-table-column>
   </el-table>
 </template>

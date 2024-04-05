@@ -9,7 +9,7 @@
   const isLoading = ref(false);
   const data = reactive({
     filePath: '',
-    fileFormats: ['csv', 'txt', 'tsv', 'spext'],
+    fileFormats: ['csv', 'txt', 'tsv', 'spext', 'dat'],
     sep: '|',
     column: '被审计单位|记账时间|凭证编号|科目编号|科目名称|借方发生额|贷方发生额',
   });

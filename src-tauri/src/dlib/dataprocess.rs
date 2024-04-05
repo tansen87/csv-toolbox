@@ -5,11 +5,22 @@ use std::{
 };
 
 use polars::{
-    io::SerReader,
-    frame::DataFrame,
     datatypes::{AnyValue, DataType},
-    lazy::dsl::{col, functions::concat_lf_diagonal, cols},
-    prelude::{Arc, Schema, CsvReader, CsvWriter, SerWriter, UnionArgs, LazyCsvReader, LazyFileListReader}
+    frame::DataFrame,
+    io::SerReader,
+    lazy::dsl::{col, cols, functions::concat_lf_diagonal, lit},
+    prelude::{
+        Arc,
+        CsvReader,
+        CsvWriter,
+        LazyCsvReader,
+        LazyFileListReader,
+        Schema,
+        SerWriter,
+        UnionArgs,
+        // NamedFrom,
+    },
+    // series::Series,
 };
 
 fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn Error>> {
@@ -90,7 +101,7 @@ fn write_xlsx(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dy
     Ok(())
 }
 
-fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn Error>> {
+fn write_csv(df: DataFrame, path: String, fn_type: String, sep: u8) -> Result<(), Box<dyn Error>> {
     /*  Write dataframe to csv */
     let file_path = Path::new(&path);
     let file_name = match file_path.file_name() {
@@ -134,7 +145,7 @@ fn write_csv(df: DataFrame, path: String, fn_type: String) -> Result<(), Box<dyn
 
     let mut file = File::create(vec_output[0].clone())?;
     CsvWriter::new(&mut file)
-        .with_separator(b'|')
+        .with_separator(sep)
         .finish(&mut df.clone())?;
 
     Ok(())
@@ -237,6 +248,15 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
         //     } else {
         //         return Err(format!("error file: {}", file).into());
         //     };
+
+        let fname = match Path::new(&file).file_name() {
+            Some(name) => match name.to_str() {
+                Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
+                None => vec![],
+            },
+            None => vec![],
+        };
+
         let tmp_df = match CsvReader::from_path(file)?
             .with_separator(separator[0])
             .with_n_rows(Some(0))
@@ -258,7 +278,9 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
             .with_missing_is_null(false)
             .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
             .finish()?;
-        lfs.push(tmp_lf);
+        let file_name = format!("{}.{}", fname[0], fname[1]);
+        let lf = tmp_lf.with_column(lit(file_name).alias("FileName"));
+        lfs.push(lf);
     }
 
     // concat dataframe
@@ -271,7 +293,7 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
     if row_len < 104_0000 {
         write_xlsx(union_df, save_path, fn_type.clone())?;
     } else {
-        write_csv(union_df, save_path, fn_type)?;
+        write_csv(union_df, save_path, fn_type, separator[0])?;
     }
 
     Ok(())
@@ -294,6 +316,13 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
     let mut schema = Schema::new();
     for file in vec_path.iter() 
     {
+        let fname = match Path::new(&file).file_name() {
+            Some(name) => match name.to_str() {
+                Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
+                None => vec![],
+            },
+            None => vec![],
+        };
         for h in vec_col.iter() {
             schema.with_column(h.to_string().into(), DataType::String);
         }
@@ -303,7 +332,9 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
             .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
             .finish()?
             .select([cols(vec_col.clone())]);
-        lfs.push(tmp_lf);
+        let file_name = format!("{}.{}", fname[0], fname[1]);
+        let lf = tmp_lf.with_column(lit(file_name).alias("FileName"));
+        lfs.push(lf);
     }
 
     // concat specific dataframe
@@ -316,7 +347,7 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
     if row_len < 104_0000 {
         write_xlsx(union_df, save_path, fn_type.clone())?;
     } else {
-        write_csv(union_df, save_path, fn_type)?;
+        write_csv(union_df, save_path, fn_type, separator[0])?;
     }
 
     Ok(())
