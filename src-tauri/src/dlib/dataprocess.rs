@@ -163,16 +163,13 @@ fn groupby_sum(path: String, sep: String, index: String, values: String) -> Resu
     let val: Vec<&str> = values.split('|').collect();
     let file_path = Path::new(&path);
 
-    // Convert idx field datatype to utf8, val field datatype to float64
+    // Convert idx field datatype to string
     let mut schema = Schema::new();
     for i in idx.iter() {
         schema.with_column(i.to_string().into(), DataType::String);
     }
-    for v in val.iter() {
-        schema.with_column(v.to_string().into(), DataType::Float64);
-    }
 
-    // load csv file
+    // read csv file
     let lf = LazyCsvReader::new(&file_path)
         .with_separator(separator[0])
         .with_dtype_overwrite(Some(&Arc::new(schema)))
