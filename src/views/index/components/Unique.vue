@@ -9,9 +9,7 @@
   const isProcessing = ref(false);
   const data = reactive({
     filePath: '',
-    fileFormats: ['csv', 'txt', 'tsv', 'spext'],
-  });
-  const form = reactive({
+    fileFormats: ['csv', 'txt', 'tsv', 'spext', 'dat'],
     sep: '|',
     column: '科目名称',
   });
@@ -33,8 +31,8 @@
       isProcessing.value = true;
       await invoke('unique', {
         path: data.filePath,
-        sep: form.sep,
-        column: form.column,
+        sep: data.sep,
+        column: data.column,
       });
       isProcessing.value = false;
       ElMessage.success('unique done.');
@@ -64,16 +62,17 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form :model="data">
     <el-form-item label="Separator">
-      <el-select v-model="form.sep" placeholder="please select delimiter">
+      <el-select v-model="data.sep">
         <el-option label="," value="," />
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
+        <el-option label=";" value=";" />
       </el-select>
     </el-form-item>
     <el-form-item label="Column">
-      <el-input v-model="form.column" placeholder="Please input column" />
+      <el-input v-model="data.column" clearable placeholder="Please input column" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
