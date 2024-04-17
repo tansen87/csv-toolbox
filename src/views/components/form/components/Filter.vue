@@ -4,27 +4,18 @@
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
-  import { Search } from '@element-plus/icons-vue';
 
   const getCSVMsg = ref('');
-  const getYamlMsg = ref('');
   const isLoading = ref(false);
   const isFinish = ref(false);
   const isWrite = ref(false);
   const countRows = ref(0);
   const data = reactive({
     filePath: '',
-    fileFormats: ['csv', 'txt', 'tsv', 'spext'],
-  });
-  const yml = reactive({
-    filePath: '',
-    fileFormats: ['yaml', 'yml'],
-  });
-  const form = reactive({
+    fileFormats: ['csv', 'txt', 'tsv', 'spext', 'dat'],
     sep: '|',
     column: '科目名称',
     mode: 'equal',
-    isinput: true,
     condition: '银行存款|应收账款',
   });
 
@@ -63,10 +54,6 @@
       ElMessage.warning('未选择csv文件');
       return;
     }
-    if (yml.filePath == '' && form.isinput === false) {
-      ElMessage.warning('未选择yaml文件');
-      return;
-    }
 
     if (data.filePath != '') {
       ElMessage.info('waiting...');
@@ -75,12 +62,10 @@
       isWrite.value = true;
       await invoke('filter', {
         path: data.filePath,
-        ymlpath: yml.filePath,
-        sep: form.sep,
-        column: form.column,
-        mode: form.mode,
-        isinput: form.isinput,
-        condition: form.condition,
+        sep: data.sep,
+        column: data.column,
+        mode: data.mode,
+        condition: data.condition,
       });
       isLoading.value = false;
       isFinish.value = true;
@@ -110,53 +95,35 @@
     }
     getCSVMsg.value = selected.toString();
   }
-  async function selectYmlFile() {
-    const selected = await open({
-      multiple: false,
-      filters: [
-        {
-          name: 'yaml',
-          extensions: yml.fileFormats,
-        },
-      ],
-    });
-    if (Array.isArray(selected)) {
-      yml.filePath = selected.toString();
-    } else if (selected === null) {
-      return;
-    } else {
-      yml.filePath = selected;
-    }
-    getYamlMsg.value = selected.toString();
-  }
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form :model="data">
     <el-form-item label="Separator">
-      <el-select v-model="form.sep" placeholder="please select delimiter">
+      <el-select v-model="data.sep">
         <el-option label="," value="," />
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
+        <el-option label=";" value=";" />
       </el-select>
     </el-form-item>
     <el-form-item label="Filter col">
-      <el-input v-model="form.column" placeholder="Please input column" />
+      <el-input v-model="data.column" clearable placeholder="Please input column" />
     </el-form-item>
     <el-form-item label="Filter mode">
-      <el-select v-model="form.mode" placeholder="please select filter mode">
+      <el-select v-model="data.mode">
         <el-option label="equal" value="equal" />
         <el-option label="contains" value="contains" />
         <el-option label="startswith" value="startswith" />
       </el-select>
     </el-form-item>
-    <el-form-item label="Input or Yaml">
-      <el-switch v-model="form.isinput" inline-prompt active-text="input" inactive-text="yaml" />
-      <ElText>---</ElText>
-      <el-button type="warning" :icon="Search" circle @click="selectYmlFile()" />
-    </el-form-item>
     <el-form-item label="conditions">
-      <el-input v-model="form.condition" placeholder="Please input conditions" clearable />
+      <el-input
+        v-model="data.condition"
+        autosize
+        type="textarea"
+        placeholder="Please input conditions"
+      />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
@@ -164,7 +131,6 @@
     </el-form-item>
   </el-form>
   <el-text class="mx-1" type="primary">{{ getCSVMsg }}</el-text>
-  <el-text class="mx-1" type="warning">{{ getYamlMsg }}</el-text>
   <p></p>
   <el-icon v-if="isLoading" color="#FF8C00" class="is-loading"> <Loading /> </el-icon>
   <el-icon v-if="isFinish" color="#32CD32"> <SuccessFilled /> </el-icon>

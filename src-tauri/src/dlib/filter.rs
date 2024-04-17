@@ -5,21 +5,6 @@ use std::{
     error::Error
 };
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Deserialize, Serialize)]
-struct Config {
-    conditions: Vec<String>,
-}
-
-fn read_yaml(path: String) -> Result<Config, Box<dyn Error>> {
-    let yaml_file = File::open(path)?;
-    let yaml_reader = BufReader::new(yaml_file);
-    let yaml: Config = serde_yaml::from_reader(yaml_reader)?;
-
-    Ok(yaml)
-}
-
 pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<BufReader<File>>, Box<dyn Error>> {
     let mut separator = Vec::new();
     let sep_u8 = if sep == "\\t" {
@@ -201,94 +186,47 @@ fn startswith_filter(path: String, sep: String, column: String, conditions: Vec<
 }
 
 #[tauri::command]
-pub async fn filter(path: String, ymlpath: String, sep: String, column: String, mode: String, isinput: bool, condition: String, window: tauri::Window) {
+pub async fn filter(path: String, sep: String, column: String, mode: String, condition: String, window: tauri::Window) {
     let equal_window = window.clone();
     let contains_window = window.clone();
     let startswith_window = window.clone();
 
-    if isinput {
-        let vec_conditions: Vec<&str> = condition.split('|').collect();
-        let vec_strings: Vec<String> = vec_conditions.iter().map(|&condition| condition.to_string()).collect();
-        if mode == "equal" 
-        {
-            match async { equal_filter(path, sep, column, vec_strings, equal_window) }.await {
-                Ok(result) => result,
-                Err(error) => {
-                    eprintln!("equal_filter error: {error}");
-                    window.emit("equal_err", &error.to_string()).unwrap();
-                    return ();
-                }
-            };
-        } 
-        else if mode == "contains" 
-        {
-            match async { contains_filter(path, sep, column, vec_strings, contains_window) }.await {
-                Ok(result) => result,
-                Err(error) => {
-                    eprintln!("contains_filter error: {error}");
-                    window.emit("contains_err", &error.to_string()).unwrap();
-                    return ();
-                }
-            };
-        } 
-        else if mode == "startswith" 
-        {
-            match async { startswith_filter(path, sep, column, vec_strings, startswith_window) }.await {
-                Ok(result) => result,
-                Err(error) => {
-                    eprintln!("startswith_filter error: {error}");
-                    window.emit("startswith_err", &error.to_string()).unwrap();
-                    return ();
-                }
-            }
-        }
-    } else {
-        let yml_window = window.clone();
-        let mut vec_cond = Vec::new();
-        let yaml = match read_yaml(ymlpath) {
-            Ok(yaml) => yaml,
-            Err(e) => {
-                let errmsg = format!("Error loading YAML: {:?}", e);
-                eprintln!("{}", errmsg);
-                yml_window.emit("yml_err", errmsg).unwrap();
-                return ();
-            },
-        };
-        for name in &yaml.conditions {
-            vec_cond.push(name.to_string())
-        }
+    let vec_conditions: Vec<String> = condition.split('|')
+        .map(|s| s.replace("\r", "").replace("\n", ""))
+        .collect();
+    let vec_strings: Vec<String> = vec_conditions.into_iter()
+        .map(|condition| condition).collect();
 
-        if mode == "equal" 
-        {
-            match async { equal_filter(path, sep, column, vec_cond, equal_window) }.await {
-                Ok(result) => result,
-                Err(error) => {
-                    eprintln!("equal_filter error: {error}");
-                    window.emit("equal_err", &error.to_string()).unwrap();
-                    return ();
-                }
-            };
-        } 
-        else if mode == "contains" 
-        {
-            match async { contains_filter(path, sep, column, vec_cond, contains_window) }.await {
-                Ok(result) => result,
-                Err(error) => {
-                    eprintln!("contains_filter error: {error}");
-                    window.emit("contains_err", &error.to_string()).unwrap();
-                    return ();
-                }
-            };
-        } 
-        else if mode == "startswith" 
-        {
-            match async { startswith_filter(path, sep, column, vec_cond, startswith_window) }.await {
-                Ok(result) => result,
-                Err(error) => {
-                    eprintln!("startswith_filter error: {error}");
-                    window.emit("startswith_err", &error.to_string()).unwrap();
-                    return ();
-                }
+    if mode == "equal" 
+    {
+        match async { equal_filter(path, sep, column, vec_strings, equal_window) }.await {
+            Ok(result) => result,
+            Err(error) => {
+                eprintln!("equal_filter error: {error}");
+                window.emit("equal_err", &error.to_string()).unwrap();
+                return ();
+            }
+        };
+    } 
+    else if mode == "contains" 
+    {
+        match async { contains_filter(path, sep, column, vec_strings, contains_window) }.await {
+            Ok(result) => result,
+            Err(error) => {
+                eprintln!("contains_filter error: {error}");
+                window.emit("contains_err", &error.to_string()).unwrap();
+                return ();
+            }
+        };
+    } 
+    else if mode == "startswith" 
+    {
+        match async { startswith_filter(path, sep, column, vec_strings, startswith_window) }.await {
+            Ok(result) => result,
+            Err(error) => {
+                eprintln!("startswith_filter error: {error}");
+                window.emit("startswith_err", &error.to_string()).unwrap();
+                return ();
             }
         }
     }
