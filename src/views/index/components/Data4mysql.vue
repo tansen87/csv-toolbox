@@ -24,8 +24,6 @@
   const data = reactive({
     filePath: '',
     fileFormats: ['yaml', 'yml'],
-  });
-  const form = reactive({
     region: '凭证表&科目余额表',
     input: '业务说明',
     epath: 'C:\\Users',
@@ -34,11 +32,11 @@
     const property = column['property'];
     return row[property] === value;
   };
+
   listen('check', (event: any) => {
     const check: any = event.payload;
     ElMessage.info(check);
   });
-
   listen('prepare_err', (event: any) => {
     const error: any = 'prepare_err: ' + event.payload;
     ElMessage.error(error);
@@ -61,7 +59,6 @@
       }
     });
   });
-
   listen('message', (event: any) => {
     const msg: any = event.payload;
     ElMessage.success(msg);
@@ -88,9 +85,9 @@
       isProcessing.value = true;
       await invoke('download', {
         filePath: data.filePath,
-        etable: form.region,
-        rcolumn: form.input,
-        epath: form.epath,
+        etable: data.region,
+        rcolumn: data.input,
+        epath: data.epath,
       });
       ElMessage.success('download done.');
     }
@@ -98,6 +95,7 @@
 
   async function selectFile() {
     isProcessing.value = false;
+    tableData.value = [];
     const selected = await open({
       multiple: false,
       filters: [
@@ -127,18 +125,18 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form :model="data">
     <el-form-item label="Export table">
-      <el-select v-model="form.region" placeholder="please select download table">
+      <el-select v-model="data.region">
         <el-option label="凭证表&科目余额表" value="凭证表&科目余额表" />
         <el-option label="核算项目明细表&核算项目余额表" value="核算项目明细表&核算项目余额表" />
       </el-select>
     </el-form-item>
     <el-form-item label="Replace col">
-      <el-input v-model="form.input" placeholder="Please input replace column" />
+      <el-input v-model="data.input" clearable placeholder="Please input replace column" />
     </el-form-item>
     <el-form-item label="Export path">
-      <el-input v-model="form.epath" placeholder="Please input export path" />
+      <el-input v-model="data.epath" clearable placeholder="Please input export path" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open Yaml</el-button>

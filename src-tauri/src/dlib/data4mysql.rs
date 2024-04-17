@@ -169,7 +169,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                             _ if vec_col_name[num] == &rcolumn && &gl_table == "凭证表" => 
                             {
                                 let value: &str = row.get(num);
-                                value.replace("|", "").to_string()
+                                value.replace("|", "-").to_string()
                             }
                             _ => 
                             {
