@@ -40,12 +40,10 @@
       duration: 0,
     });
   });
-
   listen('c2x_progress', (event: any) => {
     const pgs: any = event.payload;
     progress.value = pgs;
   });
-
   listen('read_err', (event: any) => {
     const error: any = event.payload;
     selectedFiles.value.forEach((file) => {
@@ -60,7 +58,6 @@
       duration: 0,
     });
   });
-
   listen('rows_err', (event: any) => {
     const error: any = event.payload;
     selectedFiles.value.forEach((file) => {
@@ -75,7 +72,6 @@
       duration: 0,
     });
   });
-
   listen('c2x_msg', (event: any) => {
     const c2xMsg: any = event.payload;
     selectedFiles.value.forEach((file) => {
@@ -139,10 +135,11 @@
         <el-option label="," value="," />
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
+        <el-option label=";" value=";" />
       </el-select>
     </el-form-item>
     <el-form-item label="Numeric col">
-      <el-input v-model="data.column" placeholder="Please input numeric column" />
+      <el-input v-model="data.column" autosize type="textarea" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
