@@ -50,7 +50,7 @@
     progress.value = pgs;
   });
 
-  // invoke
+  // select data
   async function SelectColumns() {
     if (data.filePath == '') {
       ElMessage.warning('未选择文件');
@@ -70,6 +70,7 @@
 
   async function selectFile() {
     isProcessing.value = false;
+    selectedFiles.value = [];
     const selected = await open({
       multiple: true,
       filters: [
@@ -101,10 +102,11 @@
         <el-option label="," value="," />
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
+        <el-option label=";" value=";" />
       </el-select>
     </el-form-item>
     <el-form-item label="Select cols">
-      <el-input v-model="data.columns" clearable />
+      <el-input v-model="data.columns" autosize type="textarea" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>

@@ -13,7 +13,9 @@ fn select_columns(path: String, sep: String, cols: String, window: tauri::Window
         sep.into_bytes()[0]
     };
     separator.push(sep_u8);
-    let cols_select: Vec<&str> = cols.split('|').collect();
+    // let cols_select: Vec<&str> = cols.split('|').collect();
+    let cols_cleaned: String = cols.replace("\r", "").replace("\n", "");
+    let cols_select: Vec<&str> = cols_cleaned.split('|').collect();
     let vec_path: Vec<&str> = path.split(',').collect();
 
     let mut countf: usize = 0;
