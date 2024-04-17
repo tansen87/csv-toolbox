@@ -7,11 +7,11 @@ use std::{
 use polars::{
     datatypes::{AnyValue, DataType},
     frame::DataFrame,
-    io::SerReader,
+    // io::SerReader,
     lazy::dsl::{col, cols, functions::concat_lf_diagonal, lit},
     prelude::{
         Arc,
-        CsvReader,
+        // CsvReader,
         CsvWriter,
         LazyCsvReader,
         LazyFileListReader,
@@ -197,16 +197,9 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
     };
     separator.push(sep_u8);
 
-    let file_path = Path::new(&path);
-
-    // Convert column field datatype to utf8
-    let mut schema = Schema::new();
-    schema.with_column(column.to_string().into(), DataType::String);
-
-    // load csv file
-    let lf = LazyCsvReader::new(&file_path)
+    let lf = LazyCsvReader::new(&Path::new(&path))
         .with_separator(separator[0])
-        .with_dtype_overwrite(Some(&Arc::new(schema)))
+        .with_infer_schema_length(Some(0))
         .finish()?;
 
     // get unique value
@@ -220,8 +213,8 @@ fn unique_value(path: String, sep: String, column: String) -> Result<(), Box<dyn
     Ok(())
 }
 
-fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
-    /* merge csv files into a xlsx or csv file */
+fn concat_all(path: String, sep: String) -> Result<(), Box<dyn Error>> {
+    /* concat csv files into a xlsx or csv file */
     let mut separator = Vec::new();
     let sep_u8 = if sep == "\\t" {
         b'\t'
@@ -233,7 +226,6 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
     let vec_path: Vec<&str> = path.split(',').collect();
     let mut lfs = Vec::new();
 
-    let mut schema = Schema::new();
     for file in vec_path.iter() 
     {
         // let tmp_df = if let Ok(df) = CsvReader::from_path(file)?
@@ -252,26 +244,22 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
             None => vec![],
         };
 
-        let tmp_df = match CsvReader::from_path(file)?
-            .with_separator(separator[0])
-            .with_n_rows(Some(0))
-            .finish() {
-                Ok(df ) => df,
-                Err(err) => {
-                    let err_msg = format!("{}|Error|{}", file, err);
-                    window.emit("read_err", err_msg)?;
-                    return Err(Box::new(err));
-                }
-            };
-        let header = tmp_df.get_column_names();
-        for h in header.iter() {
-            schema.with_column(h.to_string().into(), DataType::String);
-        }
+        // let tmp_df = match CsvReader::from_path(file)?
+        //     .with_separator(separator[0])
+        //     .with_n_rows(Some(0))
+        //     .finish() {
+        //         Ok(df ) => df,
+        //         Err(err) => {
+        //             let err_msg = format!("{}|Error|{}", file, err);
+        //             window.emit("read_err", err_msg)?;
+        //             return Err(Box::new(err));
+        //         }
+        //     };
 
         let tmp_lf = LazyCsvReader::new(file)
             .with_separator(separator[0])
             .with_missing_is_null(false)
-            .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
+            .with_infer_schema_length(Some(0))
             .finish()?;
         let file_name = format!("{}.{}", fname[0], fname[1]);
         let lf = tmp_lf.with_column(lit(file_name).alias("FileName"));
@@ -295,7 +283,7 @@ fn concat_all(path: String, sep: String, window: tauri::Window) -> Result<(), Bo
 }
 
 fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<dyn Error>> {
-    /* merge sepecific columns */
+    /* concat sepecific columns */
     let mut separator = Vec::new();
     let sep_u8 = if sep == "\\t" {
         b'\t'
@@ -308,7 +296,6 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
     let vec_col: Vec<&str> = column.split('|').collect();
     let mut lfs = Vec::new();
 
-    let mut schema = Schema::new();
     for file in vec_path.iter() 
     {
         let fname = match Path::new(&file).file_name() {
@@ -318,15 +305,14 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
             },
             None => vec![],
         };
-        for h in vec_col.iter() {
-            schema.with_column(h.to_string().into(), DataType::String);
-        }
+
         let tmp_lf = LazyCsvReader::new(file)
             .with_separator(separator[0])
             .with_missing_is_null(false)
-            .with_dtype_overwrite(Some(&Arc::new(schema.clone())))
+            .with_infer_schema_length(Some(0))
             .finish()?
             .select([cols(vec_col.clone())]);
+
         let file_name = format!("{}.{}", fname[0], fname[1]);
         let lf = tmp_lf.with_column(lit(file_name).alias("FileName"));
         lfs.push(lf);
@@ -374,8 +360,7 @@ pub async fn unique(path: String, sep: String, column: String, window: tauri::Wi
 
 #[tauri::command]
 pub async fn concat(path: String, sep: String, window: tauri::Window) {
-    let cat_window = window.clone();
-    match async { concat_all(path, sep, cat_window) }.await {
+    match async { concat_all(path, sep) }.await {
         Ok(result) => result,
         Err(error) => {
             eprintln!("concat error: {error}");
