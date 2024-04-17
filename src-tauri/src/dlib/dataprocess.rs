@@ -293,7 +293,8 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
     separator.push(sep_u8);
 
     let vec_path: Vec<&str> = path.split(',').collect();
-    let vec_col: Vec<&str> = column.split('|').collect();
+    let vec_col: Vec<String> = column.split('|')
+        .map(|s| s.replace("\r", "").replace("\n", "")).collect();
     let mut lfs = Vec::new();
 
     for file in vec_path.iter() 

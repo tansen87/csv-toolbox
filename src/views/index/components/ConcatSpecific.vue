@@ -86,7 +86,7 @@
       </el-select>
     </el-form-item>
     <el-form-item label="Specific col">
-      <el-input v-model="data.column" placeholder="Please input columns" />
+      <el-input v-model="data.column" autosize type="textarea" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
