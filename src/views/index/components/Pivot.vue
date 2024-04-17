@@ -9,10 +9,8 @@
   const isProcessing = ref(false);
   const data = reactive({
     filePath: '',
-    fileFormats: ['csv', 'txt', 'tsv', 'spext'],
-  });
-  const form = reactive({
-    sep: '|',
+    fileFormats: ['csv', 'txt', 'tsv', 'spext', 'dat'],
+    sep: ',',
     index: '被审计单位|科目编号',
     values: '借方发生额|贷方发生额',
   });
@@ -34,9 +32,9 @@
       isProcessing.value = true;
       await invoke('pivot', {
         path: data.filePath,
-        sep: form.sep,
-        index: form.index,
-        values: form.values,
+        sep: data.sep,
+        index: data.index,
+        values: data.values,
       });
       isProcessing.value = false;
       ElMessage.success('pivot done.');
@@ -66,19 +64,20 @@
 </script>
 
 <template>
-  <el-form :model="form">
+  <el-form :model="data">
     <el-form-item label="Sepa">
-      <el-select v-model="form.sep" placeholder="please select delimiter">
+      <el-select v-model="data.sep">
         <el-option label="," value="," />
         <el-option label="|" value="|" />
         <el-option label="\t" value="\t" />
+        <el-option label=";" value=";" />
       </el-select>
     </el-form-item>
     <el-form-item label="Index">
-      <el-input v-model="form.index" placeholder="Please input row columns" />
+      <el-input v-model="data.index" clearable placeholder="Please input row columns" />
     </el-form-item>
     <el-form-item label="Value">
-      <el-input v-model="form.values" placeholder="Please input value columns" />
+      <el-input v-model="data.values" clearable placeholder="Please input value columns" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
