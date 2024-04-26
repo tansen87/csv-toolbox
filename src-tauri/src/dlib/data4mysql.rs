@@ -101,7 +101,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
     for (idx, code) in vec_code.iter().enumerate()
     {
         let company = yaml.project_name[idx].split("_").nth(2).unwrap_or(&yaml.project_name[idx]);
-        let check_msg = format!("Checking {}, please wait...", &company);
+        let check_msg = format!("{}, querying...", &company);
         let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         let check_msg_log = format!("{} => {}\n", &timestamp, &check_msg);
         log_file.write_all(check_msg_log.as_bytes())?;

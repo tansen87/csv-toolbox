@@ -35,6 +35,12 @@
   listen('check', (event: any) => {
     const check: any = event.payload;
     ElMessage.info(check);
+    const currentCompany = check.split(',')[0];
+    tableData.value.forEach((file: any) => {
+      if (file.filename === currentCompany) {
+        file.status = 'awaiting';
+      }
+    });
   });
   listen('prepare_err', (event: any) => {
     const error: any = 'prepare_err: ' + event.payload;
@@ -50,10 +56,9 @@
   });
   listen('errcode', (event: any) => {
     const errCode: any = event.payload;
-    let errCodeSp = errCode.split('|');
     ElMessage.error(errCode);
     tableData.value.forEach((file: any) => {
-      if (file.filename === errCodeSp[0] && errCodeSp[1] === 'Error') {
+      if (file.filename === errCode.split('|')[0]) {
         file.status = 'error';
       }
     });
@@ -78,7 +83,6 @@
       ElMessage.warning('未选择yaml文件');
       return;
     }
-
     if (data.filePath != '') {
       ElMessage.info('waiting...');
       isProcessing.value = true;
