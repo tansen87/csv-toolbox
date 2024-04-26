@@ -253,7 +253,8 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                     .open(format!("{}/0_error_company.log", &epath))?;
                 err_file.write_all(&err_msg.as_bytes())?;
                 log_file.write_all(&err_msg_log.as_bytes())?;
-                continue;
+                count += 1;
+                continue
             }
         }
 
