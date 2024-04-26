@@ -72,7 +72,7 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
     let file_len = vec_code.len();
     let pool: sqlx::Pool<sqlx::MySql> = MySqlPool::connect(&yaml.url).await?;
     let mut message_log = String::new();
-    File::create(format!("{}/2_logs.log", &epath)).expect("Failed to create file"); 
+    File::create(format!("{}/2_logs.log", &epath))?; 
     let mut log_file = OpenOptions::new()
         .append(true)
         .open(format!("{}/2_logs.log", &epath))?;
@@ -247,11 +247,11 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
                 let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                 let err_msg_log = format!("{} => {}\n", &timestamp, &err_msg);
                 window.emit("errcode", &err_msg)?;
-                File::create(format!("{}/0_error_company.log", &epath)).expect("Failed to create file");
+                File::create(format!("{}/0_error_company.log", &epath))?;
                 let mut err_file = OpenOptions::new()
                     .append(true)
                     .open(format!("{}/0_error_company.log", &epath))?;
-                err_file.write_all(err_msg.as_bytes()).expect("Failed to write to file");
+                err_file.write_all(&err_msg.as_bytes())?;
                 log_file.write_all(&err_msg_log.as_bytes())?;
                 continue;
             }
@@ -264,10 +264,8 @@ async fn execute_query_data(vec_code: Vec<String>, yaml: Config, etable: String,
         window.emit("download_progress", progress_s)?;
     }
     
-    let mut successful_file = File::create(
-        format!("{}/1_successful_company.log", &epath)
-    ).expect("failed to create file");
-    successful_file.write_all(message_log.as_bytes()).expect("failed to write to file");
+    let mut successful_file = File::create(format!("{}/1_successful_company.log", &epath))?;
+    successful_file.write_all(message_log.as_bytes())?;
     let msg_done = "Congratulations! 数据下载成功!".to_string();
     let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
     let msg_done_log = format!("{} => {}\n", &timestamp, &msg_done);
