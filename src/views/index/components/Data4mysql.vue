@@ -10,7 +10,6 @@
     filename: string;
     status: string;
   }
-  const getYamlMsg = ref('');
   const isProcessing = ref(false);
   const progress = ref(0);
   const tableData: any = ref([]);
@@ -112,7 +111,6 @@
     } else {
       data.filePath = selected;
     }
-    getYamlMsg.value = selected.toString();
     let project: any = await invoke('getyml', {
       path: data.filePath,
     });
