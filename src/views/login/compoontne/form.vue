@@ -11,10 +11,9 @@
   const ruleFormRef = ref<FormInstance>();
 
   const ruleForm = reactive({
-    username: 'admin',
-    password: 'admin123',
+    username: '',
+    password: '',
   });
-  // const checked = ref<boolean>(false);
 
   const { t } = useI18n();
 
@@ -65,14 +64,6 @@
         :placeholder="`${$t('sys.login.password')}`"
       />
     </el-form-item>
-
-    <!-- <el-form-item class="enter-y">
-      <div class="form-item-container">
-        <el-checkbox v-model="checked" :label="$t('sys.login.rememberPassword')" />
-        <el-button link type="primary"> {{ $t('sys.login.forgotPassword') }} </el-button>
-      </div>
-    </el-form-item> -->
-
     <el-form-item class="enter-y">
       <el-button class="submit-btn" @click="submitForm(ruleFormRef)">
         {{ $t('sys.login.loginButton') }}
