@@ -46,21 +46,6 @@ const power = [
     ],
   },
   {
-    path: '/echarts',
-    name: 'RtEcharts',
-
-    children: [
-      {
-        path: 'bar',
-        name: 'RtBar',
-      },
-      {
-        path: 'map',
-        name: 'RtMap',
-      },
-    ],
-  },
-  {
     path: '/editor',
     name: 'RtEditor',
     children: [
@@ -130,16 +115,6 @@ const adminPermissionRouter = [
       {
         path: 'menu2',
         name: 'RtMenu2',
-      },
-    ],
-  },
-  {
-    path: '/external-link',
-    name: 'RtExternal',
-    children: [
-      {
-        path: 'https://github.com/tansen87',
-        name: 'RtGitLink',
       },
     ],
   },
