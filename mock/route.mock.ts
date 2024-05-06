@@ -17,50 +17,6 @@ const power = [
         path: 'file',
         name: 'RtFile',
       },
-      {
-        path: 'drag',
-        name: 'RtDrag',
-      },
-      {
-        path: 'count-to',
-        name: 'RtCountTo',
-      },
-      {
-        path: 'seamless-scroll',
-        name: 'RtSeamlessScroll',
-      },
-      {
-        path: 'date-time',
-        name: 'DateTime',
-        children: [
-          {
-            path: 'date-select',
-            name: 'RtDate',
-          },
-          {
-            path: 'calendar',
-            name: 'RtCalendar',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    path: '/editor',
-    name: 'RtEditor',
-    children: [
-      {
-        path: 'rich-text',
-        name: 'RtRichText',
-      },
-      {
-        path: 'markdown',
-        name: 'RtMarkdown',
-      },
-      {
-        path: 'logic-flow',
-        name: 'RtLogicFlow',
-      },
     ],
   },
 ];
@@ -77,44 +33,6 @@ const adminPermissionRouter = [
       {
         path: 'test-page-admin',
         name: 'RtPermissionsTestPageAdmin',
-      },
-    ],
-  },
-  {
-    path: '/nested',
-    name: 'RtNested',
-    children: [
-      {
-        path: 'menu1',
-        name: 'RtMenu1',
-        children: [
-          {
-            path: 'menu1-1',
-            name: 'RtMenu1-1',
-          },
-          {
-            path: 'menu1-2',
-            name: 'RtMenu1-2',
-            children: [
-              {
-                path: 'menu1-2-1',
-                name: 'RtMenu1-2-1',
-              },
-              {
-                path: 'menu1-2-2',
-                name: 'RtMenu1-2-2',
-              },
-            ],
-          },
-          {
-            path: 'menu1-3',
-            name: 'RtMenu1-3',
-          },
-        ],
-      },
-      {
-        path: 'menu2',
-        name: 'RtMenu2',
       },
     ],
   },
