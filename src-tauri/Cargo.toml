@@ -1,9 +1,9 @@
 [package]
 name = "tauri-toolkit"
-version = "0.3.9"
-description = "tauri toolkit"
+version = "0.3.10"
+description = "tauri-toolkit"
 authors = ["tansen"]
-license = "MIT"
+license = ""
 repository = ""
 edition = "2021"
 rust-version = "1.76.0"
