@@ -27,8 +27,6 @@
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
     sep: '|',
-    column:
-      '借方发生额|贷方发生额|借方发生额-外币|贷方发生额-外币|借方数量|贷方数量|期初数-外币|期初数|期末数外币|期末数|期初数量|期末数量',
   });
 
   listen('c2x_err', (event: any) => {
@@ -94,7 +92,6 @@
       await invoke('ctox', {
         path: data.filePath,
         sep: data.sep,
-        column: data.column,
       });
       ElMessage.success('convert done.');
     }
@@ -137,9 +134,6 @@
         <el-option label="\t" value="\t" />
         <el-option label=";" value=";" />
       </el-select>
-    </el-form-item>
-    <el-form-item label="Numeric col">
-      <el-input v-model="data.column" autosize type="textarea" />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open File</el-button>
