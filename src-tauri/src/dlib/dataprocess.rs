@@ -3,11 +3,9 @@ use std::{ fs::File, path::Path, error::Error };
 use polars::{
   datatypes::{ AnyValue, DataType },
   frame::DataFrame,
-  // io::SerReader,
   lazy::dsl::{ col, cols, functions::concat_lf_diagonal, lit },
   prelude::{
     Arc,
-    // CsvReader,
     CsvWriter,
     LazyCsvReader,
     LazyFileListReader,
@@ -133,7 +131,7 @@ fn groupby_sum(
   // read csv file
   let lf = LazyCsvReader::new(&file_path)
     .with_separator(separator[0])
-    .with_dtype_overwrite(Some(&Arc::new(schema)))
+    .with_dtype_overwrite(Some(Arc::new(schema)))
     .finish()?;
 
   // group by dataframe
@@ -221,6 +219,8 @@ fn concat_all(path: String, sep: String) -> Result<(), Box<dyn Error>> {
     parallel: true,
     rechunk: true,
     to_supertypes: true,
+    diagonal: true,
+    from_partitioned_ds: false,
   })?.collect()?;
   let save_path = vec_path[0].to_string();
   let row_len = union_df.shape().0;
@@ -274,6 +274,8 @@ fn concat_specific(path: String, sep: String, column: String) -> Result<(), Box<
     parallel: true,
     rechunk: true,
     to_supertypes: true,
+    diagonal: true,
+    from_partitioned_ds: false,
   })?.collect()?;
   let save_path = vec_path[0].to_string();
   let row_len = union_df.shape().0;

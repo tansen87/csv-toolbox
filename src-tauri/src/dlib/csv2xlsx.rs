@@ -1,10 +1,10 @@
 use std::{ error::Error, path::{ Path, PathBuf } };
 
 use polars::{
-  io::SerReader,
+  io::csv::read::{ CsvReadOptions, CsvParseOptions },
   frame::DataFrame,
   datatypes::{ DataType, AnyValue },
-  prelude::{ Arc, CsvReader, Schema },
+  prelude::{ Arc, SerReader },
 };
 
 fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
@@ -25,10 +25,34 @@ fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
         AnyValue::Float64(values) => {
           worksheet.write_number((col + 1).try_into()?, row.try_into()?, values)?;
         }
+        AnyValue::Float32(values) => {
+          worksheet.write_string((col + 1).try_into()?, row.try_into()?, values.to_string())?;
+        }
         AnyValue::String(values) => {
           worksheet.write_string((col + 1).try_into()?, row.try_into()?, values)?;
         }
-        _ => {}
+        AnyValue::Int64(values) => {
+          worksheet.write_string((col + 1).try_into()?, row.try_into()?, values.to_string())?;
+        }
+        AnyValue::Int32(values) => {
+          worksheet.write_string((col + 1).try_into()?, row.try_into()?, values.to_string())?;
+        }
+        AnyValue::Int16(values) => {
+          worksheet.write_string((col + 1).try_into()?, row.try_into()?, values.to_string())?;
+        }
+        AnyValue::Int8(values) => {
+          worksheet.write_string((col + 1).try_into()?, row.try_into()?, values.to_string())?;
+        }
+        AnyValue::UInt32(values) => {
+          worksheet.write_string((col + 1).try_into()?, row.try_into()?, values.to_string())?;
+        }
+        AnyValue::UInt16(values) => {
+          worksheet.write_string((col + 1).try_into()?, row.try_into()?, values.to_string())?;
+        }
+        AnyValue::UInt8(values) => {
+          worksheet.write_string((col + 1).try_into()?, row.try_into()?, values.to_string())?;
+        }
+        _ => { }
       }
     }
   }
@@ -40,15 +64,10 @@ fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
 fn write_range(
   path: String,
   sep: String,
-  column: String,
   window: tauri::Window
 ) -> Result<(), Box<dyn Error>> {
   /* csv to xlsx */
   let vec_path: Vec<&str> = path.split(',').collect();
-  let vec_col: Vec<String> = column
-    .split('|')
-    .map(|s| s.replace("\r", "").replace("\n", ""))
-    .collect();
   let mut separator = Vec::new();
   if sep.clone() == "\\t" {
     let sep_u8 = b'\t';
@@ -60,7 +79,6 @@ fn write_range(
 
   let mut count: usize = 0;
   let file_len = vec_path.len();
-  let mut schema = Schema::new();
 
   for file in vec_path.iter() {
     let file_name = match Path::new(&file).file_name() {
@@ -71,31 +89,17 @@ fn write_range(
         }
       None => vec![],
     };
-    let tmp_df = match
-      CsvReader::from_path(file)?.with_separator(separator[0]).with_n_rows(Some(0)).finish()
-    {
-      Ok(df) => df,
-      Err(err) => {
-        let err_msg = format!("{}| {}", file, err);
-        window.emit("read_err", err_msg)?;
-        return Err(Box::new(err));
-      }
-    };
-    let headers = tmp_df.get_column_names();
-    for s in headers.iter() {
-      schema.with_column(s.to_string().into(), DataType::String);
-    }
-    for num in vec_col.iter() {
-      schema.with_column(num.to_string().into(), DataType::Float64);
-    }
 
     let sce = PathBuf::from(file);
     let dest = sce.with_extension("xlsx");
-    let df = CsvReader::from_path(file)?
-      .with_separator(separator[0])
-      .with_missing_is_null(false)
-      .with_dtypes(Some(Arc::new(schema.clone())))
-      .finish()?;
+    let df = CsvReadOptions::default()
+        .with_parse_options(
+          CsvParseOptions::default()
+          .with_separator(separator[0])
+          .with_missing_is_null(false))
+        .with_dtype_overwrite(Some(Arc::new(vec![DataType::String])))
+        .try_into_reader_with_file_path(Some(file.into()))?
+        .finish()?;
     let rows = df.shape().0;
     if rows < 104_0000 {
       write_xlsx(df, dest)?;
@@ -116,9 +120,9 @@ fn write_range(
 }
 
 #[tauri::command]
-pub async fn ctox(path: String, sep: String, column: String, window: tauri::Window) {
+pub async fn ctox(path: String, sep: String, window: tauri::Window) {
   let copy_window = window.clone();
-  match (async { write_range(path, sep, column, copy_window) }).await {
+  match (async { write_range(path, sep, copy_window) }).await {
     Ok(result) => result,
     Err(error) => {
       eprintln!("write_range error: {error}");
