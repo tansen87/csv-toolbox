@@ -3,8 +3,8 @@ use std::{ error::Error, path::{ Path, PathBuf } };
 use polars::{
   io::csv::read::{ CsvReadOptions, CsvParseOptions },
   frame::DataFrame,
-  datatypes::{ DataType, AnyValue },
-  prelude::{ Arc, SerReader },
+  datatypes::AnyValue,
+  prelude::SerReader,
 };
 
 fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
@@ -52,7 +52,7 @@ fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
         AnyValue::UInt8(values) => {
           worksheet.write_string((col + 1).try_into()?, row.try_into()?, values.to_string())?;
         }
-        _ => { }
+        _ => {}
       }
     }
   }
@@ -61,11 +61,7 @@ fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
   Ok(())
 }
 
-fn write_range(
-  path: String,
-  sep: String,
-  window: tauri::Window
-) -> Result<(), Box<dyn Error>> {
+fn write_range(path: String, sep: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
   /* csv to xlsx */
   let vec_path: Vec<&str> = path.split(',').collect();
   let mut separator = Vec::new();
@@ -93,13 +89,12 @@ fn write_range(
     let sce = PathBuf::from(file);
     let dest = sce.with_extension("xlsx");
     let df = CsvReadOptions::default()
-        .with_parse_options(
-          CsvParseOptions::default()
-          .with_separator(separator[0])
-          .with_missing_is_null(false))
-        .with_dtype_overwrite(Some(Arc::new(vec![DataType::String])))
-        .try_into_reader_with_file_path(Some(file.into()))?
-        .finish()?;
+      .with_parse_options(
+        CsvParseOptions::default().with_separator(separator[0]).with_missing_is_null(false)
+      )
+      .with_infer_schema_length(Some(0))
+      .try_into_reader_with_file_path(Some(file.into()))?
+      .finish()?;
     let rows = df.shape().0;
     if rows < 104_0000 {
       write_xlsx(df, dest)?;
