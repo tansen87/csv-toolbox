@@ -26,6 +26,7 @@
     region: '凭证表&科目余额表',
     input: '业务说明',
     epath: 'C:\\Users',
+    nameNum: '3',
   });
   const filterHandler = (value: string, row: User, column: TableColumnCtx<User>) => {
     const property = column['property'];
@@ -91,6 +92,7 @@
         etable: data.region,
         rcolumn: data.input,
         epath: data.epath,
+        nameNum: data.nameNum,
       });
       ElMessage.success('download done.');
     }
@@ -139,6 +141,15 @@
     </el-form-item>
     <el-form-item label="Export path">
       <el-input v-model="data.epath" clearable placeholder="Please input export path" />
+    </el-form-item>
+    <el-form-item label="Name number">
+      <el-select v-model="data.nameNum">
+        <el-option label="1" value="1" />
+        <el-option label="2" value="2" />
+        <el-option label="3" value="3" />
+        <el-option label="4" value="4" />
+        <el-option label="5" value="5" />
+      </el-select>
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="selectFile()">Open Yaml</el-button>
