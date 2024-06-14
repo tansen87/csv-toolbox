@@ -68,6 +68,7 @@ async fn execute_query_data(
   etable: String,
   rcolumn: String,
   epath: String,
+  name_num: usize,
   window: tauri::Window
 ) -> Result<(), Box<dyn Error>> {
   let mut company_count = 1;
@@ -93,7 +94,7 @@ async fn execute_query_data(
 
   // start query data
   for (idx, code) in vec_code.iter().enumerate() {
-    let company = yaml.project_name[idx].split("_").nth(2).unwrap_or(&yaml.project_name[idx]);
+    let company = yaml.project_name[idx].split("_").nth(name_num-1).unwrap_or(&yaml.project_name[idx]);
     let check_msg = format!("{}, querying...", &company);
     let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
     let check_msg_log = format!("{} => {}\n", &timestamp, &check_msg);
@@ -116,14 +117,14 @@ async fn execute_query_data(
         let sql_query_gl = format!("SELECT * FROM {}.{}", code, &gl_table);
         let mut stream = sqlx::query(&sql_query_gl).fetch(&pool);
         let mut split_filename = yaml.project_name[idx].split("_");
-        let filename = split_filename.nth(2).unwrap_or(&yaml.project_name[idx]);
+        let filename = split_filename.nth(name_num-1).unwrap_or(&yaml.project_name[idx]);
 
         let emit_msg = format!("({}) {}", company_count, filename);
         let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         let check_done_log = format!("{} => {}\n", &timestamp, &emit_msg);
         log_file.write_all(check_done_log.as_bytes())?;
 
-        let folder_path = format!("{}\\{}", &epath, &filename);
+        let folder_path = format!("{}", &epath);
         if !folder_exists(&folder_path) {
           std::fs::create_dir(&folder_path)?;
         }
@@ -269,6 +270,7 @@ pub async fn download(
   etable: String,
   rcolumn: String,
   epath: String,
+  name_num: usize,
   file_path: String,
   window: tauri::Window
 ) {
@@ -284,7 +286,7 @@ pub async fn download(
     }
   };
 
-  match execute_query_data(vec_code, yaml, etable, rcolumn, epath, window).await {
+  match execute_query_data(vec_code, yaml, etable, rcolumn, epath, name_num, window).await {
     Ok(result) => result,
     Err(error) => {
       eprintln!("execute_query_data error: {error}");
