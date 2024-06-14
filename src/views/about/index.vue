@@ -1,27 +1,28 @@
 <script lang="ts" setup>
   import { reactive } from 'vue';
-  import packagepath from '../../../package.json';
-  const pageDate = reactive({ info: {}, dependencies: {}, devDependencies: {} });
+  import packagePath from '../../../package.json';
+  import cargoPath from '../../../src-tauri/cargo.json';
+  const pageInfo = reactive({ info: {}, backDependencies: {}, frontDependencies: {} });
 
   const toName = {
-    info: '项目信息',
-    dependencies: '生产依赖',
-    devDependencies: '开发依赖',
+    info: 'project info',
+    frontDependencies: 'front end',
+    backDependencies: 'backend',
   };
 
-  pageDate.info = {
-    name: packagepath.name,
-    version: packagepath.version,
+  pageInfo.info = {
+    author: packagePath.author.name,
+    version: packagePath.version,
+    github: packagePath.author.url,
+    email: packagePath.author.email,
   };
-  pageDate.dependencies = packagepath.dependencies;
-  pageDate.devDependencies = packagepath.devDependencies;
-
-  console.log(packagepath);
+  pageInfo.backDependencies = cargoPath.dependencies;
+  pageInfo.frontDependencies = packagePath.dependencies;
 </script>
 
 <template>
   <div>
-    <el-row v-for="(item, index) in pageDate" :key="index" :gutter="30" class="enter-y">
+    <el-row v-for="(item, index) in pageInfo" :key="index" :gutter="30" class="enter-y">
       <el-col>
         <el-card class="box-card">
           <template #header>
