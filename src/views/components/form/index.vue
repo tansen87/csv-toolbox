@@ -8,7 +8,7 @@
 </script>
 
 <template>
-  <div>
+  <el-scrollbar>
     <el-row :gutter="20" class="enter-y">
       <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
         <el-card class="box-card">
@@ -69,7 +69,7 @@
         </el-card>
       </el-col>
     </el-row>
-  </div>
+  </el-scrollbar>
 </template>
 
 <style lang="scss" scoped>
