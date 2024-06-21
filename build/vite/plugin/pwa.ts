@@ -9,8 +9,8 @@ export function configPwaPlugin() {
     includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
     logLevel: 'silent',
     manifest: {
-      name: 'tauri-toolkit',
-      short_name: 'tauri-toolkit',
+      name: 'csv-toolbox',
+      short_name: 'csv-toolbox',
       description: '基于 vue3+vite+element-plus 搭建的后台模板',
       theme_color: '#ffffff',
       icons: [

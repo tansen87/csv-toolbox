@@ -1,6 +1,6 @@
 {
-    "name": "tauri-toolkit",
-    "short_name": "tauri-toolkit",
+    "name": "csv-toolbox",
+    "short_name": "csv-toolbox",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
