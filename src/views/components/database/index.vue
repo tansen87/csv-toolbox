@@ -5,7 +5,7 @@
 <template>
   <el-scrollbar>
     <el-row :gutter="24" class="enter-y">
-      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
