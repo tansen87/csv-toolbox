@@ -5,15 +5,15 @@ const component: AppRouteRecordRaw[] = [
   {
     path: '/components',
     // component: Layout,
-    redirect: '/components/form',
+    redirect: '/components/box',
     name: 'RtComponents',
     meta: { title: t('route.pathName.components'), icon: 'components', position: 2 },
     children: [
       {
-        path: 'form',
-        name: 'RtForm',
-        component: () => import('@/views/components/form/index.vue'),
-        meta: { title: t('route.pathName.form'), keepAlive: true },
+        path: 'box',
+        name: 'RtBox',
+        component: () => import('@/views/components/box/index.vue'),
+        meta: { title: t('route.pathName.box'), keepAlive: true },
       },
       {
         path: 'file',
