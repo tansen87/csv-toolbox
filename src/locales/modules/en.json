@@ -62,6 +62,7 @@
       "box": "Box",
       "file": "File",
       "database": "Database",
+      "rename": "Rename",
       "editor": "Editor",
       "error": "Error",
       "about": "About"

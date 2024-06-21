@@ -21,8 +21,6 @@
   const data = reactive({
     filePath: '',
     fileFormats: ['csv', 'txt', 'tsv', 'spext'],
-  });
-  const form = reactive({
     sep: ',',
   });
 
@@ -65,7 +63,7 @@
     isWrite.value = true;
     await invoke('rename', {
       path: data.filePath,
-      sep: form.sep,
+      sep: data.sep,
       headers: headersString,
     });
     isLoading.value = false;
@@ -99,7 +97,7 @@
 
     let headers: any = await invoke('geth', {
       path: data.filePath,
-      sep: form.sep,
+      sep: data.sep,
     });
 
     for (let i = 0; i < headers.length; i++) {
@@ -117,47 +115,49 @@
 </script>
 
 <template>
-  <el-form :model="form">
-    <el-form-item label="Separator" class="custom-sep-form-item">
-      <el-select v-model="form.sep">
-        <el-option label="," value="," />
-        <el-option label="|" value="|" />
-        <el-option label="\t" value="\t" />
-      </el-select>
-    </el-form-item>
-    <el-form-item>
-      <el-button type="primary" @click="selectFile()">Open File</el-button>
-      <el-button type="success" @click="renameData()">Rename</el-button>
-    </el-form-item>
-    <el-table :data="filterTableData" height="770" style="width: 100%">
-      <el-table-column prop="col1" label="headers" width="300"></el-table-column>
-      <el-table-column prop="col2" label="rename headers" width="300">
-        <template #default="{ row }">
-          <el-input
-            v-model="row.col2"
-            placeholder="new header"
-            class="custom-header-input"
-            @blur="headerEdit(row)"
-          ></el-input>
-        </template>
-      </el-table-column>
-      <el-table-column>
-        <template #header>
-          <el-input v-model="search" size="small" placeholder="Type to search" />
-        </template>
-      </el-table-column>
-    </el-table>
-  </el-form>
-  <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
-  <p></p>
-  <el-icon v-if="isLoading" color="#FF8C00" class="is-loading"> <Loading /> </el-icon>
-  <el-icon v-if="isFinish" color="#32CD32"> <SuccessFilled /> </el-icon>
-  <el-text v-if="isWrite" class="mx-1">{{ writeRows }}</el-text>
+  <el-scrollbar class="page-container">
+    <el-form :model="data">
+      <el-form-item label="Separator" class="custom-sep-form-item">
+        <el-select v-model="data.sep">
+          <el-option label="," value="," />
+          <el-option label="|" value="|" />
+          <el-option label="\t" value="\t" />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="selectFile()">Open File</el-button>
+        <el-button type="success" @click="renameData()">Rename</el-button>
+      </el-form-item>
+      <el-table :data="filterTableData" height="700" style="width: 100%">
+        <el-table-column prop="col1" label="headers" width="300"></el-table-column>
+        <el-table-column prop="col2" label="rename headers" width="300">
+          <template #default="{ row }">
+            <el-input
+              v-model="row.col2"
+              placeholder="new header"
+              class="custom-header-input"
+              @blur="headerEdit(row)"
+            ></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column>
+          <template #header>
+            <el-input v-model="search" size="small" placeholder="Type to search" />
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-form>
+    <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
+    <p></p>
+    <el-icon v-if="isLoading" color="#FF8C00" class="is-loading"> <Loading /> </el-icon>
+    <el-icon v-if="isFinish" color="#32CD32"> <SuccessFilled /> </el-icon>
+    <el-text v-if="isWrite" class="mx-1">{{ writeRows }}</el-text>
+  </el-scrollbar>
 </template>
 
 <style>
   .custom-sep-form-item {
-    width: 100px !important; /* 使用 !important 确保样式优先级 */
+    width: 275px !important; /* 使用 !important 确保样式优先级 */
   }
 
   .custom-header-input {

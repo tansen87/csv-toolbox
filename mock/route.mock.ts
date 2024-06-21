@@ -21,6 +21,10 @@ const power = [
         path: 'database',
         name: 'RtDatabase',
       },
+      {
+        path: 'rename',
+        name: 'RtRename',
+      },
     ],
   },
 ];
