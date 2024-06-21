@@ -63,8 +63,8 @@
       "file": "文件",
       "database": "数据库",
       "rename": "重命名",
+      "cc": "合并转换",
       "editor": "编辑器",
-      "refSyntax": "ref语法糖",
       "error": "异常页面",
       "about": "关于"
     },

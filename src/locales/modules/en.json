@@ -63,6 +63,7 @@
       "file": "File",
       "database": "Database",
       "rename": "Rename",
+      "cc": "Cat Convert",
       "editor": "Editor",
       "error": "Error",
       "about": "About"

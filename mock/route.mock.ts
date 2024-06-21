@@ -25,6 +25,10 @@ const power = [
         path: 'rename',
         name: 'RtRename',
       },
+      {
+        path: 'cc',
+        name: 'RtCatConvert',
+      },
     ],
   },
 ];

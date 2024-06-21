@@ -32,6 +32,12 @@ const component: AppRouteRecordRaw[] = [
         component: () => import('@/views/components/rename/index.vue'),
         meta: { title: t('route.pathName.rename') },
       },
+      {
+        path: 'cc',
+        name: 'RtCatConvert',
+        component: () => import('@/views/components/cat-convert/index.vue'),
+        meta: { title: t('route.pathName.cc') },
+      },
     ],
   },
 ];
