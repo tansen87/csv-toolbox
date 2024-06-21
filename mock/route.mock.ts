@@ -29,6 +29,10 @@ const power = [
         path: 'cc',
         name: 'RtCatConvert',
       },
+      {
+        path: 'select',
+        name: 'RtSelect',
+      },
     ],
   },
 ];

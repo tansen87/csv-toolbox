@@ -38,6 +38,12 @@ const component: AppRouteRecordRaw[] = [
         component: () => import('@/views/components/cat-convert/index.vue'),
         meta: { title: t('route.pathName.cc') },
       },
+      {
+        path: 'select',
+        name: 'RtSelect',
+        component: () => import('@/views/components/select/index.vue'),
+        meta: { title: t('route.pathName.select') },
+      },
     ],
   },
 ];
