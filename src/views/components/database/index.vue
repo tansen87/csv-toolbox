@@ -3,9 +3,9 @@
 </script>
 
 <template>
-  <el-scrollbar>
-    <el-row :gutter="24" class="enter-y">
-      <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+  <el-scrollbar class="page-container">
+    <el-row>
+      <el-col>
         <el-card class="box-card">
           <template #header>
             <div class="card-header cursor">
