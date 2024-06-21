@@ -65,6 +65,7 @@
       "rename": "重命名",
       "cc": "合并转换",
       "select": "筛选",
+      "polars": "Polars",
       "editor": "编辑器",
       "error": "异常页面",
       "about": "关于"

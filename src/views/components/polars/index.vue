@@ -1,11 +1,31 @@
 <script setup lang="ts">
-  defineOptions({
-    name: 'RtWelcome',
-  });
+  import Pivot from './components/Pivot.vue';
+  import Unique from './components/Unique.vue';
 </script>
 
 <template>
-  <el-scrollbar></el-scrollbar>
+  <el-scrollbar>
+    <el-row :gutter="20" class="enter-y">
+      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header cursor">
+              <span>pivot</span>
+            </div>
+          </template>
+          <Pivot />
+        </el-card>
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header cursor">
+              <span>unique</span>
+            </div>
+          </template>
+          <Unique />
+        </el-card>
+      </el-col>
+    </el-row>
+  </el-scrollbar>
 </template>
 
 <style lang="scss" scoped>

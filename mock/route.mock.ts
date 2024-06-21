@@ -33,6 +33,10 @@ const power = [
         path: 'select',
         name: 'RtSelect',
       },
+      {
+        path: 'polars',
+        name: 'RtPolars',
+      },
     ],
   },
 ];

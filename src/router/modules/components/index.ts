@@ -44,6 +44,12 @@ const component: AppRouteRecordRaw[] = [
         component: () => import('@/views/components/select/index.vue'),
         meta: { title: t('route.pathName.select') },
       },
+      {
+        path: 'polars',
+        name: 'RtPolars',
+        component: () => import('@/views/components/polars/index.vue'),
+        meta: { title: t('route.pathName.polars') },
+      },
     ],
   },
 ];

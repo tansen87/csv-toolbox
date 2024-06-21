@@ -65,6 +65,7 @@
       "rename": "Rename",
       "cc": "Cat Convert",
       "select": "Select",
+      "polars": "Polars",
       "editor": "Editor",
       "error": "Error",
       "about": "About"
