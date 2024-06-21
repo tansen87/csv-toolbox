@@ -1,46 +1,62 @@
 <script setup lang="ts">
+  import { ref } from 'vue';
+  import { ElCarousel, ElCarouselItem, ElLink } from 'element-plus';
+
+  const items = ref([
+    {
+      id: 1,
+      title: 'github source',
+      link: 'https://github.com/tansen87/csv-toolbox',
+    },
+    {
+      id: 2,
+      title: 'download new version',
+      link: 'https://github.com/tansen87/csv-toolbox/releases',
+    },
+  ]);
+
   defineOptions({
     name: 'RtWelcome',
   });
 </script>
 
 <template>
-  <el-scrollbar></el-scrollbar>
+  <el-scrollbar class="page-container">
+    <div class="block text-center">
+      <ElCarousel height="300px" motion-blur>
+        <ElCarouselItem v-for="item in items" :key="item.id">
+          <ElLink :href="item.link" target="_blank" class="carousel-item">
+            <div class="carousel-item-title">{{ item.title }}</div>
+          </ElLink>
+        </ElCarouselItem>
+      </ElCarousel>
+    </div>
+  </el-scrollbar>
 </template>
 
-<style lang="scss" scoped>
-  .box-card {
-    margin-bottom: 20px;
+<style scoped>
+  .el-carousel__item:nth-child(2n) {
+    background-color: #99a9bf;
+  }
 
-    :deep(.el-card__header) {
-      padding-bottom: 0;
-      border: none;
-    }
+  .el-carousel__item:nth-child(2n + 1) {
+    background-color: #a9c9ea;
+  }
 
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-weight: 600;
-    }
+  .carousel-item {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
 
-    .card-content {
-      :deep(.el-progress-bar__outer) {
-        height: 17px !important;
-      }
+  .carousel-item-title {
+    display: block;
+    width: 100%;
+    height: 100%;
+    color: #fff;
+    line-height: 300px;
+    text-align: center;
 
-      .numerical-value {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        margin-bottom: 10px;
-
-        .number {
-          color: var(--text-color-primary);
-          font-size: var(--font-size-extra-large);
-          font-weight: 600;
-        }
-      }
-    }
+    /* background-color: rgba(0, 0, 0, 0.5); */
   }
 </style>
