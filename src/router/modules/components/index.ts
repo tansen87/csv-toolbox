@@ -4,15 +4,15 @@ import { t } from '@/hooks/web/useI18n';
 const component: AppRouteRecordRaw[] = [
   {
     path: '/components',
-    redirect: '/components/form',
+    redirect: '/components/box',
     name: 'RtComponents',
     meta: { title: t('route.pathName.components'), icon: 'components', position: 2 },
     children: [
       {
-        path: 'form',
-        name: 'RtForm',
-        component: () => import('@/views/components/form/index.vue'),
-        meta: { title: t('route.pathName.form'), keepAlive: true },
+        path: 'box',
+        name: 'RtBox',
+        component: () => import('@/views/components/box/index.vue'),
+        meta: { title: t('route.pathName.box'), keepAlive: true },
       },
       {
         path: 'file',
@@ -21,10 +21,10 @@ const component: AppRouteRecordRaw[] = [
         meta: { title: t('route.pathName.file') },
       },
       {
-        path: 'table',
-        name: 'RtTable',
+        path: 'database',
+        name: 'RtDatabase',
         component: () => import('@/views/components/database/index.vue'),
-        meta: { title: t('route.pathName.table') },
+        meta: { title: t('route.pathName.database') },
       },
     ],
   },

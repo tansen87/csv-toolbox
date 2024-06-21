@@ -10,12 +10,16 @@ const power = [
     name: 'RtComponents',
     children: [
       {
-        path: 'form',
-        name: 'RtForm',
+        path: 'box',
+        name: 'RtBox',
       },
       {
         path: 'file',
         name: 'RtFile',
+      },
+      {
+        path: 'database',
+        name: 'RtDatabase',
       },
     ],
   },

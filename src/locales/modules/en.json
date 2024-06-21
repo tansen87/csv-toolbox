@@ -59,9 +59,9 @@
       "waterMark": "Water Mark",
       "guide": "GuidePage",
       "components": "Components",
-      "form": "Form",
+      "box": "Box",
       "file": "File",
-      "table": "Database",
+      "database": "Database",
       "editor": "Editor",
       "error": "Error",
       "about": "About"

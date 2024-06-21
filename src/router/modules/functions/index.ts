@@ -4,12 +4,12 @@ import { t } from '@/hooks/web/useI18n';
 const functions: AppRouteRecordRaw[] = [
   {
     path: '/functions',
-    redirect: '/functions/preview-pdf',
+    redirect: '/functions/guide',
     name: 'Functions',
     meta: {
       title: 'route.pathName.functions',
       icon: 'iEL-briefcase',
-      position: 2,
+      position: 3,
       whiteRoute: true,
       alwaysShow: true,
     },
