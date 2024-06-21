@@ -1031,6 +1031,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "csv-toolbox"
+version = "0.3.10"
+dependencies = [
+ "calamine",
+ "chrono",
+ "csv",
+ "futures",
+ "itoa 1.0.10",
+ "polars",
+ "rayon",
+ "rust_decimal",
+ "rust_xlsxwriter",
+ "ryu",
+ "serde",
+ "serde_yaml",
+ "sqlx",
+ "tauri",
+ "tauri-build",
+ "tokio",
+]
+
+[[package]]
 name = "ctor"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5577,28 +5599,6 @@ dependencies = [
  "webview2-com",
  "windows 0.39.0",
  "wry",
-]
-
-[[package]]
-name = "tauri-toolkit"
-version = "0.3.10"
-dependencies = [
- "calamine",
- "chrono",
- "csv",
- "futures",
- "itoa 1.0.10",
- "polars",
- "rayon",
- "rust_decimal",
- "rust_xlsxwriter",
- "ryu",
- "serde",
- "serde_yaml",
- "sqlx",
- "tauri",
- "tauri-build",
- "tokio",
 ]
 
 [[package]]
