@@ -1,5 +1,5 @@
 {
-  "name": "tauri-toolkit",
+  "name": "csv-toolbox",
   "type": "module",
   "version": "0.3.10",
   "packageManager": "pnpm@8.1.0",
@@ -8,7 +8,7 @@
     "email": "tansen87@qq.com",
     "url": "https://github.com/tansen87"
   },
-  "license": "MIT",
+  "license": "",
   "engines": {
     "node": ">=18",
     "pnpm": ">=8.1.0"
