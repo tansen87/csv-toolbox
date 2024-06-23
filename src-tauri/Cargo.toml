@@ -26,9 +26,10 @@ serde_yaml = "0.9.32"
 rust_decimal = "1.35.0"
 chrono = "0.4.38"
 futures = "0.3.30"
-polars = { version = "0.40.0", features = [
+polars = { version = "0.41.1", features = [
     "lazy",
     "diagonal_concat",
+    "parquet",
     ] }
 rust_xlsxwriter = "0.64.2"
 calamine = { version = "0.25.0", features = ["dates"] }
