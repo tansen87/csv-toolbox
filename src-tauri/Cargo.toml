@@ -31,7 +31,7 @@ polars = { version = "0.41.1", features = [
     "diagonal_concat",
     "parquet",
     ] }
-rust_xlsxwriter = "0.64.2"
+rust_xlsxwriter = "0.68.0"
 calamine = { version = "0.25.0", features = ["dates"] }
 rayon = "1.10.0"
 ryu = "1"
