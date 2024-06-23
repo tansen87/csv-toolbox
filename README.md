@@ -1,43 +1,38 @@
-# Tauri Toolkit
-> * Download MySQL data
-> * Data pivot
-> * Data unique
-> * Concatenate data
-> * Concatenate specific data
-> * Quick convert Excel to CSV
-> * Convert CSV to xlsx
-> * Quick count CSV rows
-> * Quick multi condition data precision query (equal)
-> * Quick multi condition data fuzzy query (contains)
-> * Quick multi condition data starts with query (startswith)
-> * rename header
-> * select, re-order CSV columns
-> * insert CSV blank columns
-> * insert CSV value columns
-> * get filename and write to xlsx
+# csv toolbox
 
-![image](https://github.com/tansen87/tauri-toolkit/assets/98570790/8906487e-eaa9-4355-b0be-359b453dd3f9)
+### function
+* Data pivot
+* Data unique
+* Concatenate data
+* Concatenate specific data
+* Quick convert Excel to CSV
+* Convert CSV to xlsx
+* Quick count CSV rows
+* Quick multi condition data precision query (equal)
+* Quick multi condition data fuzzy query (contains)
+* Quick multi condition data starts with query (startswith)
+* rename header
+* select, re-order CSV columns
+* insert CSV blank columns
+* insert CSV value columns
+* get filename and write to xlsx
+
+![image](https://github.com/tansen87/csv-toolbox/assets/98570790/c01bd519-f551-4c1b-9794-011e0bc6e7f3)
 
 ## Usage
 ### Install dependencies
 ```bash
-npm i -g pnpm
-```
-```bash
 pnpm i
 ```
-### run web
+### dev
 ```bash
-pnpm dev
-```
-### run desktop
-```bash
-pnpm run tauri dev
+pnpm run tauri:dev
 ```
 ### build
 ```bash
-pnpm run tauri build
+pnpm run tauri:build
 ```
-### Thanks
+
+##### Thanks
 * [tauri-xs-admin](https://github.com/jsxiaosi/tauri-xs-admin)
 * [qsv](https://github.com/jqnatividad/qsv)
