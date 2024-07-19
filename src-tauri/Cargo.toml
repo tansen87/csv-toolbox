@@ -29,13 +29,13 @@ polars = { version = "0.41.3", features = [
 ] }
 rayon = "1.10.0"
 rust_decimal = "1.35.0"
-rust_xlsxwriter = "0.69.0"
+rust_xlsxwriter = "0.70.0"
 ryu = "1"
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9.32"
 sqlx = { version = "0.7.4", features = ["mysql", "runtime-tokio-native-tls", "rust_decimal"] }
 tauri = { version = "1.7.1", features = ["api-all"] }
-tokio = { version="1.38.0", features= ["full"] }
+tokio = { version="1.38.1", features= ["full"] }
 
 [features]
 # by default Tauri runs in production mode
