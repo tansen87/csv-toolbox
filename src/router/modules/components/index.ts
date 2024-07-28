@@ -21,12 +21,6 @@ const component: AppRouteRecordRaw[] = [
         meta: { title: t('route.pathName.file') },
       },
       {
-        path: 'database',
-        name: 'RtDatabase',
-        component: () => import('@/views/components/database/index.vue'),
-        meta: { title: t('route.pathName.database') },
-      },
-      {
         path: 'rename',
         name: 'RtRename',
         component: () => import('@/views/components/rename/index.vue'),
