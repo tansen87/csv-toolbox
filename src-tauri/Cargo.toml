@@ -25,7 +25,7 @@ itoa = "1"
 polars = { version = "0.41.3", features = [
     "lazy",
     "diagonal_concat",
-    "parquet",
+    "csv",
 ] }
 rayon = "1.10.0"
 rust_decimal = "1.35.0"
