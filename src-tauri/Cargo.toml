@@ -29,7 +29,7 @@ polars = { version = "0.42.0", features = [
 ] }
 rayon = "1.10.0"
 rust_decimal = "1.35.0"
-rust_xlsxwriter = "0.72.0"
+rust_xlsxwriter = "0.73.0"
 ryu = "1"
 serde = { version = "1", features = ["derive"] }
 tauri = { version = "1.7.1", features = ["api-all"] }
