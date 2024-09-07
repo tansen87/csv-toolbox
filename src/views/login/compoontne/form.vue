@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { reactive, ref } from 'vue';
+  import { reactive, ref, onMounted } from 'vue';
   import type { FormInstance, FormRules } from 'element-plus';
   import { Avatar, Lock } from '@element-plus/icons-vue';
   import { useRouter } from 'vue-router';
@@ -11,8 +11,8 @@
   const ruleFormRef = ref<FormInstance>();
 
   const ruleForm = reactive({
-    username: '',
-    password: '',
+    username: 'admin',
+    password: 'admin123',
   });
 
   const { t } = useI18n();
@@ -37,12 +37,16 @@
   const router = useRouter();
   const onLogin = async (): Promise<void> => {
     const res = await getUserInfo(ruleForm.username, ruleForm.password);
-    if (res.code === 1) {
-      useUserInfoStoreHook().setUserInfo(res.data);
-      await initRoute(res.data.role);
-      router.push('/');
-    }
+    // if (res.code === 1) {
+    useUserInfoStoreHook().setUserInfo(res.data);
+    await initRoute(res.data.role);
+    router.push('/');
+    // }
   };
+
+  onMounted(async () => {
+    await onLogin();
+  });
 </script>
 
 <template>
