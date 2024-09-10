@@ -46,7 +46,7 @@
       "bottom": "Bottom",
       "none": "None"
     },
-    "clearStorage": "Clear cache and return to login page",
+    "clearStorage": "clear cache",
     "closeTabDrag": "Close tab drag"
   },
   "route": {

@@ -6,7 +6,7 @@
   import Breadcrumb from '../../components/Breadcrumb/index.vue';
   import AppLogo from '../AppLogo/index.vue';
 
-  import { AppLocale, AppTheme, AppAccount } from '@/components/Application';
+  import { AppLocale, AppTheme } from '@/components/Application';
 
   import SvgIcon from '@/components/SvgIcon/index.vue';
   import { useRootSetting } from '@/hooks/setting/useRootSetting';
