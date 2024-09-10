@@ -47,9 +47,6 @@
       "none": "不显示"
     },
     "clearStorage": "清空缓存回到登录页",
-    "navbar": {
-      "fullScreen": "全屏"
-    },
     "closeTabDrag": "关闭标签页拖拽"
   },
   "route": {

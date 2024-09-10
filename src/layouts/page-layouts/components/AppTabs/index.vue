@@ -12,7 +12,7 @@
   import { useRootSetting } from '@/hooks/setting/useRootSetting';
   import useSortable from '@/hooks/web/useSortable';
 
-  const { appConfig, setAppConfigMode } = useRootSetting();
+  const { appConfig } = useRootSetting();
 
   const route = useRoute();
   const router = useRouter();
@@ -49,15 +49,6 @@
       path: e.path,
       query: e.query,
     });
-  };
-
-  const fullScreenChange = () => {
-    const { hideNavbart, hideSidebar } = appConfig.value;
-    if (hideNavbart && hideSidebar) {
-      setAppConfigMode({ hideNavbart: false, hideSidebar: false });
-    } else {
-      setAppConfigMode({ hideNavbart: true, hideSidebar: true });
-    }
   };
 
   const elDropdownRef = ref<InstanceType<typeof ElDropdown>>();
@@ -162,9 +153,6 @@
               </el-dropdown-menu>
             </template>
           </ElDropdown>
-        </li>
-        <li class="cursor" @click="fullScreenChange">
-          <SvgIcon name="full_screen_page"></SvgIcon>
         </li>
       </ul>
     </div>

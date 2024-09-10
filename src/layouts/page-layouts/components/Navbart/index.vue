@@ -14,19 +14,6 @@
   const drawer = ref(false);
 
   const { appConfig } = useRootSetting();
-
-  const full_screen = ref<'full_screen' | 'full_screen_close'>('full_screen');
-
-  const fullScreenChange = () => {
-    // https://developer.mozilla.org/zh-CN/docs/Web/API/Document/exitFullscreen
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-      full_screen.value = 'full_screen';
-    } else {
-      full_screen.value = 'full_screen_close';
-      document.documentElement.requestFullscreen();
-    }
-  };
 </script>
 
 <template>
@@ -51,9 +38,6 @@
         </template>
       </div>
       <div class="navbar-right">
-        <el-tooltip :content="$t('layout.navbar.fullScreen')" placement="bottom">
-          <SvgIcon class="cursor" :name="full_screen" @click="fullScreenChange"></SvgIcon>
-        </el-tooltip>
         <AppLocale class="icon"></AppLocale>
         <AppTheme></AppTheme>
         <AppAccount></AppAccount>

@@ -47,9 +47,6 @@
       "none": "None"
     },
     "clearStorage": "Clear cache and return to login page",
-    "navbar": {
-      "fullScreen": "Full Screen"
-    },
     "closeTabDrag": "Close tab drag"
   },
   "route": {
