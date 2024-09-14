@@ -1,7 +1,9 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { ElCarousel, ElCarouselItem, ElLink } from 'element-plus';
+  import { useRouter } from 'vue-router';
 
+  const router = useRouter();
   const items = ref([
     {
       id: 1,
@@ -14,6 +16,30 @@
       link: 'https://github.com/tansen87/csv-toolbox/releases',
     },
   ]);
+
+  function toCount() {
+    router.push('/command/box');
+  }
+
+  function toFile() {
+    router.push('/command/file');
+  }
+
+  function toRename() {
+    router.push('/command/rename');
+  }
+
+  function toCat() {
+    router.push('/command/cat-convert');
+  }
+
+  function toSelect() {
+    router.push('/command/select');
+  }
+
+  function toPolars() {
+    router.push('/command/polars');
+  }
 </script>
 
 <template>
@@ -29,195 +55,77 @@
     </div>
     <p />
 
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <span>Components/Box</span>
+    <el-row :gutter="20">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toCount">
+          <span class="title-color">Count</span>
+          <p class="description-color">Count the rows of CSV files.</p>
         </el-card>
       </el-col>
-    </el-row>
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>count rows</span>
-            </div>
-          </template>
-          <span>Count the rows in a csv file.</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toCount">
+          <span class="title-color">Insert blank cols</span>
+          <p class="description-color">Insert a column of empty values into csv file.</p>
         </el-card>
       </el-col>
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>insert blank cols</span>
-            </div>
-          </template>
-          <span>Insert a column of empty values into csv file.</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toCount">
+          <span class="title-color">Insert fill cols</span>
+          <p class="description-color">Insert up to four columns of values into csv file.</p>
         </el-card>
       </el-col>
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>insert fill cols</span>
-            </div>
-          </template>
-          <span>Insert up to four columns of values into csv file.</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toFile">
+          <span class="title-color">Get filename</span>
+          <p class="description-color">Get the file name from the folder and write it to xlsx.</p>
         </el-card>
       </el-col>
-    </el-row>
-    <p />
-
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <span>Components/File</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toRename">
+          <span class="title-color">Rename</span>
+          <p class="description-color">Rename the columns of a CSV.</p>
         </el-card>
       </el-col>
-    </el-row>
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>get file name</span>
-            </div>
-          </template>
-          <span>Get the file name from the folder and write it to xlsx.</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toCat">
+          <span class="title-color">Cat</span>
+          <p class="description-color">Merge multiple CSV files into one xlsx file or csv file.</p>
         </el-card>
       </el-col>
-    </el-row>
-    <p />
-
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <span>Components/Rename</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toCat">
+          <span class="title-color">Cat specific</span>
+          <p class="description-color">Merge csv files for specified columns.</p>
         </el-card>
       </el-col>
-    </el-row>
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <span>Rename the columns of a CSV efficiently.</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toCat">
+          <span class="title-color">Excel to csv</span>
+          <p class="description-color">Quickly convert excel to csv.</p>
         </el-card>
       </el-col>
-    </el-row>
-    <p />
-
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <span>Components/Cat Convert</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toCat">
+          <span class="title-color">Csv to xlsx</span>
+          <p class="description-color">Quickly convert csv to xlsx.</p>
         </el-card>
       </el-col>
-    </el-row>
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>concat</span>
-            </div>
-          </template>
-          <span>Merge multiple CSV files into one xlsx file or csv file.</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toSelect">
+          <span class="title-color">Search</span>
+          <p class="description-color"> Select fields and shows only matching rows. </p>
         </el-card>
       </el-col>
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>concat specific</span>
-            </div>
-          </template>
-          <span>Merge csv files for specified columns.</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toSelect">
+          <span class="title-color">Select</span>
+          <p class="description-color">Select, re-order csv columns.</p>
         </el-card>
       </el-col>
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>excel to csv</span>
-            </div>
-          </template>
-          <span>Quickly convert excel to csv.</span>
-        </el-card>
-      </el-col>
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>csv to xlsx</span>
-            </div>
-          </template>
-          <span>Quickly convert csv to xlsx.</span>
-        </el-card>
-      </el-col>
-    </el-row>
-    <p />
-
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <span>Components/Select</span>
-        </el-card>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>filter rows</span>
-            </div>
-          </template>
-          <span
-            >Streaming queries for data in a column that is equal to and contains certain
-            values.</span
-          >
-        </el-card>
-      </el-col>
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>select columns</span>
-            </div>
-          </template>
-          <span>Select, re-order csv columns.</span>
-        </el-card>
-      </el-col>
-    </el-row>
-    <p />
-
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <span>Components/Polars</span>
-        </el-card>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>pivot</span>
-            </div>
-          </template>
-          <span>Data pivot.</span>
-        </el-card>
-      </el-col>
-      <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>unique</span>
-            </div>
-          </template>
-          <span>Data unique.</span>
+      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+        <el-card class="box-card" shadow="hover" @click="toPolars">
+          <span class="title-color">Polars</span>
+          <p class="description-color">Data pivot and unique.</p>
         </el-card>
       </el-col>
     </el-row>
@@ -246,5 +154,18 @@
     color: #fff;
     line-height: 300px;
     text-align: center;
+  }
+
+  .box-card {
+    margin-bottom: 20px;
+  }
+
+  .title-color {
+    font-size: 30px;
+    font-weight: bold;
+  }
+
+  .description-color {
+    font-size: 15px;
   }
 </style>

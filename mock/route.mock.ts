@@ -6,8 +6,8 @@ const power = [
     name: 'RtWelcome',
   },
   {
-    path: '/components',
-    name: 'RtComponents',
+    path: '/command',
+    name: 'Rtcommand',
     children: [
       {
         path: 'box',

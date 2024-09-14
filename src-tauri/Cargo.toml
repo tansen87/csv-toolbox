@@ -6,7 +6,7 @@ authors = ["tansen"]
 license = ""
 repository = "https://github.com/tansen87/csv-toolbox"
 edition = "2021"
-rust-version = "1.80.1"
+rust-version = "1.81.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]

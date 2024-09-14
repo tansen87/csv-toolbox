@@ -3,6 +3,7 @@
   import { open } from '@tauri-apps/api/dialog';
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
+  import type { TableColumnCtx } from 'element-plus';
   import { ElMessage, ElIcon } from 'element-plus';
   import { CloseBold, Select } from '@element-plus/icons-vue';
 
