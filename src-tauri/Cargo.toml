@@ -14,7 +14,7 @@ name = "dlib"
 path = "src/dlib/mod.rs"
 
 [build-dependencies]
-tauri-build = { version = "1.5.4", features = [] }
+tauri-build = { version = "1.5.5", features = [] }
 
 [dependencies]
 calamine = { version = "0.25.0", features = ["dates"] }
@@ -28,10 +28,10 @@ polars = { version = "0.42.0", features = [
     "csv",
 ] }
 rayon = "1.10.0"
-rust_xlsxwriter = "0.75.0"
+rust_xlsxwriter = "0.76.0"
 ryu = "1"
 serde = { version = "1", features = ["derive"] }
-tauri = { version = "1.7.2", features = ["api-all"] }
+tauri = { version = "1.8.0", features = ["api-all"] }
 
 [features]
 # by default Tauri runs in production mode

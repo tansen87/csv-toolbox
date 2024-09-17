@@ -30,7 +30,7 @@
   }
 
   function toCat() {
-    router.push('/command/cat-convert');
+    router.push('/command/cc');
   }
 
   function toSelect() {
