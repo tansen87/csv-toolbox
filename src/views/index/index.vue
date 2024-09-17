@@ -18,7 +18,7 @@
   ]);
 
   function toCount() {
-    router.push('/command/box');
+    router.push('/command/count');
   }
 
   function toFile() {
@@ -30,11 +30,15 @@
   }
 
   function toCat() {
-    router.push('/command/cc');
+    router.push('/command/cat');
   }
 
   function toSelect() {
     router.push('/command/select');
+  }
+
+  function toSearch() {
+    router.push('/command/search');
   }
 
   function toPolars() {
@@ -111,7 +115,7 @@
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
-        <el-card class="box-card" shadow="hover" @click="toSelect">
+        <el-card class="box-card" shadow="hover" @click="toSearch">
           <span class="title-color">Search</span>
           <p class="description-color"> Select fields and shows only matching rows. </p>
         </el-card>

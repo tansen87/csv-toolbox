@@ -15,6 +15,18 @@ const component: AppRouteRecordRaw[] = [
         meta: { title: t('route.pathName.box'), keepAlive: true },
       },
       {
+        path: 'cat',
+        name: 'RtCat',
+        component: () => import('@/views/command/cat/index.vue'),
+        meta: { title: t('route.pathName.cat'), keepAlive: true },
+      },
+      {
+        path: 'count',
+        name: 'RtCount',
+        component: () => import('@/views/command/count/index.vue'),
+        meta: { title: t('route.pathName.count'), keepAlive: true },
+      },
+      {
         path: 'file',
         name: 'RtFile',
         component: () => import('@/views/command/file/index.vue'),
@@ -37,6 +49,12 @@ const component: AppRouteRecordRaw[] = [
         name: 'RtSelect',
         component: () => import('@/views/command/select/index.vue'),
         meta: { title: t('route.pathName.select') },
+      },
+      {
+        path: 'search',
+        name: 'RtSearch',
+        component: () => import('@/views/command/search/index.vue'),
+        meta: { title: t('route.pathName.search') },
       },
       {
         path: 'polars',

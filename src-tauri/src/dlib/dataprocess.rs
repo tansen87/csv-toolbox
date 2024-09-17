@@ -320,7 +320,7 @@ pub async fn unique(path: String, sep: String, column: String, window: tauri::Wi
 }
 
 #[tauri::command]
-pub async fn concat(path: String, sep: String, window: tauri::Window) {
+pub async fn concat1(path: String, sep: String, window: tauri::Window) {
   match (async { concat_all(path, sep) }).await {
     Ok(result) => result,
     Err(error) => {

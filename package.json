@@ -66,6 +66,7 @@
     "qs": "^6.11.2",
     "sortablejs": "^1.15.0",
     "vue": "^3.3.9",
+    "vue-draggable-plus": "^0.5.3",
     "vue-i18n": "^9.13.1",
     "vue-router": "^4.2.5",
     "vue-types": "^5.1.1",

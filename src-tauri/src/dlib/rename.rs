@@ -1,21 +1,21 @@
-use std::{ fs::File, path::Path, error::Error };
+use std::{error::Error, fs::File, path::Path};
 
-fn get_headers(path: &str, sep: String) -> Result<Vec<String>, Box<dyn Error>> {
+fn get_header(path: &str, sep: String) -> Result<Vec<String>, Box<dyn Error>> {
   let mut separator = Vec::new();
-  let sep_u8 = if sep == "\\t" { b'\t' } else { sep.into_bytes()[0] };
-  separator.push(sep_u8);
+  let sep = if sep == "\\t" {
+    b'\t'
+  } else {
+    sep.into_bytes()[0]
+  };
+  separator.push(sep);
 
-  let mut rdr = csv::ReaderBuilder
-    ::new()
+  let mut rdr = csv::ReaderBuilder::new()
     .delimiter(separator[0])
     .has_headers(true)
     .from_reader(File::open(path)?);
 
   let headers = rdr.headers()?.clone();
-  let vec_headers: Vec<String> = headers
-    .iter()
-    .map(|h| h.to_string())
-    .collect();
+  let vec_headers: Vec<String> = headers.iter().map(|h| h.to_string()).collect();
 
   Ok(vec_headers)
 }
@@ -24,40 +24,31 @@ fn rename_headers(
   path: &str,
   sep: String,
   r_header: String,
-  window: tauri::Window
+  window: tauri::Window,
 ) -> Result<(), Box<dyn Error>> {
   let mut separator = Vec::new();
-  let sep_u8 = if sep == "\\t" { b'\t' } else { sep.into_bytes()[0] };
-  separator.push(sep_u8);
+  let sep = if sep == "\\t" {
+    b'\t'
+  } else {
+    sep.into_bytes()[0]
+  };
+  separator.push(sep);
 
-  let mut rdr = csv::ReaderBuilder
-    ::new()
+  let mut rdr = csv::ReaderBuilder::new()
     .delimiter(separator[0])
     .has_headers(true)
     .from_reader(File::open(path)?);
 
-  let headers = rdr.byte_headers()?;
   let mut new_rdr = csv::Reader::from_reader(r_header.as_bytes());
 
   let new_headers = new_rdr.byte_headers()?;
 
-  if headers.len() != new_headers.len() {
-    let msg = format!(
-      "before header len: {}, after header len: {}.",
-      headers.len(),
-      new_headers.len()
-    );
-    window.emit("len_err", msg)?;
-    return Ok(());
-  }
-
   let file_path = Path::new(&path);
   let file_name = match file_path.file_name() {
-    Some(name) =>
-      match name.to_str() {
-        Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
-        None => vec![],
-      }
+    Some(name) => match name.to_str() {
+      Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
+      None => vec![],
+    },
     None => vec![],
   };
   let current_time = chrono::Local::now();
@@ -72,7 +63,9 @@ fn rename_headers(
     current_time.format("%Y-%m-%d-%H%M%S")
   );
 
-  let mut wtr = csv::WriterBuilder::new().delimiter(separator[0]).from_path(output_path)?;
+  let mut wtr = csv::WriterBuilder::new()
+    .delimiter(separator[0])
+    .from_path(output_path)?;
 
   wtr.write_record(new_headers)?;
 
@@ -92,8 +85,8 @@ fn rename_headers(
 }
 
 #[tauri::command]
-pub async fn geth(path: String, sep: String, window: tauri::Window) -> Vec<String> {
-  let headers = match (async { get_headers(path.as_str(), sep) }).await {
+pub async fn get_rename_headers(path: String, sep: String, window: tauri::Window) -> Vec<String> {
+  let headers = match (async { get_header(path.as_str(), sep) }).await {
     Ok(result) => result,
     Err(err) => {
       eprintln!("get headers error: {err}");

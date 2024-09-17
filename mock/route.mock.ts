@@ -14,12 +14,16 @@ const power = [
         name: 'RtBox',
       },
       {
-        path: 'file',
-        name: 'RtFile',
+        path: 'cat',
+        name: 'RtCat',
       },
       {
-        path: 'database',
-        name: 'RtDatabase',
+        path: 'count',
+        name: 'RtCount',
+      },
+      {
+        path: 'file',
+        name: 'RtFile',
       },
       {
         path: 'rename',
@@ -32,6 +36,10 @@ const power = [
       {
         path: 'select',
         name: 'RtSelect',
+      },
+      {
+        path: 'search',
+        name: 'RtSearch',
       },
       {
         path: 'polars',

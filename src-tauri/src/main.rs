@@ -1,14 +1,14 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
 use dlib::{
-  dataprocess,
   excel2csv,
   csv2xlsx,
+  cat,
   count,
-  filter,
   rename,
   getfilename,
   select,
+  search,
   insert,
 };
 
@@ -17,18 +17,17 @@ fn main() {
     ::default()
     .invoke_handler(
       tauri::generate_handler![
-        dataprocess::pivot,
-        dataprocess::unique,
-        dataprocess::concat,
-        dataprocess::concatsp,
         excel2csv::etoc,
         csv2xlsx::ctox,
-        count::countr,
-        filter::filter,
-        rename::geth,
+        cat::concat,
+        count::count,
+        rename::get_rename_headers,
         rename::rename,
         getfilename::filename,
+        select::get_select_headers,
         select::select,
+        search::get_search_headers,
+        search::search,
         insert::insertblank,
         insert::insertcol
       ]

@@ -22,7 +22,7 @@ chrono = "0.4.38"
 csv = "1.3.0"
 futures = "0.3.30"
 itoa = "1"
-polars = { version = "0.42.0", features = [
+polars = { version = "0.43.1", features = [
     "lazy",
     "diagonal_concat",
     "csv",

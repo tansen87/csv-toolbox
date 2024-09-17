@@ -1,23 +1,10 @@
 <script setup lang="ts">
-  import Count from './components/Count.vue';
   import InsertBlank from './components/InsertBlank.vue';
   import InsertFill from './components/InsertFill.vue';
 </script>
 
 <template>
   <el-scrollbar>
-    <el-row :gutter="20" class="enter-y">
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card class="box-card">
-          <template #header>
-            <div class="card-header cursor">
-              <span>count rows</span>
-            </div>
-          </template>
-          <Count />
-        </el-card>
-      </el-col>
-    </el-row>
     <el-row :gutter="20" class="enter-y">
       <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
         <el-card class="box-card">

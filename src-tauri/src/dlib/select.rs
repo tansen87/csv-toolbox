@@ -1,31 +1,66 @@
-use std::{ collections::BTreeMap, fs::File, io::BufWriter, path::Path };
+use std::{
+  collections::{BTreeMap, HashMap},
+  error::Error,
+  fs::File,
+  io::BufWriter,
+  path::Path,
+};
+
+fn get_header(path: &str, sep: String) -> Result<Vec<HashMap<String, String>>, Box<dyn Error>> {
+  let mut separator = Vec::new();
+  let sep = if sep == "\\t" {
+    b'\t'
+  } else {
+    sep.into_bytes()[0]
+  };
+  separator.push(sep);
+
+  let mut rdr = csv::ReaderBuilder::new()
+    .delimiter(separator[0])
+    .has_headers(true)
+    .from_reader(File::open(path)?);
+
+  let headers = rdr.headers()?.clone();
+  let vec_headers: Vec<String> = headers.iter().map(|h| h.to_string()).collect();
+
+  let hs = vec_headers
+    .into_iter()
+    .enumerate()
+    .map(|(index, name)| {
+      let mut map = HashMap::new();
+      map.insert("name".to_string(), name);
+      map.insert("id".to_string(), index.to_string());
+      map
+    })
+    .collect();
+
+  Ok(hs)
+}
 
 fn select_columns(
   path: String,
   sep: String,
   cols: String,
-  window: tauri::Window
+  window: tauri::Window,
 ) -> Result<(), Box<dyn std::error::Error>> {
   let mut separator = Vec::new();
-  let sep_u8 = if sep == "\\t" { b'\t' } else { sep.into_bytes()[0] };
+  let sep_u8 = if sep == "\\t" {
+    b'\t'
+  } else {
+    sep.into_bytes()[0]
+  };
   separator.push(sep_u8);
-  // let cols_select: Vec<&str> = cols.split('|').collect();
   let cols_cleaned: String = cols.replace("\r", "").replace("\n", "");
   let cols_select: Vec<&str> = cols_cleaned.split('|').collect();
-  let vec_path: Vec<&str> = path.split(',').collect();
-
-  let mut countf: usize = 0;
-  let mut count_mistake: usize = 0;
-  let file_len = vec_path.len();
+  let vec_path: Vec<&str> = path.split('|').collect();
 
   for f in vec_path.iter() {
     let file_path = Path::new(&f);
     let file_name = match file_path.file_name() {
-      Some(name) =>
-        match name.to_str() {
-          Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
-          None => vec![],
-        }
+      Some(name) => match name.to_str() {
+        Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
+        None => vec![],
+      },
       None => vec![],
     };
     let current_time = chrono::Local::now();
@@ -40,8 +75,7 @@ fn select_columns(
       current_time.format("%Y-%m-%d-%H%M%S")
     );
 
-    let mut rdr = csv::ReaderBuilder
-      ::new()
+    let mut rdr = csv::ReaderBuilder::new()
       .delimiter(separator[0])
       .has_headers(true)
       .from_reader(File::open(f)?);
@@ -66,16 +100,12 @@ fn select_columns(
       }
     }
 
-    let mut wtr = csv::WriterBuilder
-      ::new()
+    let mut wtr = csv::WriterBuilder::new()
       .delimiter(separator[0])
       .from_writer(BufWriter::new(File::create(output_path)?));
 
     wtr.write_record(cols_select.iter())?;
     let mut record = csv::ByteRecord::new();
-    // while rdr.read_byte_record(&mut record)? {
-    //     wtr.write_record(vec_indices.iter().map(|&i| &record[i]))?;
-    // }
 
     while rdr.read_byte_record(&mut record)? {
       match wtr.write_record(vec_indices.iter().map(|&i| &record[i])) {
@@ -83,27 +113,29 @@ fn select_columns(
         Err(e) => {
           let wtr_msg = format!("{}.{}|error|{}", file_name[0], file_name[1], e);
           window.emit("wtr_err", wtr_msg)?;
-          count_mistake += 1;
           break;
         }
       }
     }
 
     wtr.flush()?;
-
-    if count_mistake == 0 {
-      let select_msg = format!("{}.{}", file_name[0], file_name[1]);
-      window.emit("select_msg", select_msg.clone())?;
-    }
-
-    countf += 1;
-    count_mistake = 0;
-    let progress = ((countf as f32) / (file_len as f32)) * 100.0;
-    let progress_s = format!("{progress:.0}");
-    window.emit("sel_progress", progress_s)?;
   }
 
   Ok(())
+}
+
+#[tauri::command]
+pub async fn get_select_headers(path: String, sep: String, window: tauri::Window) -> Vec<HashMap<String, String>> {
+  let headers = match (async { get_header(path.as_str(), sep) }).await {
+    Ok(result) => result,
+    Err(err) => {
+      eprintln!("get headers error: {err}");
+      window.emit("get_err", &err.to_string()).unwrap();
+      return Vec::new();
+    }
+  };
+
+  headers
 }
 
 #[tauri::command]

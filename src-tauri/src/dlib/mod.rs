@@ -1,9 +1,11 @@
-pub mod dataprocess;
 pub mod excel2csv;
 pub mod csv2xlsx;
 pub mod count;
-pub mod filter;
 pub mod rename;
 pub mod getfilename;
 pub mod select;
+pub mod search;
 pub mod insert;
+pub mod cat;
+pub mod excel;
+pub mod xlsx_writer;

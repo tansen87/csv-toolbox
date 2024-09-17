@@ -4,14 +4,14 @@
   import { invoke } from '@tauri-apps/api/tauri';
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
-  import { SuccessFilled } from '@element-plus/icons-vue';
+  import { SuccessFilled, Loading, Watermelon, FolderOpened } from '@element-plus/icons-vue';
 
-  const getCSVMsg = ref('');
   const tableData: any = ref([]);
   const writeRows = ref(0);
   const isFinish = ref(false);
   const isLoading = ref(false);
   const isWrite = ref(false);
+  const isPath = ref(false);
   const search = ref('');
   const filterTableData = computed(() =>
     tableData.value.filter(
@@ -20,7 +20,7 @@
   );
   const data = reactive({
     filePath: '',
-    fileFormats: ['csv', 'txt', 'tsv', 'spext'],
+    fileFormats: ['csv', 'txt', 'tsv', 'spext', 'dat'],
     sep: ',',
   });
 
@@ -29,53 +29,22 @@
     const getErrMsg: any = 'get error: ' + error;
     ElMessage.error(getErrMsg);
   });
-
   listen('rename_err', (event: any) => {
     const error: any = event.payload;
     const renameErrMsg: any = 'rename error: ' + error;
     ElMessage.error(renameErrMsg);
   });
-
-  listen('len_err', (event: any) => {
-    const error: any = event.payload;
-    const lenErrMsg: any = 'len error: ' + error;
-    ElMessage.warning(lenErrMsg);
-  });
-
   listen('count_rows', (event: any) => {
     const count: any = event.payload;
     writeRows.value = count;
   });
-
-  // rename csv headers
-  async function renameData() {
-    if (data.filePath == '') {
-      ElMessage.warning('未选择csv文件');
-      return;
-    }
-
-    ElMessage.info('waiting...');
-
-    const headersStringArray = tableData.value.map((row: any) => row.col2);
-    const headersString = headersStringArray.join(',');
-    isLoading.value = true;
-    isFinish.value = false;
-    isWrite.value = true;
-    await invoke('rename', {
-      path: data.filePath,
-      sep: data.sep,
-      headers: headersString,
-    });
-    isLoading.value = false;
-    isFinish.value = true;
-    ElMessage.success('rename done.');
-  }
 
   async function selectFile() {
     tableData.value = [];
     isLoading.value = false;
     isFinish.value = false;
     isWrite.value = false;
+    isPath.value = false;
     const selected = await open({
       multiple: false,
       filters: [
@@ -93,9 +62,9 @@
       data.filePath = selected;
     }
 
-    getCSVMsg.value = selected.toString();
+    isPath.value = true;
 
-    let headers: any = await invoke('geth', {
+    const headers: any = await invoke('get_rename_headers', {
       path: data.filePath,
       sep: data.sep,
     });
@@ -109,6 +78,30 @@
     }
   }
 
+  // rename csv headers
+  async function renameData() {
+    if (data.filePath == '') {
+      ElMessage.warning('未选择csv文件');
+      return;
+    }
+
+    ElMessage.info('Running...');
+
+    const headersStringArray = tableData.value.map((row: any) => row.col2);
+    const headersString = headersStringArray.join(',');
+    isLoading.value = true;
+    isFinish.value = false;
+    await invoke('rename', {
+      path: data.filePath,
+      sep: data.sep,
+      headers: headersString,
+    });
+    isLoading.value = false;
+    isFinish.value = true;
+    isWrite.value = true;
+    ElMessage.success('rename done.');
+  }
+
   async function headerEdit(row: any) {
     return row;
   }
@@ -116,20 +109,51 @@
 
 <template>
   <el-scrollbar class="page-container">
-    <el-form :model="data">
-      <el-form-item label="Separator" class="custom-sep-form-item">
-        <el-select v-model="data.sep">
-          <el-option label="," value="," />
-          <el-option label="|" value="|" />
-          <el-option label="\t" value="\t" />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="selectFile()">Open File</el-button>
-        <el-button type="success" @click="renameData()">Rename</el-button>
-      </el-form-item>
-      <el-table :data="filterTableData" height="650" style="width: 100%">
-        <el-table-column prop="col1" label="headers" width="300"></el-table-column>
+    <el-form>
+      <div
+        style="
+          display: flex;
+          position: sticky;
+          align-items: flex-start;
+          justify-content: space-between;
+        "
+      >
+        <div style="display: flex; align-items: flex-start">
+          <el-button type="primary" :icon="FolderOpened" plain @click="selectFile()">
+            Open File
+          </el-button>
+          <el-select v-model="data.sep" style="width: 100px; margin-left: 16px">
+            <el-option label="," value="," />
+            <el-option label="|" value="|" />
+            <el-option label="\t" value="\t" />
+            <el-option label=";" value=";" />
+          </el-select>
+          <el-button
+            type="success"
+            :icon="Watermelon"
+            plain
+            style="margin-left: 16px"
+            @click="renameData()"
+          >
+            Rename
+          </el-button>
+        </div>
+        <el-form-item>
+          <el-icon v-if="isLoading" color="#FF8C00" class="is-loading">
+            <Loading />
+          </el-icon>
+          <el-icon v-if="isFinish" color="#32CD32"> <SuccessFilled /> </el-icon>
+          <el-text v-if="isWrite" class="mx-1">{{ writeRows }}</el-text>
+        </el-form-item>
+
+        <el-text type="primary" size="large">
+          <el-icon> <Watermelon /> </el-icon>
+          <span v-if="isPath">{{ data.filePath }}</span>
+          <span v-else>Rename the columns of a CSV</span>
+        </el-text>
+      </div>
+      <el-table :data="filterTableData" height="420" style="width: 100%">
+        <el-table-column prop="col1" label="headers" style="width: 50%" />
         <el-table-column prop="col2" label="rename headers" width="300">
           <template #default="{ row }">
             <el-input
@@ -137,30 +161,15 @@
               placeholder="new header"
               class="custom-header-input"
               @blur="headerEdit(row)"
-            ></el-input>
+            />
           </template>
         </el-table-column>
         <el-table-column>
           <template #header>
-            <el-input v-model="search" size="small" placeholder="Type to search" />
+            <el-input v-model="search" size="small" placeholder="Type to search headers" />
           </template>
         </el-table-column>
       </el-table>
     </el-form>
-    <el-text class="mx-1" type="success">{{ getCSVMsg }}</el-text>
-    <p></p>
-    <el-icon v-if="isLoading" color="#FF8C00" class="is-loading"> <Loading /> </el-icon>
-    <el-icon v-if="isFinish" color="#32CD32"> <SuccessFilled /> </el-icon>
-    <el-text v-if="isWrite" class="mx-1">{{ writeRows }}</el-text>
   </el-scrollbar>
 </template>
-
-<style>
-  .custom-sep-form-item {
-    width: 275px !important; /* 使用 !important 确保样式优先级 */
-  }
-
-  .custom-header-input {
-    width: 275px !important; /* 使用 !important 确保样式优先级 */
-  }
-</style>

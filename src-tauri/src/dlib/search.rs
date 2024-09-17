@@ -1,13 +1,52 @@
-use std::{ fs::File, io::{ BufReader, BufWriter }, path::PathBuf, error::Error };
+use std::{
+  collections::HashMap, error::Error, fs::File, io::{BufReader, BufWriter}, path::PathBuf
+};
+
+fn get_header(path: &str, sep: String) -> Result<Vec<HashMap<String, String>>, Box<dyn Error>> {
+  let mut separator = Vec::new();
+  let sep = if sep == "\\t" {
+    b'\t'
+  } else {
+    sep.into_bytes()[0]
+  };
+  separator.push(sep);
+
+  let mut rdr = csv::ReaderBuilder::new()
+    .delimiter(separator[0])
+    .has_headers(true)
+    .from_reader(File::open(path)?);
+
+  let headers = rdr.headers()?.clone();
+  let vec_headers: Vec<String> = headers.iter().map(|h| h.to_string()).collect();
+
+  let hs = vec_headers
+    .into_iter()
+    .enumerate()
+    .map(|(_index, name)| {
+      let mut map = HashMap::new();
+      map.insert("value".to_string(), name.clone());
+      map.insert("label".to_string(), name);
+      map
+    })
+    .collect();
+
+  Ok(hs)
+}
 
 pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<BufReader<File>>, Box<dyn Error>> {
   let mut separator = Vec::new();
-  let sep_u8 = if sep == "\\t" { b'\t' } else { sep.into_bytes()[0] };
-  separator.push(sep_u8);
+  let sep = if sep == "\\t" {
+    b'\t'
+  } else {
+    sep.into_bytes()[0]
+  };
+  separator.push(sep);
 
-  let file = File::open(path.clone())?;
+  let file = File::open(path)?;
 
-  let rdr = csv::ReaderBuilder::new().delimiter(separator[0]).from_reader(BufReader::new(file));
+  let rdr = csv::ReaderBuilder::new()
+    .delimiter(separator[0])
+    .from_reader(BufReader::new(file));
 
   Ok(rdr)
 }
@@ -15,11 +54,15 @@ pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<BufReader<File>
 pub fn write_csv(
   path: String,
   sep: String,
-  mode: &str
+  mode: &str,
 ) -> Result<csv::Writer<BufWriter<File>>, Box<dyn Error>> {
   let mut separator = Vec::new();
-  let sep_u8 = if sep == "\\t" { b'\t' } else { sep.into_bytes()[0] };
-  separator.push(sep_u8);
+  let sep = if sep == "\\t" {
+    b'\t'
+  } else {
+    sep.into_bytes()[0]
+  };
+  separator.push(sep);
 
   let path = PathBuf::from(path);
   let file_name = path
@@ -37,35 +80,46 @@ pub fn write_csv(
   let mut vec_output = Vec::new();
   match mode {
     "equal" => {
-      vec_output.push(
-        format!("{}/{}_equal {}.csv", path_parent.display(), file_name, current_time_str)
-      );
+      vec_output.push(format!(
+        "{}/{}_equal {}.csv",
+        path_parent.display(),
+        file_name,
+        current_time_str
+      ));
     }
     "contains" => {
-      vec_output.push(
-        format!("{}/{}_contains {}.csv", path_parent.display(), file_name, current_time_str)
-      );
+      vec_output.push(format!(
+        "{}/{}_contains {}.csv",
+        path_parent.display(),
+        file_name,
+        current_time_str
+      ));
     }
     "startswith" => {
-      vec_output.push(
-        format!("{}/{}_startswith {}.csv", path_parent.display(), file_name, current_time_str)
-      );
+      vec_output.push(format!(
+        "{}/{}_startswith {}.csv",
+        path_parent.display(),
+        file_name,
+        current_time_str
+      ));
     }
     _ => {}
   }
 
   let file = File::create(&vec_output[0])?;
-  let wtr = csv::WriterBuilder::new().delimiter(separator[0]).from_writer(BufWriter::new(file));
+  let wtr = csv::WriterBuilder::new()
+    .delimiter(separator[0])
+    .from_writer(BufWriter::new(file));
 
   Ok(wtr)
 }
 
-fn equal_filter(
+fn equal_search(
   path: String,
   sep: String,
   column: String,
   conditions: Vec<String>,
-  window: tauri::Window
+  window: tauri::Window,
 ) -> Result<(), Box<dyn Error>> {
   let mut count: usize = 0;
   let mut rdr = read_csv(path.clone(), sep.clone())?;
@@ -81,7 +135,6 @@ fn equal_filter(
 
   let mut wtr = write_csv(path, sep, "equal")?;
 
-  // Write headers to the output file
   wtr.write_record(&headers)?;
 
   for result in rdr.records() {
@@ -98,12 +151,12 @@ fn equal_filter(
   Ok(())
 }
 
-fn contains_filter(
+fn contains_search(
   path: String,
   sep: String,
   column: String,
   conditions: Vec<String>,
-  window: tauri::Window
+  window: tauri::Window,
 ) -> Result<(), Box<dyn Error>> {
   let mut count: usize = 0;
   let mut rdr = read_csv(path.clone(), sep.clone())?;
@@ -119,7 +172,6 @@ fn contains_filter(
 
   let mut wtr = write_csv(path, sep, "contains")?;
 
-  // Write headers to the output file
   wtr.write_record(&headers)?;
 
   for result in rdr.records() {
@@ -144,12 +196,12 @@ fn contains_filter(
   Ok(())
 }
 
-fn startswith_filter(
+fn startswith_search(
   path: String,
   sep: String,
   column: String,
   conditions: Vec<String>,
-  window: tauri::Window
+  window: tauri::Window,
 ) -> Result<(), Box<dyn Error>> {
   let mut count: usize = 0;
   let mut rdr = read_csv(path.clone(), sep.clone())?;
@@ -165,7 +217,6 @@ fn startswith_filter(
 
   let mut wtr = write_csv(path, sep, "startswith")?;
 
-  // Write headers to the output file
   wtr.write_record(&headers)?;
 
   for result in rdr.records() {
@@ -184,13 +235,27 @@ fn startswith_filter(
 }
 
 #[tauri::command]
-pub async fn filter(
+pub async fn get_search_headers(path: String, sep: String, window: tauri::Window) -> Vec<HashMap<String, String>> {
+  let headers = match (async { get_header(path.as_str(), sep) }).await {
+    Ok(result) => result,
+    Err(err) => {
+      eprintln!("get headers error: {err}");
+      window.emit("get_err", &err.to_string()).unwrap();
+      return Vec::new();
+    }
+  };
+
+  headers
+}
+
+#[tauri::command]
+pub async fn search(
   path: String,
   sep: String,
   column: String,
   mode: String,
   condition: String,
-  window: tauri::Window
+  window: tauri::Window,
 ) {
   let equal_window = window.clone();
   let contains_window = window.clone();
@@ -206,28 +271,28 @@ pub async fn filter(
     .collect();
 
   if mode == "equal" {
-    match (async { equal_filter(path, sep, column, vec_strings, equal_window) }).await {
+    match (async { equal_search(path, sep, column, vec_strings, equal_window) }).await {
       Ok(result) => result,
       Err(error) => {
-        eprintln!("equal_filter error: {error}");
+        eprintln!("equal_search error: {error}");
         window.emit("equal_err", &error.to_string()).unwrap();
         return ();
       }
     };
   } else if mode == "contains" {
-    match (async { contains_filter(path, sep, column, vec_strings, contains_window) }).await {
+    match (async { contains_search(path, sep, column, vec_strings, contains_window) }).await {
       Ok(result) => result,
       Err(error) => {
-        eprintln!("contains_filter error: {error}");
+        eprintln!("contains_search error: {error}");
         window.emit("contains_err", &error.to_string()).unwrap();
         return ();
       }
     };
   } else if mode == "startswith" {
-    match (async { startswith_filter(path, sep, column, vec_strings, startswith_window) }).await {
+    match (async { startswith_search(path, sep, column, vec_strings, startswith_window) }).await {
       Ok(result) => result,
       Err(error) => {
-        eprintln!("startswith_filter error: {error}");
+        eprintln!("startswith_search error: {error}");
         window.emit("startswith_err", &error.to_string()).unwrap();
         return ();
       }
