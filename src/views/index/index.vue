@@ -101,12 +101,6 @@
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
-        <el-card class="box-card" shadow="hover" @click="toCat">
-          <span class="title-color">Cat specific</span>
-          <p class="description-color">Merge csv files for specified columns.</p>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
         <el-card class="box-card" shadow="hover" @click="toConvert">
           <span class="title-color">Excel to csv</span>
           <p class="description-color">Quickly convert excel to csv.</p>

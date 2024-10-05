@@ -42,7 +42,7 @@ const component: AppRouteRecordRaw[] = [
         path: 'convert',
         name: 'RtConvert',
         component: () => import('@/views/command/convert/index.vue'),
-        meta: { title: t('route.pathName.cc') },
+        meta: { title: t('route.pathName.convert') },
       },
       {
         path: 'select',
