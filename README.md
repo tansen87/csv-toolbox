@@ -17,7 +17,8 @@
 * insert CSV value columns
 * get filename and write to xlsx
 
-![image](https://github.com/tansen87/csv-toolbox/assets/98570790/c01bd519-f551-4c1b-9794-011e0bc6e7f3)
+![image](https://github.com/user-attachments/assets/5ca80663-a8f2-41fc-9898-1fa52dbd854f)
+
 
 ## Usage
 ### Install dependencies
