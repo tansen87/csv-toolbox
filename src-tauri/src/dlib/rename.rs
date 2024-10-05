@@ -1,5 +1,7 @@
 use std::{error::Error, fs::File, path::Path};
 
+use tauri::Emitter;
+
 fn get_header(path: &str, sep: String) -> Result<Vec<String>, Box<dyn Error>> {
   let mut separator = Vec::new();
   let sep = if sep == "\\t" {

@@ -44,6 +44,10 @@
   function toPolars() {
     router.push('/command/polars');
   }
+
+  function toConvert() {
+    router.push('/command/convert');
+  }
 </script>
 
 <template>
@@ -103,13 +107,13 @@
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
-        <el-card class="box-card" shadow="hover" @click="toCat">
+        <el-card class="box-card" shadow="hover" @click="toConvert">
           <span class="title-color">Excel to csv</span>
           <p class="description-color">Quickly convert excel to csv.</p>
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
-        <el-card class="box-card" shadow="hover" @click="toCat">
+        <el-card class="box-card" shadow="hover" @click="toConvert">
           <span class="title-color">Csv to xlsx</span>
           <p class="description-color">Quickly convert csv to xlsx.</p>
         </el-card>
@@ -117,7 +121,7 @@
       <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
         <el-card class="box-card" shadow="hover" @click="toSearch">
           <span class="title-color">Search</span>
-          <p class="description-color"> Select fields and shows only matching rows. </p>
+          <p class="description-color"> Select fields only matching rows. </p>
         </el-card>
       </el-col>
       <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">

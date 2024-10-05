@@ -1,6 +1,7 @@
-use std::{ error::Error, path::PathBuf };
+use calamine::{Data, Range, Reader};
 use rayon::prelude::*;
-use calamine::{ Reader, Range, Data };
+use tauri::Emitter;
+use std::{error::Error, path::PathBuf};
 
 fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>> {
   /* convert excel to csv */
@@ -92,10 +93,9 @@ fn write_range(path: String, window: tauri::Window) -> Result<(), Box<dyn Error>
                 float_val = *f;
 
                 #[allow(clippy::cast_precision_loss)]
-                if
-                  float_val.fract().abs() > f64::EPSILON ||
-                  float_val > (i64::MAX as f64) ||
-                  float_val < (i64::MIN as f64)
+                if float_val.fract().abs() > f64::EPSILON
+                  || float_val > (i64::MAX as f64)
+                  || float_val < (i64::MIN as f64)
                 {
                   record.push_field(ryu_buffer.format_finite(float_val));
                 } else {

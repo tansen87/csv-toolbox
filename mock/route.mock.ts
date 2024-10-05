@@ -30,8 +30,8 @@ const power = [
         name: 'RtRename',
       },
       {
-        path: 'cc',
-        name: 'RtCatConvert',
+        path: 'convert',
+        name: 'RtConvert',
       },
       {
         path: 'select',

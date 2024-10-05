@@ -1,6 +1,12 @@
 use std::{
-  collections::HashMap, error::Error, fs::File, io::{BufReader, BufWriter}, path::PathBuf
+  collections::HashMap,
+  error::Error,
+  fs::File,
+  io::{BufReader, BufWriter},
+  path::PathBuf,
 };
+
+use tauri::Emitter;
 
 fn get_header(path: &str, sep: String) -> Result<Vec<HashMap<String, String>>, Box<dyn Error>> {
   let mut separator = Vec::new();
@@ -235,7 +241,11 @@ fn startswith_search(
 }
 
 #[tauri::command]
-pub async fn get_search_headers(path: String, sep: String, window: tauri::Window) -> Vec<HashMap<String, String>> {
+pub async fn get_search_headers(
+  path: String,
+  sep: String,
+  window: tauri::Window,
+) -> Vec<HashMap<String, String>> {
   let headers = match (async { get_header(path.as_str(), sep) }).await {
     Ok(result) => result,
     Err(err) => {

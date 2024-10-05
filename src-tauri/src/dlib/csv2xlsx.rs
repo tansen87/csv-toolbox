@@ -1,11 +1,15 @@
-use std::{ error::Error, path::{ Path, PathBuf } };
+use std::{
+  error::Error,
+  path::{Path, PathBuf},
+};
 
 use polars::{
-  io::csv::read::{ CsvReadOptions, CsvParseOptions },
-  frame::DataFrame,
   datatypes::AnyValue,
+  frame::DataFrame,
+  io::csv::read::{CsvParseOptions, CsvReadOptions},
   prelude::SerReader,
 };
+use tauri::Emitter;
 
 fn write_xlsx(df: DataFrame, dest: PathBuf) -> Result<(), Box<dyn Error>> {
   /* write dataframe to xlsx */
@@ -78,11 +82,10 @@ fn write_range(path: String, sep: String, window: tauri::Window) -> Result<(), B
 
   for file in vec_path.iter() {
     let file_name = match Path::new(&file).file_name() {
-      Some(name) =>
-        match name.to_str() {
-          Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
-          None => vec![],
-        }
+      Some(name) => match name.to_str() {
+        Some(name_str) => name_str.split('.').collect::<Vec<&str>>(),
+        None => vec![],
+      },
       None => vec![],
     };
 
@@ -90,7 +93,9 @@ fn write_range(path: String, sep: String, window: tauri::Window) -> Result<(), B
     let dest = sce.with_extension("xlsx");
     let df = CsvReadOptions::default()
       .with_parse_options(
-        CsvParseOptions::default().with_separator(separator[0]).with_missing_is_null(false)
+        CsvParseOptions::default()
+          .with_separator(separator[0])
+          .with_missing_is_null(false),
       )
       .with_infer_schema_length(Some(0))
       .try_into_reader_with_file_path(Some(file.into()))?
@@ -101,7 +106,10 @@ fn write_range(path: String, sep: String, window: tauri::Window) -> Result<(), B
       let c2x_msg = format!("{}", file);
       window.emit("c2x_msg", c2x_msg)?;
     } else {
-      let rows_msg = format!("{}.{}|rows:{}, cannot converted.", file_name[0], file_name[1], rows);
+      let rows_msg = format!(
+        "{}.{}|rows:{}, cannot converted.",
+        file_name[0], file_name[1], rows
+      );
       window.emit("rows_err", rows_msg)?;
     }
 

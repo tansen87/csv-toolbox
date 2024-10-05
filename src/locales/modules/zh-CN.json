@@ -61,7 +61,7 @@
       "box": "盒子",
       "file": "文件",
       "rename": "重命名",
-      "cc": "转换",
+      "convert": "转换",
       "select": "筛选",
       "search": "查询",
       "polars": "Polars",

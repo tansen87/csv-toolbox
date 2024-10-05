@@ -1,5 +1,7 @@
 use std::{error::Error, fs::File, path::Path};
 
+use tauri::Emitter;
+
 fn count_rows(
   path: String,
   sep: String,

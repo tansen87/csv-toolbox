@@ -61,7 +61,7 @@
       "box": "Box",
       "file": "File",
       "rename": "Rename",
-      "cc": "Convert",
+      "convert": "Convert",
       "select": "Select",
       "search": "Search",
       "polars": "Polars",

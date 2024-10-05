@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, reactive, computed } from 'vue';
-  import { open } from '@tauri-apps/api/dialog';
-  import { invoke } from '@tauri-apps/api/tauri';
+  import { open } from '@tauri-apps/plugin-dialog';
+  import { invoke } from '@tauri-apps/api/core';
   import { listen } from '@tauri-apps/api/event';
   import { ElMessage } from 'element-plus';
   import { SuccessFilled, Loading, Watermelon, FolderOpened } from '@element-plus/icons-vue';

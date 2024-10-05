@@ -5,6 +5,7 @@ use polars::{
   lazy::dsl::{functions::concat_lf_diagonal, lit},
   prelude::{CsvWriter, IntoLazy, LazyCsvReader, LazyFileListReader, SerWriter, UnionArgs},
 };
+use tauri::Emitter;
 
 use crate::{
   excel::{ExcelReader, ToPolarsDataFrame},

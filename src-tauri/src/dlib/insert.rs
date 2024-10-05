@@ -1,14 +1,25 @@
-use std::{ error::Error, fs::File, io::{ BufReader, BufWriter }, path::PathBuf, time::Instant };
+use std::{
+  error::Error,
+  fs::File,
+  io::{BufReader, BufWriter},
+  path::PathBuf,
+  time::Instant,
+};
+
+use tauri::Emitter;
 
 pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<BufReader<File>>, Box<dyn Error>> {
   let mut separator = Vec::new();
-  let sep_u8 = if sep == "\\t" { b'\t' } else { sep.into_bytes()[0] };
+  let sep_u8 = if sep == "\\t" {
+    b'\t'
+  } else {
+    sep.into_bytes()[0]
+  };
   separator.push(sep_u8);
 
   let file = File::open(path.clone())?;
 
-  let rdr = csv::ReaderBuilder
-    ::new()
+  let rdr = csv::ReaderBuilder::new()
     .delimiter(separator[0])
     .has_headers(true)
     .from_reader(BufReader::new(file));
@@ -19,10 +30,14 @@ pub fn read_csv(path: String, sep: String) -> Result<csv::Reader<BufReader<File>
 pub fn write_csv(
   path: String,
   sep: String,
-  mode: &str
+  mode: &str,
 ) -> Result<csv::Writer<BufWriter<File>>, Box<dyn Error>> {
   let mut separator = Vec::new();
-  let sep_u8 = if sep == "\\t" { b'\t' } else { sep.into_bytes()[0] };
+  let sep_u8 = if sep == "\\t" {
+    b'\t'
+  } else {
+    sep.into_bytes()[0]
+  };
   separator.push(sep_u8);
 
   let path = PathBuf::from(path);
@@ -41,20 +56,28 @@ pub fn write_csv(
   let mut vec_output = Vec::new();
   match mode {
     "iblank" => {
-      vec_output.push(
-        format!("{}/{}_iblank {}.csv", path_parent.display(), file_name, current_time_str)
-      );
+      vec_output.push(format!(
+        "{}/{}_iblank {}.csv",
+        path_parent.display(),
+        file_name,
+        current_time_str
+      ));
     }
     "ifill" => {
-      vec_output.push(
-        format!("{}/{}_ifill {}.csv", path_parent.display(), file_name, current_time_str)
-      );
+      vec_output.push(format!(
+        "{}/{}_ifill {}.csv",
+        path_parent.display(),
+        file_name,
+        current_time_str
+      ));
     }
     _ => {}
   }
 
   let file = File::create(&vec_output[0])?;
-  let wtr = csv::WriterBuilder::new().delimiter(separator[0]).from_writer(BufWriter::new(file));
+  let wtr = csv::WriterBuilder::new()
+    .delimiter(separator[0])
+    .from_writer(BufWriter::new(file));
 
   Ok(wtr)
 }
@@ -170,7 +193,7 @@ fn insert_blank_cols(path: String, sep: String) -> Result<(), Box<dyn Error>> {
     "Cost Centre Description",
     "Profit Centre",
     "Profit Centre Description",
-    "Source Activity or Transaction Code"
+    "Source Activity or Transaction Code",
   ];
   insert_headers.reverse();
 
@@ -264,7 +287,7 @@ pub async fn insertcol(
   sep: String,
   col: String,
   input: String,
-  window: tauri::Window
+  window: tauri::Window,
 ) {
   let start = Instant::now();
   match (async { insert_col(path, sep, col, input) }).await {
@@ -289,7 +312,9 @@ pub async fn insertblank(path: String, sep: String, window: tauri::Window) {
     Ok(result) => result,
     Err(error) => {
       eprintln!("insert_blank_cols error:: {error}");
-      window.emit("insert_blank_cols_err", &error.to_string()).unwrap();
+      window
+        .emit("insert_blank_cols_err", &error.to_string())
+        .unwrap();
       return ();
     }
   }

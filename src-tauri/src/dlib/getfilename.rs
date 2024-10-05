@@ -1,4 +1,9 @@
-use std::{ error::Error, path::{ Path, PathBuf } };
+use std::{
+  error::Error,
+  path::{Path, PathBuf},
+};
+
+use tauri::Emitter;
 
 fn get_filename(path: String) -> Result<Vec<String>, Box<dyn Error>> {
   let vec_path: Vec<&str> = path.split(',').collect();

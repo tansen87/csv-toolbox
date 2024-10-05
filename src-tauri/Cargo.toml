@@ -1,6 +1,6 @@
 [package]
 name = "csv-toolbox"
-version = "0.3.10"
+version = "0.4.0"
 description = "csv-toolbox"
 authors = ["tansen"]
 license = ""
@@ -12,9 +12,10 @@ rust-version = "1.81.0"
 [lib]
 name = "dlib"
 path = "src/dlib/mod.rs"
+crate-type = ["lib", "staticlib", "cdylib"]
 
 [build-dependencies]
-tauri-build = { version = "1.5.5", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
 calamine = { version = "0.25.0", features = ["dates"] }
@@ -28,10 +29,19 @@ polars = { version = "0.43.1", features = [
     "csv",
 ] }
 rayon = "1.10.0"
-rust_xlsxwriter = "0.76.0"
+rust_xlsxwriter = "0.79.0"
 ryu = "1"
 serde = { version = "1", features = ["derive"] }
-tauri = { version = "1.8.0", features = ["api-all"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+tauri-plugin-clipboard-manager = "2.0.1"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-http = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-os = "2"
+tauri-plugin-process = "2"
+tauri-plugin-shell = "2"
 
 [features]
 # by default Tauri runs in production mode
@@ -40,3 +50,6 @@ default = [ "custom-protocol" ]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = [ "tauri/custom-protocol" ]
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-global-shortcut = "2"

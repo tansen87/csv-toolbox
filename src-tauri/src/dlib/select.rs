@@ -6,6 +6,8 @@ use std::{
   path::Path,
 };
 
+use tauri::Emitter;
+
 fn get_header(path: &str, sep: String) -> Result<Vec<HashMap<String, String>>, Box<dyn Error>> {
   let mut separator = Vec::new();
   let sep = if sep == "\\t" {
@@ -125,7 +127,11 @@ fn select_columns(
 }
 
 #[tauri::command]
-pub async fn get_select_headers(path: String, sep: String, window: tauri::Window) -> Vec<HashMap<String, String>> {
+pub async fn get_select_headers(
+  path: String,
+  sep: String,
+  window: tauri::Window,
+) -> Vec<HashMap<String, String>> {
   let headers = match (async { get_header(path.as_str(), sep) }).await {
     Ok(result) => result,
     Err(err) => {
