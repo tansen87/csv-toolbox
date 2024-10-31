@@ -7,7 +7,7 @@
     "license": "",
     "repository": "https://github.com/tansen87/csv-toolbox",
     "edition": "2021",
-    "rust-version": "1.81.0"
+    "rust-version": "1.82.0"
   },
   "lib": {
     "name": "dlib",
@@ -25,9 +25,9 @@
     "serde": "1",
     "chrono": "0.4.38",
     "futures": "0.3.30",
-    "polars": "0.43.1",
+    "polars": "0.44.1",
     "rust_xlsxwriter": "0.79.0",
-    "calamine": "0.25.0",
+    "calamine": "0.26.1",
     "rayon": "1.10.0",
     "ryu": "1",
     "itoa": "1"
